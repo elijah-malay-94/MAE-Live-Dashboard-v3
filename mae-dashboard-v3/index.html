@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datalogger Live Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=optional" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">DL</div>
+    <div class="sidebar-logo-text">DataLogger<small>MONITOR v2</small></div>
+  </div>
+
+  <div class="nav-section">Navigation</div>
+  <div class="nav-item active" onclick="setPage('dashboard')" id="navDashboard">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </div>
+  <div class="nav-item" onclick="openThresholds()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    Alerts
+    <span id="alertCount" style="margin-left:auto;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
+  </div>
+  <div class="nav-item" onclick="openExport()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Export
+  </div>
+  <div class="nav-item" onclick="openThresholds()">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    Settings
+  </div>
+
+  <div class="device-list">
+    <div class="device-section-label">Devices</div>
+    <div id="deviceList"></div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">Live Dashboard</h1>
+      <div class="subtitle" id="pageSubtitle">DEVICE: M22MOP0007 · DL8 · AUTO-REFRESH ON</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
+      <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span id="refreshCountdown">30s</span>
+      </div>  
+      <button class="btn" onclick="openThresholds()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Alerts
+      </button>
+      <button class="btn btn-primary" onclick="openExport()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <span class="controls-label">Period</span>
+    <input type="date" class="date-input" id="dateFrom">
+    <span style="color:var(--muted);font-size:12px">→</span>
+    <input type="date" class="date-input" id="dateTo">
+    <button class="btn" onclick="applyDateFilter()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Apply
+    </button>
+    <div class="controls-sep"></div>
+    <span class="controls-label">Channel</span>
+    <select class="select-input" id="channelSelect" onchange="renderChart()">
+      <!-- options populated dynamically by updateChannelSelect() in dashboard.js -->
+    </select>
+    <div class="controls-sep"></div>
+    <span class="controls-label">Interval</span>
+    <select class="select-input" id="intervalSelect" onchange="applyDateFilter()">
+      <option value="all">All</option>
+      <option value="hour">Last hour</option>
+      <option value="day">Last 24h</option>
+    </select>
+    <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+      <span class="controls-label">Auto-refresh</span>
+      <span id="refreshCountdown2" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">30s</span>
+    </div>
+  </div>
+
+  <!-- ALERT BANNER -->
+  <div id="alertBanner"></div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <!-- CHART CARD -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="chartTitle">PT-50 fs1 — Time Series</span>
+        <span class="card-badge" id="chartBadge">Ch1 · mm</span>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-y" id="chartYLabels"></div>
+        <div class="chart-svg-area"><svg id="mainChartSvg" viewBox="0 0 700 160" preserveAspectRatio="none"></svg></div>
+        <div class="chart-x" id="chartXLabels"></div>
+      </div>
+      <div class="chart-stats" id="chartStats"></div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-label" style="margin-bottom:12px;"><span class="kpi-dot" style="background:var(--accent2)"></span>Device Info</div>
+        <div class="info-list" id="deviceInfoList"></div>
+      </div>
+      <div class="card">
+        <div class="card-label" style="margin-bottom:0; justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" style="background:var(--accent3)"></span>Power Supply</div>
+          <button class="btn" style="padding:4px 10px;font-size:10px;gap:5px;" onclick="openPowerModal()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            View Live
+          </button>
+        </div>
+        <div class="power-chart-wrap"><svg id="powerSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg></div>
+        <div class="power-legend">
+          <div class="legend-item" style="cursor:pointer;" onclick="openPowerModal()"><div class="legend-dot" style="background:#ef4444"></div>Batt <span id="legBatt">4.1V</span></div>
+          <div class="legend-item" style="cursor:pointer;" onclick="openPowerModal()"><div class="legend-dot" style="background:#3b82f6"></div>USB <span id="legUsb">5.0V</span></div>
+          <div class="legend-item" style="cursor:pointer;" onclick="openPowerModal()"><div class="legend-dot" style="background:#10b981"></div>AUX <span id="legAux">0.1V</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+    <!-- ISBC CHARTS -->
+    <div class="card">
+      <div class="card-header"><span class="card-title" id="miniChartsTitle">Secondary Channels</span></div>
+      <div id="isbcCharts"></div>
+    </div>
+
+    <!-- DATA TABLE -->
+    <div class="card table-card">
+      <div class="table-controls">
+        <span class="table-controls-title">Measurement Log</span>
+        <input type="text" class="table-search" placeholder="Search..." id="tableSearch" oninput="renderTable()">
+      </div>
+      <div class="table-head">
+        <span class="th">Date</span><span class="th">Time</span><span class="th">PT-50 mm</span>
+        <span class="th">ISBC X</span><span class="th">ISBC Y</span><span class="th">Status</span>
+      </div>
+      <div class="table-body" id="tableBody"></div>
+      <div class="table-footer">
+        <span class="table-count" id="tableCount">15 records</span>
+        <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()">Export CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API HINT -->
+  <div class="api-hint" id="apiHint">
+    <strong>// API integration active</strong><br>
+    Fetching data via <strong>GET /api/v1/devices/:id/data?start_date=...&amp;end_date=...</strong><br>
+    Channel names and units are read dynamically from <strong>data.header</strong> in the response.
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">Datalogger Live Dashboard · <span id="footerDevice">M22MOP0007</span> · <span id="footerDate"></span></div>
+    <div class="footer-chips">
+      <div class="footer-chip" id="footerPlatform">DL8 Platform</div>
+      <div class="footer-chip" id="footerSignal">Signal 4/4</div>
+      <div class="footer-chip" id="footerMemory">Memory 3.3 Gb</div>
+      <div class="footer-chip" id="footerRecords">15 records</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ═══════════════════════ MAP MODAL ═══════════════════════ -->
+<div class="map-modal-overlay" id="mapModal">
+  <div class="map-modal">
+    <div class="map-modal-header">
+      <div class="map-modal-htitle">
+        <div class="map-modal-icon">🗺️</div>
+        <div>
+          <h2>Live Device Location</h2>
+          <p id="mapModalSub">DEVICE: M22MOP0007 · Milano · 45.4654°, 9.1859°</p>
+        </div>
+      </div>
+      <div class="map-modal-header-right">
+        <div class="pm-live-pill"><div class="pm-live-dot"></div>LIVE GPS</div>
+        <div class="map-modal-close" onclick="closeMapModal()">✕</div>
+      </div>
+    </div>
+    <div class="map-body">
+      <div class="map-sidebar">
+        <div class="map-sidebar-section">
+          <div class="map-sidebar-label">All Devices</div>
+          <div id="mapDeviceList"></div>
+        </div>
+        <div class="map-sidebar-section">
+          <div class="map-sidebar-label">Active Device</div>
+          <div class="map-info-row"><span class="map-info-key">ID</span><span class="map-info-val" id="mapInfoId">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">City</span><span class="map-info-val" id="mapInfoCity">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">Position</span><span class="map-info-val" id="mapInfoPos">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">Lat</span><span class="map-info-val" id="mapInfoLat">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">Lng</span><span class="map-info-val" id="mapInfoLng">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">Status</span><span class="map-info-val" id="mapInfoStatus">—</span></div>
+          <div class="map-info-row"><span class="map-info-key">Signal</span><span class="map-info-val" id="mapInfoSignal">—</span></div>
+        </div>
+        <div class="map-sidebar-section">
+          <div class="map-sidebar-label">Map Style</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('streets')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Streets
+            </div>
+            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('satellite')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>Satellite
+            </div>
+            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('topo')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Terrain
+            </div>
+          </div>
+        </div>
+        <div class="map-sidebar-section" style="border-bottom:none;">
+          <div class="map-sidebar-label">Quick Jump</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <input id="mapSearchInput" type="text" placeholder="Search city or address…" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 10px;border-radius:8px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')jumpToCity()">
+            <div class="map-ctrl-btn" style="position:static;background:var(--accent);color:white;border-color:var(--accent);justify-content:center;" onclick="jumpToCity()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Go
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="map-container">
+        <div class="map-loading" id="mapLoading">
+          <div class="map-spinner"></div>
+          <div class="map-loading-text">Loading map…</div>
+        </div>
+        <iframe id="mapIframe" title="Device Location Map"></iframe>
+        <div class="map-overlay-badge" id="mapBadge">
+          <div class="mob-title" id="mapBadgeName">—</div>
+          <div class="mob-coord" id="mapBadgeCoord">—</div>
+          <div class="mob-status">
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0;"></div>
+            <span id="mapBadgeStatus" style="color:var(--green);">Online</span>
+          </div>
+        </div>
+        <div class="map-controls-strip">
+          <div class="map-ctrl-btn" onclick="zoomMapIn()">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Zoom In
+          </div>
+          <div class="map-ctrl-btn" onclick="zoomMapOut()">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>Zoom Out
+          </div>
+          <div class="map-ctrl-btn" onclick="centerOnDevice()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Re-center
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ POWER SUPPLY MODAL ═══════════════════════ -->
+<div class="power-modal-overlay" id="powerModal">
+  <div class="power-modal">
+    <div class="power-modal-header">
+      <div class="power-modal-htitle">
+        <div class="power-modal-icon">⚡</div>
+        <div>
+          <h2>Power Supply — Live Monitor</h2>
+          <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates every 2s</p>
+        </div>
+      </div>
+      <div class="power-modal-actions">
+        <div class="pm-live-pill"><div class="pm-live-dot"></div>LIVE</div>
+        <div class="power-modal-close" onclick="closePowerModal()">✕</div>
+      </div>
+    </div>
+    <div class="power-modal-body">
+      <div class="power-kpi-strip">
+        <div class="power-kpi batt">
+          <div class="power-kpi-label">Battery</div>
+          <div class="power-kpi-val" id="pm_battVal">—</div>
+          <div class="power-kpi-sub" id="pm_battSub">Nominal: 3.7V – 4.2V</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar" style="width:0%"></div></div>
+        </div>
+        <div class="power-kpi usb">
+          <div class="power-kpi-label">USB Voltage</div>
+          <div class="power-kpi-val" id="pm_usbVal">—</div>
+          <div class="power-kpi-sub" id="pm_usbSub">Nominal: 5.0V</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar" style="width:0%"></div></div>
+        </div>
+        <div class="power-kpi aux">
+          <div class="power-kpi-label">AUX Voltage</div>
+          <div class="power-kpi-val" id="pm_auxVal">—</div>
+          <div class="power-kpi-sub" id="pm_auxSub">External supply</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="pm-section-label">Combined View — All Channels<span class="live-tag">Streaming</span></div>
+      <div class="power-full-chart">
+        <div class="pm-tooltip" id="pmTooltip">
+          <div class="pm-tooltip-time" id="pmTTTime"></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#ef4444"></span><span class="pm-tooltip-label">Battery</span><span class="pm-tooltip-val" id="pmTTBatt" style="color:#ef4444"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#3b82f6"></span><span class="pm-tooltip-label">USB</span><span class="pm-tooltip-val" id="pmTTUsb" style="color:#3b82f6"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#10b981"></span><span class="pm-tooltip-label">AUX</span><span class="pm-tooltip-val" id="pmTTAux" style="color:#10b981"></span></div>
+        </div>
+        <svg id="powerModalSvg" height="220" viewBox="0 0 720 220" preserveAspectRatio="none"></svg>
+        <div class="pm-chart-legend">
+          <div class="pm-legend-item" id="leg_batt" onclick="togglePowerLine('batt')">
+            <div class="pm-legend-line" style="background:#ef4444"></div>
+            <span class="pm-legend-text">Battery</span>
+            <span class="pm-legend-cur" style="color:#ef4444" id="leg_batt_cur">—</span>
+          </div>
+          <div class="pm-legend-item" id="leg_usb" onclick="togglePowerLine('usb')">
+            <div class="pm-legend-line" style="background:#3b82f6"></div>
+            <span class="pm-legend-text">USB</span>
+            <span class="pm-legend-cur" style="color:#3b82f6" id="leg_usb_cur">—</span>
+          </div>
+          <div class="pm-legend-item" id="leg_aux" onclick="togglePowerLine('aux')">
+            <div class="pm-legend-line" style="background:#10b981"></div>
+            <span class="pm-legend-text">AUX</span>
+            <span class="pm-legend-cur" style="color:#10b981" id="leg_aux_cur">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="pm-section-label" style="margin-top:4px;">Individual Channel History</div>
+      <div class="pm-channel-grid">
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">Battery <span class="pm-cur-val" id="pm_ch_batt" style="color:#ef4444">—</span></div>
+          <svg id="pm_spark_batt" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">USB Voltage <span class="pm-cur-val" id="pm_ch_usb" style="color:#3b82f6">—</span></div>
+          <svg id="pm_spark_usb" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">AUX Voltage <span class="pm-cur-val" id="pm_ch_aux" style="color:#10b981">—</span></div>
+          <svg id="pm_spark_aux" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ THRESHOLD PANEL ═══════════════════════ -->
+<div class="threshold-panel" id="thresholdPanel">
+  <div class="panel-header">
+    <span class="panel-title">Alert Thresholds</span>
+    <span class="panel-close" onclick="closeThresholds()">✕</span>
+  </div>
+  <div class="toggle-row">
+    <span class="toggle-label">Enable Alerts</span>
+    <label class="toggle"><input type="checkbox" id="alertsEnabled" checked onchange="checkAlerts()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+  </div>
+  <div class="toggle-row" style="margin-bottom:20px;">
+    <span class="toggle-label">Sound Notifications</span>
+    <label class="toggle"><input type="checkbox" id="soundEnabled"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+  </div>
+  <div class="threshold-group">
+    <div class="threshold-group-title">PT-50 fs1 (mm)</div>
+    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_pt50_warnMin" value="36.120" step="0.001"><span class="threshold-unit">mm</span></div>
+    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_pt50_warnMax" value="36.150" step="0.001"><span class="threshold-unit">mm</span></div>
+    <div class="threshold-row"><span class="threshold-label">Min alert</span><input type="number" class="threshold-input" id="th_pt50_alertMin" value="36.100" step="0.001"><span class="threshold-unit">mm</span></div>
+    <div class="threshold-row"><span class="threshold-label">Max alert</span><input type="number" class="threshold-input" id="th_pt50_alertMax" value="36.200" step="0.001"><span class="threshold-unit">mm</span></div>
+  </div>
+  <div class="threshold-group">
+    <div class="threshold-group-title">ISBC-10 X (?)</div>
+    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_x_warnMin" value="-1.00" step="0.01"><span class="threshold-unit">?</span></div>
+    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_x_warnMax" value="0.50" step="0.01"><span class="threshold-unit">?</span></div>
+  </div>
+  <div class="threshold-group">
+    <div class="threshold-group-title">ISBC-10 Y (gr)</div>
+    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_y_warnMin" value="-2.00" step="0.01"><span class="threshold-unit">gr</span></div>
+    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_y_warnMax" value="0.00" step="0.01"><span class="threshold-unit">gr</span></div>
+  </div>
+  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();">Save & Apply</button>
+</div>
+
+<!-- ═══════════════════════ EXPORT MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-title">Export Data</div>
+    <div class="modal-sub">Choose format and range for the current filtered dataset.</div>
+    <div class="modal-options">
+      <div class="export-option" onclick="doExport('csv')">
+        <span class="export-icon">📄</span>
+        <div class="export-info"><div class="export-name">CSV — Comma Separated</div><div class="export-desc">Compatible with Excel, Google Sheets, MATLAB</div></div>
+      </div>
+      <div class="export-option" onclick="doExport('json')">
+        <span class="export-icon">{ }</span>
+        <div class="export-info"><div class="export-name">JSON — Raw data</div><div class="export-desc">For API integration & backend import</div></div>
+      </div>
+      <div class="export-option" onclick="window.print()">
+        <span class="export-icon">🖨️</span>
+        <div class="export-info"><div class="export-name">Print / PDF</div><div class="export-desc">Save as PDF via browser print dialog</div></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeExport()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Navigation stub — currently single-page, kept for future multi-page expansion
+function setPage(page) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const nav = document.getElementById('navDashboard');
+  if (nav) nav.classList.add('active');
+}
+</script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/state.js"></script>
+<script src="js/render.js"></script>
+<script src="js/modals.js"></script>
+</body>
+</html>

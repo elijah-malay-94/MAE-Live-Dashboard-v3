@@ -1,0 +1,93 @@
+/* ================================================================
+   base.css — CSS variables, reset, body, layout, sidebar, topbar, buttons, controls bar
+   ================================================================ */
+
+:root {
+  --bg: #f0f4f8; --surface: #ffffff; --surface2: #f8fafc; --surface3: #eef2f7;
+  --border: rgba(15,30,60,0.09); --border2: rgba(15,30,60,0.15);
+  --accent: #2563eb; --accent2: #0891b2; --accent3: #d97706;
+  --green: #059669; --red: #dc2626; --orange: #ea580c;
+  --text: #0f172a; --muted: #64748b; --muted2: #475569;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(37,99,235,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(37,99,235,0.04) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+
+/* ── LAYOUT ── */
+.app { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:220px; flex-shrink:0; background:var(--surface3);
+  border-right:1px solid var(--border); padding:24px 0;
+  display:flex; flex-direction:column; gap:4px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.sidebar-logo {
+  display:flex; align-items:center; gap:12px;
+  padding:0 20px 20px; border-bottom:1px solid var(--border); margin-bottom:12px;
+}
+.logo-mark {
+  width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-family:'DM Mono',monospace; font-size:13px; color:white; font-weight:500;
+  box-shadow:0 0 20px rgba(59,130,246,0.3); flex-shrink:0;
+}
+.sidebar-logo-text { font-family:'Syne',sans-serif; font-size:14px; font-weight:800; line-height:1.2; }
+.sidebar-logo-text small { display:block; font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); font-weight:400; letter-spacing:1px; }
+
+.nav-section { padding:8px 20px 4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:9px 20px;
+  font-size:13px; color:var(--muted2); cursor:pointer;
+  border-left:2px solid transparent; transition:all 0.15s;
+}
+.nav-item:hover { color:var(--text); background:rgba(15,30,60,0.05); }
+.nav-item.active { color:var(--accent); border-left-color:var(--accent); background:rgba(37,99,235,0.08); }
+.nav-item svg { width:15px; height:15px; flex-shrink:0; }
+
+.device-list { padding:8px 12px; margin-top:16px; border-top:1px solid var(--border); }
+.device-section-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; padding:8px 8px 6px; }
+.device-item {
+  display:flex; align-items:center; gap:8px; padding:8px;
+  border-radius:8px; cursor:pointer; transition:background 0.15s;
+  border:1px solid transparent;
+}
+.device-item:hover { background:rgba(15,30,60,0.05); }
+.device-item.active { background:rgba(37,99,235,0.08); border-color:rgba(37,99,235,0.2); }
+.device-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.device-info { flex:1; min-width:0; }
+.device-name { font-size:11px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.device-serial { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); }
+.device-status { font-family:'DM Mono',monospace; font-size:9px; }
+
+/* ── MAIN CONTENT ── */
+.main { flex:1; min-width:0; padding:28px; overflow-x:hidden; }
+
+/* ── TOP BAR ── */
+.topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; gap:16px; flex-wrap:wrap; }
+.topbar-left h1 { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.3px; }
+.topbar-left .subtitle { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; margin-top:3px; }
+.topbar-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+.status-pill { display:flex; align-items:center; gap:7px; padding:7px 14px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:100px; font-size:11px; color:var(--green); font-family:'DM Mono',monospace; }
+.status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4);} 50%{box-shadow:0 0 0 4px rgba(16,185,129,0);} }
+
+.btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:9px; font-size:12px; font-family:'DM Mono',monospace; cursor:pointer; transition:all 0.15s; border:1px solid var(--border2); background:var(--surface2); color:var(--muted2); }
+.btn:hover { color:var(--text); border-color:rgba(15,30,60,0.25); }
+.btn.btn-primary { background:var(--accent); color:white; border-color:var(--accent); }
+.btn.btn-primary:hover { background:#2563eb; }
+.btn.btn-danger { background:rgba(239,68,68,0.1); color:var(--red); border-color:rgba(239,68,68,0.2); }
+.btn.active { color:var(--accent); border-color:rgba(37,99,235,0.4); background:rgba(37,99,235,0.08); }
+.btn svg { width:13px; height:13px; }
+
+/* ── CONTROLS BAR ── */
+.controls { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.controls-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+.date-input { background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-family:'DM Mono',monospace; font-size:11px; padding:7px 10px; border-radius:8px; outline:none; }
+.date-input:focus { border-color:var(--accent); }
+.select-input { background:var(--surface2); border:1px solid var(--border2); color:var(--muted2); font-family:'DM Mono',monospace; font-size:11px; padding:7px 10px; border-radius:8px; outline:none; cursor:pointer; }
+.select-input:focus { border-color:var(--accent); }
+.controls-sep { width:1px; height:24px; background:var(--border); margin:0 4px; }
+#refreshCountdown { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); min-width:60px; }

@@ -1,0 +1,6 @@
+/* ================================================================
+   responsive.css — Responsive breakpoints — media queries only
+   ================================================================ */
+
+@media(max-width:1100px) { .main-grid,.bottom-grid { grid-template-columns:1fr; } .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:700px) { .sidebar { display:none; } .kpi-grid { grid-template-columns:1fr 1fr; } }

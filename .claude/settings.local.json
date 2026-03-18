@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 15 Name, CPU, WorkingSet | Format-Table -AutoSize\")"
+    ]
+  }
+}
