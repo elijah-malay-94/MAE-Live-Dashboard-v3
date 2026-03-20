@@ -199,6 +199,11 @@ async function fetchDevicesData(customerId) {
         position: '',
         lat:      parseFloat(coords[0]) || 0,
         lng:      parseFloat(coords[1]) || 0,
+        // Network info (if provided by /devices endpoint)
+        ip:        item.ip ?? item.ipPublic ?? item['ip_public'] ?? '',
+        port:      item.port ?? item.portPublic ?? item['port_public'] ?? '',
+        ip_public: item.ip_public ?? item.ipPublic ?? item['ip_public'] ?? '',
+        port_public: item.port_public ?? item.portPublic ?? item['port_public'] ?? '',
       };
     });
   } catch (err) {
@@ -232,6 +237,20 @@ async function fetchDevicesInfo(deviceId) {
       const [lat, lng] = gps.split(';').map(Number);
       if (!isNaN(lat) && lat !== 0) activeDevice.lat = lat;
       if (!isNaN(lng) && lng !== 0) activeDevice.lng = lng;
+    }
+
+    // Network info (if provided by /info endpoint)
+    if (data.ip !== undefined || data.port !== undefined) {
+      activeDevice.ip = data.ip ?? activeDevice.ip ?? '';
+      activeDevice.port = data.port ?? activeDevice.port ?? '';
+    }
+    if (data.ip_public !== undefined || data.port_public !== undefined) {
+      activeDevice.ip_public = data.ip_public ?? activeDevice.ip_public ?? '';
+      activeDevice.port_public = data.port_public ?? activeDevice.port_public ?? '';
+    }
+    if (data.ipPublic !== undefined || data.portPublic !== undefined) {
+      activeDevice.ip_public = data.ipPublic ?? activeDevice.ip_public ?? '';
+      activeDevice.port_public = data.portPublic ?? activeDevice.port_public ?? '';
     }
 
     return data;

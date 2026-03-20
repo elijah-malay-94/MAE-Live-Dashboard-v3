@@ -49,12 +49,21 @@ async function switchDevice(id) {
 function renderDeviceInfo() {
   const d = activeDevice;
   if (!d) return;
+  const fmtIpPort = (ip, port) => {
+    const a = (ip === undefined || ip === null) ? '' : String(ip).trim();
+    const b = (port === undefined || port === null) ? '' : String(port).trim();
+    if (!a && !b) return '—';
+    if (a && b) return `${a}:${b}`;
+    return a || b || '—';
+  };
   document.getElementById('deviceInfoList').innerHTML = `
     <div class="info-row"><span class="info-key">Name</span><span class="info-val">${d.name}</span></div>
     <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
     <div class="info-row"><span class="info-key">Typology</span><span class="info-val">${d.type}</span></div>
     <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge badge-green">● ${d.signal} / 4</span></span></div>
     <div class="info-row"><span class="info-key">Memory</span><span class="info-val">${d.memory || '—'}</span></div>
+    <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
+    <div class="info-row"><span class="info-key">Public IP</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
     <div class="info-row">
       <span class="info-key">City</span>
       <span class="info-val" style="display:flex;align-items:center;gap:8px;">
