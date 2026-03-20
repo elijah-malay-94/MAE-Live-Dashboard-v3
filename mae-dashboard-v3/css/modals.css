@@ -41,6 +41,48 @@
 .export-info .export-desc { font-size:11px; color:var(--muted2); margin-top:2px; }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
 
+/* ── FILES & EVENTS MODAL ── */
+.files-modal { width:760px; max-width:95vw; max-height:88vh; display:flex; flex-direction:column; }
+.files-filters { display:grid; grid-template-columns:1fr 1fr 120px auto; gap:10px; align-items:end; margin-bottom:12px; }
+.files-filter-item { display:flex; flex-direction:column; gap:4px; }
+.files-filter-item label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+.files-filter-item input,
+.files-filter-item select,
+.files-event-row input {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+  padding:8px 10px;
+  border-radius:8px;
+  outline:none;
+}
+.files-summary { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted2); margin-bottom:10px; }
+.files-list { border:1px solid var(--border); border-radius:10px; background:var(--surface2); max-height:260px; overflow:auto; margin-bottom:12px; }
+.files-row { display:grid; grid-template-columns:1.5fr 1fr 80px 140px; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px solid rgba(15,30,60,0.06); }
+.files-row:last-child { border-bottom:none; }
+.files-row.files-head { position:sticky; top:0; z-index:1; background:var(--surface); }
+.files-cell { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted2); }
+.files-cell strong { color:var(--text); }
+.files-pagination { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-bottom:12px; }
+.files-pagination #filesPageInfo { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); min-width:110px; text-align:center; }
+.files-event-box { border:1px solid var(--border); border-radius:10px; padding:10px; background:var(--surface2); }
+.files-event-row { display:flex; gap:10px; margin-bottom:8px; }
+.files-event-row input { flex:1; }
+.event-details-pre {
+  margin:0;
+  max-height:180px;
+  overflow:auto;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px;
+  color:var(--text);
+  font-size:11px;
+  line-height:1.45;
+}
+
 /* ── FOOTER ── */
 .footer { margin-top:8px; padding-top:18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
 .footer-left { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }

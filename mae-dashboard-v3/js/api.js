@@ -9,6 +9,9 @@
 // ║  • fetchDevicesData()    GET /api/v1/customers/:id/devices   ║
 // ║  • fetchDevicesInfo()    GET /api/v1/devices/:id/info        ║
 // ║  • fetchData()           GET /api/v1/devices/:id/data        ║
+// ║  • fetchDeviceFiles()    GET /api/v1/devices/:id/files/...   ║
+// ║  • fetchDeviceFile()     GET /api/v1/devices/:id/file/:name  ║
+// ║  • fetchEventDetails()   GET /api/v1/devices/:id/event/:id   ║
 // ║                                                              ║
 // ║  Dependencies: config.js, state.js                          ║
 // ║  Load order:   2nd                                           ║
@@ -401,4 +404,82 @@ async function fetchData(deviceId, dateFrom, dateTo) {
     console.error('[fetchData] fatal error:', err);
     return getMockFallback();
   }
+}
+
+// ═══════════════════════ API: DEVICE FILE LIST ═══════════════════════
+// GET /api/v1/devices/:id/files/from/:start/to/:end/type/:type/limit/:limit/offset/:offset
+//
+// Response example:
+// {
+//   "header": [],
+//   "total": 65,
+//   "offset": 0,
+//   "limit": 50,
+//   "count": 50,
+//   "has_more": true,
+//   "records": [{ "timestamp":"...", "name":"...", "type":"evt|cir|day" }]
+// }
+function normalizeDeviceFilesResponse(raw) {
+  const data = raw && typeof raw === 'object' ? raw : {};
+  const records = Array.isArray(data.records) ? data.records : [];
+  return {
+    header: Array.isArray(data.header) ? data.header : [],
+    total: Number.isFinite(Number(data.total)) ? Number(data.total) : records.length,
+    offset: Number.isFinite(Number(data.offset)) ? Number(data.offset) : 0,
+    limit: Number.isFinite(Number(data.limit)) ? Number(data.limit) : records.length,
+    count: Number.isFinite(Number(data.count)) ? Number(data.count) : records.length,
+    has_more: Boolean(data.has_more),
+    records: records.map(r => ({
+      timestamp: r?.timestamp || '',
+      name: r?.name || '',
+      type: r?.type || '',
+    })),
+  };
+}
+
+async function fetchDeviceFiles(deviceId, filters = {}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const from = filters.from || filters.dateFrom || today;
+  const to = filters.to || filters.dateTo || today;
+  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 50;
+  const offset = Number.isFinite(Number(filters.offset)) ? Number(filters.offset) : 0;
+  const type = typeof filters.type === 'string' ? filters.type.toLowerCase().trim() : '';
+  const validType = ['evt', 'cir', 'day'].includes(type) ? type : null;
+
+  const typeSegment = validType ? `/type/${encodeURIComponent(validType)}` : '';
+  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`;
+  const data = await apiFetch(path);
+  return normalizeDeviceFilesResponse(data);
+}
+
+// ═══════════════════════ API: FILE DOWNLOAD ═══════════════════════
+// GET /api/v1/devices/:id/file/:name
+//
+// Expected response shape:
+// { "data": "<base64 string>" } or { "base64": "<base64 string>" }
+async function fetchDeviceFile(deviceId, fileName) {
+  const safeName = String(fileName || '').trim();
+  if (!safeName) {
+    throw new Error('File name is required.');
+  }
+
+  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/file/${encodeURIComponent(safeName)}`;
+  const data = await apiFetch(path);
+  const base64 = data?.data ?? data?.base64 ?? data?.file ?? '';
+  return {
+    ...data,
+    base64: typeof base64 === 'string' ? base64 : '',
+  };
+}
+
+// ═══════════════════════ API: EVENT DETAILS ═══════════════════════
+// GET /api/v1/devices/:id/event/:evt_id
+async function fetchEventDetails(deviceId, eventId) {
+  const safeEventId = String(eventId || '').trim();
+  if (!safeEventId) {
+    throw new Error('Event ID is required.');
+  }
+
+  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/event/${encodeURIComponent(safeEventId)}`;
+  return await apiFetch(path);
 }

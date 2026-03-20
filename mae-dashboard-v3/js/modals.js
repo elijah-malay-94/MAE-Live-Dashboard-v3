@@ -56,6 +56,200 @@ function toggleAutoRefresh() {
 function openExport()  { document.getElementById('exportModal').classList.add('open'); }
 function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
 
+let currentDeviceFiles = [];
+let filesPagination = {
+  offset: 0,
+  limit: 50,
+  total: 0,
+  hasMore: false,
+};
+
+function openFilesModal() {
+  closeExport();
+  const today = new Date().toISOString().slice(0, 10);
+  const fromEl = document.getElementById('filesFrom');
+  const toEl = document.getElementById('filesTo');
+  if (fromEl && !fromEl.value) fromEl.value = today;
+  if (toEl && !toEl.value) toEl.value = today;
+  filesPagination.offset = 0;
+  filesPagination.total = 0;
+  filesPagination.hasMore = false;
+  updateFilesPaginationUI();
+  document.getElementById('filesModal').classList.add('open');
+}
+
+function closeFilesModal() {
+  document.getElementById('filesModal').classList.remove('open');
+}
+
+function renderFilesTable(records) {
+  const list = document.getElementById('filesList');
+  if (!list) return;
+  if (!records || records.length === 0) {
+    list.innerHTML = '<div class="files-row"><div class="files-cell">No files found for current filters.</div></div>';
+    return;
+  }
+
+  list.innerHTML = `
+    <div class="files-row files-head">
+      <div class="files-cell"><strong>Name</strong></div>
+      <div class="files-cell"><strong>Timestamp</strong></div>
+      <div class="files-cell"><strong>Type</strong></div>
+      <div class="files-cell"><strong>Action</strong></div>
+    </div>
+    ${records.map((r, idx) => `
+      <div class="files-row">
+        <div class="files-cell">${r.name || '—'}</div>
+        <div class="files-cell">${r.timestamp || '—'}</div>
+        <div class="files-cell">${r.type || '—'}</div>
+        <div class="files-cell">
+          <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadDeviceFileByIndex(${idx})">Download</button>
+          ${String(r.type || '').toLowerCase() === 'evt'
+            ? `<button class="btn" style="padding:5px 10px;font-size:10px;margin-left:6px;" onclick="loadEventDetailsFromFileIndex(${idx})">Event</button>`
+            : ''
+          }
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function updateFilesPaginationUI() {
+  const prev = document.getElementById('filesPrevBtn');
+  const next = document.getElementById('filesNextBtn');
+  const pageInfo = document.getElementById('filesPageInfo');
+  const page = Math.floor(filesPagination.offset / filesPagination.limit) + 1;
+  const pages = Math.max(1, Math.ceil((filesPagination.total || 0) / filesPagination.limit));
+  if (pageInfo) pageInfo.textContent = `Page ${page} / ${pages}`;
+  if (prev) prev.disabled = filesPagination.offset <= 0;
+  if (next) next.disabled = !filesPagination.hasMore;
+}
+
+async function loadDeviceFiles() {
+  filesPagination.offset = 0;
+  await loadDeviceFilesPage('current');
+}
+
+async function loadDeviceFilesPage(direction = 'current') {
+  if (!activeDevice?.id) return;
+  if (direction === 'next' && filesPagination.hasMore) {
+    filesPagination.offset += filesPagination.limit;
+  } else if (direction === 'prev') {
+    filesPagination.offset = Math.max(0, filesPagination.offset - filesPagination.limit);
+  }
+
+  const from = document.getElementById('filesFrom')?.value;
+  const to = document.getElementById('filesTo')?.value;
+  const type = document.getElementById('filesType')?.value || '';
+  const summaryEl = document.getElementById('filesSummary');
+  const prev = document.getElementById('filesPrevBtn');
+  const next = document.getElementById('filesNextBtn');
+  if (prev) prev.disabled = true;
+  if (next) next.disabled = true;
+  if (summaryEl) summaryEl.textContent = 'Loading files...';
+
+  try {
+    const res = await fetchDeviceFiles(activeDevice.id, {
+      from,
+      to,
+      type,
+      limit: filesPagination.limit,
+      offset: filesPagination.offset,
+    });
+    currentDeviceFiles = Array.isArray(res.records) ? res.records : [];
+    filesPagination.total = Number(res.total || 0);
+    filesPagination.offset = Number(res.offset || 0);
+    filesPagination.limit = Number(res.limit || filesPagination.limit);
+    filesPagination.hasMore = Boolean(res.has_more);
+    renderFilesTable(currentDeviceFiles);
+    if (summaryEl) {
+      summaryEl.textContent = `Loaded ${res.count} / ${res.total} files (offset ${res.offset}, limit ${res.limit})${res.has_more ? ' — more available' : ''}.`;
+    }
+    updateFilesPaginationUI();
+  } catch (err) {
+    currentDeviceFiles = [];
+    filesPagination.hasMore = false;
+    renderFilesTable([]);
+    if (summaryEl) summaryEl.textContent = `Error loading files: ${err.message}`;
+    updateFilesPaginationUI();
+  }
+}
+
+function decodeBase64ToUint8Array(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function downloadDeviceFileByIndex(index) {
+  const item = currentDeviceFiles[index];
+  if (!item?.name || !activeDevice?.id) return;
+  try {
+    const res = await fetchDeviceFile(activeDevice.id, item.name);
+    if (!res.base64) throw new Error('Missing base64 payload in API response.');
+    const bytes = decodeBase64ToUint8Array(res.base64);
+    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: item.name,
+    });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    alert(`Download failed: ${err.message}`);
+  }
+}
+
+async function loadEventDetails() {
+  const eventId = document.getElementById('eventIdInput')?.value?.trim();
+  const pre = document.getElementById('eventDetailsPre');
+  if (!pre) return;
+  if (!activeDevice?.id) {
+    pre.textContent = 'No active device selected.';
+    return;
+  }
+  if (!eventId) {
+    pre.textContent = 'Please insert an event ID.';
+    return;
+  }
+  pre.textContent = 'Loading event details...';
+  try {
+    const details = await fetchEventDetails(activeDevice.id, eventId);
+    pre.textContent = JSON.stringify(details, null, 2);
+  } catch (err) {
+    pre.textContent = `Error loading event details: ${err.message}`;
+  }
+}
+
+function extractEventIdFromFileName(fileName) {
+  const name = String(fileName || '').trim();
+  if (!name) return '';
+
+  // Common pattern: "..._<evt_id>.<ext>" => e.g. acquisition1_ch1_1234.dat
+  const trailing = name.match(/_(\d+)(?:\.[^.]+)?$/);
+  if (trailing?.[1]) return trailing[1];
+
+  // Fallback: last numeric token anywhere in the name
+  const allNumbers = name.match(/\d+/g);
+  if (allNumbers && allNumbers.length > 0) return allNumbers[allNumbers.length - 1];
+
+  return '';
+}
+
+async function loadEventDetailsFromFileIndex(index) {
+  const item = currentDeviceFiles[index];
+  const eventId = extractEventIdFromFileName(item?.name);
+  if (!eventId) {
+    alert('Could not extract event ID from filename.');
+    return;
+  }
+  const input = document.getElementById('eventIdInput');
+  if (input) input.value = eventId;
+  await loadEventDetails();
+}
+
 function doExport(fmt) {
   closeExport();
   const cfg  = getDeviceConfig();
@@ -91,6 +285,9 @@ document.addEventListener('click', e => {
 
   const modal = document.getElementById('exportModal');
   if (modal.classList.contains('open') && e.target === modal) closeExport();
+
+  const filesModal = document.getElementById('filesModal');
+  if (filesModal.classList.contains('open') && e.target === filesModal) closeFilesModal();
 });
 
 // ═══════════════════════ MAP MODAL ═══════════════════════

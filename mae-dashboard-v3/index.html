@@ -416,9 +416,63 @@
         <span class="export-icon">🖨️</span>
         <div class="export-info"><div class="export-name">Print / PDF</div><div class="export-desc">Save as PDF via browser print dialog</div></div>
       </div>
+      <div class="export-option" onclick="openFilesModal()">
+        <span class="export-icon">📁</span>
+        <div class="export-info"><div class="export-name">Device Files & Events</div><div class="export-desc">Browse file list, download base64 files, inspect event details</div></div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeExport()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ FILES & EVENTS MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="filesModal">
+  <div class="modal files-modal">
+    <div class="modal-title">Device Files & Events</div>
+    <div class="modal-sub">API endpoints: <strong>/files</strong>, <strong>/file</strong>, <strong>/event</strong>.</div>
+
+    <div class="files-filters">
+      <div class="files-filter-item">
+        <label for="filesFrom">From</label>
+        <input type="date" id="filesFrom">
+      </div>
+      <div class="files-filter-item">
+        <label for="filesTo">To</label>
+        <input type="date" id="filesTo">
+      </div>
+      <div class="files-filter-item">
+        <label for="filesType">Type</label>
+        <select id="filesType">
+          <option value="">All</option>
+          <option value="evt">evt</option>
+          <option value="cir">cir</option>
+          <option value="day">day</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="loadDeviceFiles()">Load files</button>
+    </div>
+
+    <div class="files-summary" id="filesSummary">No file query yet.</div>
+
+    <div class="files-list" id="filesList"></div>
+    <div class="files-pagination">
+      <button class="btn" id="filesPrevBtn" onclick="loadDeviceFilesPage('prev')">Prev</button>
+      <span id="filesPageInfo">Page 0 / 0</span>
+      <button class="btn" id="filesNextBtn" onclick="loadDeviceFilesPage('next')">Next</button>
+    </div>
+
+    <div class="files-event-box">
+      <div class="files-event-row">
+        <input type="text" id="eventIdInput" placeholder="Event ID (for /event endpoint)">
+        <button class="btn" onclick="loadEventDetails()">Load event details</button>
+      </div>
+      <pre id="eventDetailsPre" class="event-details-pre">No event loaded.</pre>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeFilesModal()">Close</button>
     </div>
   </div>
 </div>
