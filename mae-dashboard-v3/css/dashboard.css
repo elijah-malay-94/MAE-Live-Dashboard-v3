@@ -54,9 +54,9 @@
 .chart-y span { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-align:right; width:34px; }
 .chart-svg-area { height:160px; }
 .chart-svg-area svg { width:100%; height:100%; overflow:visible; }
-.chart-x { display:flex; justify-content:space-between; margin-top:6px; padding-bottom:4px; }
+.chart-x { display:flex; justify-content:space-between; margin-top:2px; padding-bottom:0; }
 .chart-x span { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted2); display:block; text-align:center; white-space:nowrap; }
-.chart-stats { display:flex; gap:24px; padding-top:14px; margin-top:14px; border-top:1px solid var(--border); }
+.chart-stats { display:flex; gap:24px; padding-top:8px; margin-top:8px; border-top:1px solid var(--border); }
 .chart-stat-item { display:flex; flex-direction:column; }
 .chart-stat-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
 .chart-stat-value { font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:var(--text); letter-spacing:0.3px; }
@@ -86,7 +86,7 @@
 .mini-chart-title.alert-label { color:var(--red); }
 
 /* ── TABLE ── */
-.table-card { padding:0; overflow-x:auto; }
+.table-card { padding:20px; overflow-x:auto; }
 .table-controls { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
 .table-controls-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
 .table-search { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'DM Mono',monospace; font-size:11px; padding:6px 10px; border-radius:8px; outline:none; width:160px; }

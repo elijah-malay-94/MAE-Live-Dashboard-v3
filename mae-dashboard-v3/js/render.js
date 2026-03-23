@@ -106,13 +106,6 @@ function renderKPIs() {
     };
   });
 
-  cards.push({
-    label:'Battery', dot:'var(--green)',
-    value: (activeDevice.battery||0).toFixed(1), unit:' V',
-    sub: `USB ${activeDevice.usb||0}V · AUX ${activeDevice.aux||0}V`,
-    state:'ok', trend:'trend-stable', trendVal:'●',
-  });
-
   document.getElementById('kpiGrid').innerHTML = cards.map(c => `
     <div class="kpi-card ${c.state==='alert'?'alert-state':c.state==='warn'?'warn-state':''}">
       <div class="kpi-label"><span class="kpi-dot" style="background:${c.dot}"></span>${c.label}</div>
