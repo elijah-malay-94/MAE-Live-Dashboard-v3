@@ -209,7 +209,10 @@ function buildConfigFromHeaders(header) {
   // Table: Date + Time + one column per channel + Status
   const tableHeaders  = ['Date', 'Time', ...entries.map(e => `${e.name}${e.unit ? ' ' + e.unit : ''}`), 'Status'];
   const colCount      = entries.length;
-  const tableColumns  = `100px 90px ${'1fr '.repeat(colCount).trim()} 90px`;
+  // Use fixed-width channel cells so the table remains readable with many channels (e.g. 8),
+  // and the UI can scroll horizontally when it exceeds the available width.
+  const channelColW   = 90;
+  const tableColumns  = `100px 90px ${Array(colCount).fill(`${channelColW}px`).join(' ')} 90px`;
 
   const tableRow = (r, states) => [
     `<span class="td" style="font-size:10px;color:var(--muted)">${r.date}</span>`,

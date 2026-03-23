@@ -37,7 +37,7 @@
 
 /* ── MAIN GRID ── */
 .main-grid { display:grid; grid-template-columns:1fr 300px; gap:18px; margin-bottom:18px; }
-.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+.bottom-grid { display:grid; grid-template-columns:1fr 300px; gap:18px; margin-bottom:18px; }
 
 /* ── CARD ── */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; position:relative; overflow:hidden; box-shadow:0 1px 3px rgba(15,30,60,0.06),0 4px 14px rgba(15,30,60,0.04); transition:box-shadow 0.2s,border-color 0.2s; }
@@ -86,18 +86,18 @@
 .mini-chart-title.alert-label { color:var(--red); }
 
 /* ── TABLE ── */
-.table-card { padding:0; overflow:hidden; }
+.table-card { padding:0; overflow-x:auto; }
 .table-controls { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
 .table-controls-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
 .table-search { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'DM Mono',monospace; font-size:11px; padding:6px 10px; border-radius:8px; outline:none; width:160px; }
 .table-search:focus { border-color:var(--accent); }
-.table-head { display:grid; grid-template-columns:100px 90px 1fr 90px 90px 90px; padding:10px 18px; background:var(--surface2); border-bottom:1px solid var(--border); overflow:hidden; }
+.table-head { display:grid; grid-template-columns:100px 90px 1fr 90px 90px 90px; padding:10px 18px; background:var(--surface2); border-bottom:1px solid var(--border); overflow:visible; }
 /* Note: grid-template-columns is overridden by JS (renderTable) for dynamic channel counts */
 .th { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
 .table-body { max-height:280px; overflow-y:auto; }
 .table-body::-webkit-scrollbar { width:3px; }
 .table-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-.table-row { display:grid; grid-template-columns:100px 90px 1fr 90px 90px 90px; padding:10px 18px; border-bottom:1px solid rgba(15,30,60,0.04); transition:background 0.15s; cursor:default; overflow:hidden; }
+.table-row { display:grid; grid-template-columns:100px 90px 1fr 90px 90px 90px; padding:10px 18px; border-bottom:1px solid rgba(15,30,60,0.04); transition:background 0.15s; cursor:default; overflow:visible; }
 /* Note: grid-template-columns is overridden by JS (renderTable) for dynamic channel counts */
 .table-row:hover { background:rgba(15,30,60,0.04); }
 .table-row.new-row { animation:flashIn 1s ease; }

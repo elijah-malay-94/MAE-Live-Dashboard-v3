@@ -1,0 +1,335 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 2023 >>
+stream
+BT
+/F1 10 Tf
+50 800 Td
+14 TL
+(MAE Dashboard V3 - Technical and User Manual \(EN + IT\)) Tj
+T*
+(Version: 1.0) Tj
+T*
+(Project: mae-dashboard-v3) Tj
+T*
+(Date: 22 Mar 2026) Tj
+T*
+(Reference URL: https://www.maeservice.it/newui/) Tj
+T*
+() Tj
+T*
+(1\) PROJECT OVERVIEW \(EN\)) Tj
+T*
+(MAE Dashboard V3 is a web dashboard used to monitor datalogger devices in near real time.) Tj
+T*
+(It provides device selection, KPIs, charts, table views, GPS map support, power monitoring,) Tj
+T*
+(alert thresholds, export tools, and API-driven integrations.) Tj
+T*
+() Tj
+T*
+(2\) PANORAMICA PROGETTO \(IT\)) Tj
+T*
+(MAE Dashboard V3 e una dashboard web per monitorare dispositivi datalogger quasi in tempo reale.) Tj
+T*
+(Fornisce selezione dispositivo, KPI, grafici, tabelle, supporto mappa GPS, monitoraggio) Tj
+T*
+(alimentazione, soglie allarmi, export e integrazioni API.) Tj
+T*
+() Tj
+T*
+(3\) TECHNOLOGY STACK \(EN\)) Tj
+T*
+(Programming languages:) Tj
+T*
+(- HTML5) Tj
+T*
+(- CSS3) Tj
+T*
+(- JavaScript ES6+) Tj
+T*
+() Tj
+T*
+(Frameworks/libraries:) Tj
+T*
+(- No frontend framework \(no React/Vue/Angular\)) Tj
+T*
+(- No mandatory build framework) Tj
+T*
+(- Browser native APIs \(Fetch API, DOM, SVG\)) Tj
+T*
+(- Local dev server via live-server scripts) Tj
+T*
+() Tj
+T*
+(Architecture:) Tj
+T*
+(- state.js: global state and initialization) Tj
+T*
+(- api.js: API layer and normalization) Tj
+T*
+(- render.js: UI rendering) Tj
+T*
+(- modals.js: modal workflows and interactions) Tj
+T*
+() Tj
+T*
+(4\) STACK TECNOLOGICO \(IT\)) Tj
+T*
+(Linguaggi:) Tj
+T*
+(- HTML5) Tj
+T*
+(- CSS3) Tj
+T*
+(- JavaScript ES6+) Tj
+T*
+() Tj
+T*
+(Framework/librerie:) Tj
+T*
+(- Nessun framework frontend \(no React/Vue/Angular\)) Tj
+T*
+(- Nessun framework build obbligatorio) Tj
+T*
+(- API native browser \(Fetch API, DOM, SVG\)) Tj
+T*
+(- Server locale via script live-server) Tj
+T*
+() Tj
+T*
+(Architettura:) Tj
+T*
+(- state.js: stato globale e init) Tj
+T*
+(- api.js: layer API e normalizzazione) Tj
+T*
+(- render.js: rendering UI) Tj
+T*
+(- modals.js: flussi modali e interazioni) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 2322 >>
+stream
+BT
+/F1 10 Tf
+50 800 Td
+14 TL
+(5\) CORE FUNCTIONALITY \(EN\)) Tj
+T*
+(- Device list and active device switching) Tj
+T*
+(- Device info \(battery, memory, GPS, network\)) Tj
+T*
+(- Measurement data loading with date filters) Tj
+T*
+(- Dynamic channel header handling) Tj
+T*
+(- KPI cards, main chart, mini charts, table log) Tj
+T*
+(- Alerts and thresholds panel) Tj
+T*
+(- Map modal with styles and quick navigation) Tj
+T*
+(- Power modal with Battery/USB/AUX trends) Tj
+T*
+(- Export in CSV, JSON, and browser print/PDF) Tj
+T*
+() Tj
+T*
+(6\) FUNZIONALITA PRINCIPALI \(IT\)) Tj
+T*
+(- Lista dispositivi e cambio dispositivo attivo) Tj
+T*
+(- Device info \(batteria, memoria, GPS, rete\)) Tj
+T*
+(- Caricamento dati con filtri data) Tj
+T*
+(- Gestione dinamica header canali) Tj
+T*
+(- KPI, grafico principale, mini grafici, tabella misure) Tj
+T*
+(- Pannello allarmi e soglie) Tj
+T*
+(- Modale mappa con stili e navigazione rapida) Tj
+T*
+(- Modale alimentazione con trend Battery/USB/AUX) Tj
+T*
+(- Export CSV, JSON e stampa/PDF browser) Tj
+T*
+() Tj
+T*
+(7\) NEW APIs INCLUDED \(EN\)) Tj
+T*
+(- File list endpoint:) Tj
+T*
+(  /api/v1/devices/:id/files/from/:from/to/:to/type/:type/limit/:limit/offset/:offset) Tj
+T*
+(  Supports type filter: evt | cir | day and pagination metadata.) Tj
+T*
+(- File download endpoint:) Tj
+T*
+(  /api/v1/devices/:id/file/:name) Tj
+T*
+(  Supports base64 payload download.) Tj
+T*
+(- Event details endpoint:) Tj
+T*
+(  /api/v1/devices/:id/event/:evt_id) Tj
+T*
+(  Shows event JSON details.) Tj
+T*
+() Tj
+T*
+(UI additions:) Tj
+T*
+(- New "Device Files & Events" modal in Export) Tj
+T*
+(- Filters \(from/to/type\), paginated file list, per-file download) Tj
+T*
+(- Event details input + one-click from evt rows) Tj
+T*
+() Tj
+T*
+(Device Info additions:) Tj
+T*
+(- IP field = ip + port) Tj
+T*
+(- Public IP field = ip_public + port_public) Tj
+T*
+() Tj
+T*
+(8\) NUOVE API INCLUSE \(IT\)) Tj
+T*
+(- Endpoint elenco file:) Tj
+T*
+(  /api/v1/devices/:id/files/from/:from/to/:to/type/:type/limit/:limit/offset/:offset) Tj
+T*
+(  Supporta filtro tipo evt | cir | day e metadati paginazione.) Tj
+T*
+(- Endpoint download file:) Tj
+T*
+(  /api/v1/devices/:id/file/:name) Tj
+T*
+(  Supporta download da payload base64.) Tj
+T*
+(- Endpoint dettaglio evento:) Tj
+T*
+(  /api/v1/devices/:id/event/:evt_id) Tj
+T*
+(  Mostra dettagli JSON evento.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 1174 >>
+stream
+BT
+/F1 10 Tf
+50 800 Td
+14 TL
+() Tj
+T*
+(Aggiunte UI:) Tj
+T*
+(- Nuova modale "Device Files & Events" in Export) Tj
+T*
+(- Filtri \(from/to/type\), lista file paginata, download per file) Tj
+T*
+(- Input dettaglio evento + click da righe evt) Tj
+T*
+() Tj
+T*
+(Aggiunte Device Info:) Tj
+T*
+(- Campo IP = ip + port) Tj
+T*
+(- Campo Public IP = ip_public + port_public) Tj
+T*
+() Tj
+T*
+(9\) FILE STRUCTURE \(EN/IT\)) Tj
+T*
+(- index.html) Tj
+T*
+(- js/config.js) Tj
+T*
+(- js/api.js) Tj
+T*
+(- js/state.js) Tj
+T*
+(- js/render.js) Tj
+T*
+(- js/modals.js) Tj
+T*
+(- css/base.css) Tj
+T*
+(- css/dashboard.css) Tj
+T*
+(- css/modals.css) Tj
+T*
+(- css/responsive.css) Tj
+T*
+(- START_SERVER.bat / START_SERVER.sh) Tj
+T*
+() Tj
+T*
+(10\) RUN / AVVIO) Tj
+T*
+(Windows: run START_SERVER.bat) Tj
+T*
+(Linux/macOS/Git Bash: run START_SERVER.sh) Tj
+T*
+(Expected: live-server on port 8080, index.html opened in browser.) Tj
+T*
+() Tj
+T*
+(11\) MAINTENANCE NOTES \(EN + IT\)) Tj
+T*
+(- Backend payload fields can evolve: update normalization in js/api.js if needed.) Tj
+T*
+(- The project is intentionally framework-free for simpler deployment.) Tj
+T*
+(- Keep API endpoint contracts aligned with backend team.) Tj
+ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000000323 00000 n 
+0000002398 00000 n 
+0000002524 00000 n 
+0000004898 00000 n 
+0000005024 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+6250
+%%EOF
