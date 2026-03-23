@@ -470,6 +470,8 @@ function initInlinePowerLive() {
   const deviceIdEl = document.getElementById('pmDeviceId');
   if (!deviceIdEl || !activeDevice) return;
   deviceIdEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
+  // Always start inline view with all traces visible for readability.
+  powerLineVisibility = { batt:true, usb:true, aux:true };
   powerHistory = buildInitialPowerHistory(activeDevice);
   renderPowerModal();
   clearInterval(powerModalTimer);
@@ -499,6 +501,8 @@ function renderPowerModal() {
   document.getElementById('leg_batt_cur').textContent = latest.batt.toFixed(2) + 'V';
   document.getElementById('leg_usb_cur').textContent  = latest.usb.toFixed(2)  + 'V';
   document.getElementById('leg_aux_cur').textContent  = latest.aux.toFixed(2)  + 'V';
+  const lastTimeEl = document.getElementById('leg_last_time');
+  if (lastTimeEl) lastTimeEl.textContent = latest.label;
   document.getElementById('pm_ch_batt').textContent   = latest.batt.toFixed(2) + 'V';
   document.getElementById('pm_ch_usb').textContent    = latest.usb.toFixed(2)  + 'V';
   document.getElementById('pm_ch_aux').textContent    = latest.aux.toFixed(2)  + 'V';
@@ -509,13 +513,15 @@ function renderPowerModal() {
 
 function renderPowerCombinedChart() {
   const svg = document.getElementById('powerModalSvg');
-  const W=720,H=220,PAD_L=44,PAD_R=12,PAD_T=12,PAD_B=28;
+  if (!svg || !powerHistory.length) return;
+  const W=720,H=260,PAD_L=48,PAD_R=12,PAD_T=14,PAD_B=34;
   const cW=W-PAD_L-PAD_R, cH=H-PAD_T-PAD_B;
   const n = powerHistory.length;
   const allVals = powerHistory.flatMap(p=>[p.batt,p.usb,p.aux]);
   const rawMin=Math.min(...allVals), rawMax=Math.max(...allVals);
-  const pad=(rawMax-rawMin)*0.3||0.5;
-  const yMin=Math.max(0,rawMin-pad), yMax=rawMax+pad;
+  const pad=(rawMax-rawMin)*0.35||0.8;
+  const yMin=Math.max(0,rawMin-pad);
+  const yMax=Math.max(yMin + 3, rawMax + pad);
   const toX = i => PAD_L+(i/(n-1||1))*cW;
   const toY = v => PAD_T+cH-((v-yMin)/(yMax-yMin||1))*cH;
   const channels=[
@@ -523,17 +529,21 @@ function renderPowerCombinedChart() {
     {key:'usb', color:'#3b82f6',gradId:'pmUsbGrad', visible:powerLineVisibility.usb},
     {key:'aux', color:'#10b981',gradId:'pmAuxGrad', visible:powerLineVisibility.aux},
   ];
+  if (!channels.some(ch => ch.visible)) {
+    powerLineVisibility = { batt:true, usb:true, aux:true };
+    channels.forEach(ch => { ch.visible = true; });
+  }
   let gridLines='',yLabels='';
   for(let i=0;i<=5;i++){
     const v=yMin+(yMax-yMin)*(i/5), y=toY(v);
-    gridLines+=`<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="rgba(15,30,60,0.05)" stroke-width="1"/>`;
-    yLabels  +=`<text x="${PAD_L-6}" y="${y+4}" fill="#64748b" font-size="9" font-family="monospace" text-anchor="end">${v.toFixed(1)}</text>`;
+    gridLines+=`<line x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}" stroke="rgba(15,30,60,0.08)" stroke-width="1"/>`;
+    yLabels  +=`<text x="${PAD_L-8}" y="${y+4}" fill="#334155" font-size="11" font-family="monospace" text-anchor="end">${v.toFixed(1)}</text>`;
   }
-  const xStep=Math.max(1,Math.ceil(n/8));
+  const xStep=Math.max(1,Math.ceil(n/6));
   let xLabels='';
-  powerHistory.forEach((p,i)=>{ if(i%xStep===0) xLabels+=`<text x="${toX(i)}" y="${H-4}" fill="#64748b" font-size="8" font-family="monospace" text-anchor="middle">${p.label.slice(0,5)}</text>`; });
+  powerHistory.forEach((p,i)=>{ if(i%xStep===0) xLabels+=`<text x="${toX(i)}" y="${H-14}" fill="#334155" font-size="10" font-family="monospace" text-anchor="middle">${p.label.slice(0,5)}</text>`; });
   let defs='<defs>';
-  channels.forEach(ch=>{ defs+=`<linearGradient id="${ch.gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${ch.color}" stop-opacity="0.25"/><stop offset="100%" stop-color="${ch.color}" stop-opacity="0"/></linearGradient>`; });
+  channels.forEach(ch=>{ defs+=`<linearGradient id="${ch.gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${ch.color}" stop-opacity="0.32"/><stop offset="100%" stop-color="${ch.color}" stop-opacity="0.02"/></linearGradient>`; });
   defs+='</defs>';
   let areas='',lines='',dots='';
   channels.forEach(ch=>{
@@ -541,9 +551,9 @@ function renderPowerCombinedChart() {
     const pts=powerHistory.map((p,i)=>`${toX(i)},${toY(p[ch.key])}`);
     const areaD=`M${toX(0)},${toY(powerHistory[0][ch.key])} `+powerHistory.slice(1).map((p,i)=>`L${toX(i+1)},${toY(p[ch.key])}`).join(' ')+` L${toX(n-1)},${PAD_T+cH} L${PAD_L},${PAD_T+cH} Z`;
     areas+=`<path d="${areaD}" fill="url(#${ch.gradId})"/>`;
-    lines+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${ch.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px ${ch.color}88)"/>`;
+    lines+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${ch.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px ${ch.color}66)"/>`;
     const last=powerHistory[n-1];
-    dots+=`<circle cx="${toX(n-1)}" cy="${toY(last[ch.key])}" r="4" fill="${ch.color}" style="filter:drop-shadow(0 0 6px ${ch.color})"/>`;
+    dots+=`<circle cx="${toX(n-1)}" cy="${toY(last[ch.key])}" r="4.2" fill="${ch.color}" stroke="#ffffff" stroke-width="1.2" style="filter:drop-shadow(0 0 6px ${ch.color})"/>`;
     dots+=`<circle cx="${toX(n-1)}" cy="${toY(last[ch.key])}" r="7" fill="${ch.color}" opacity="0.15"/>`;
   });
   let hoverRects='';
