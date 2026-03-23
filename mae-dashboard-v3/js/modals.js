@@ -441,21 +441,18 @@ function buildInitialPowerHistory(device) {
 }
 
 function openPowerModal() {
-  document.getElementById('powerModal').classList.add('open');
-  document.getElementById('pmDeviceId').textContent = activeDevice?.serial || activeDevice?.id || '—';
-  powerHistory = buildInitialPowerHistory(activeDevice);
-  renderPowerModal();
-  powerModalTimer = setInterval(tickPowerModal, 2000);
+  // Power modal has been replaced by inline live view.
+  // Keep this function for backward compatibility.
+  initInlinePowerLive();
 }
 
 function closePowerModal() {
-  document.getElementById('powerModal').classList.remove('open');
-  clearInterval(powerModalTimer);
-  powerModalTimer = null;
+  // No modal to close in inline mode.
 }
 
 function tickPowerModal() {
   const d = activeDevice;
+  if (!d) return;
   const jitter = (base, amp) => Math.round((base + (Math.random()-0.5)*amp)*100)/100;
   const now = new Date();
   powerHistory.push({
@@ -467,6 +464,20 @@ function tickPowerModal() {
   });
   if (powerHistory.length > MAX_POWER_POINTS) powerHistory.shift();
   renderPowerModal();
+}
+
+function initInlinePowerLive() {
+  const deviceIdEl = document.getElementById('pmDeviceId');
+  if (!deviceIdEl || !activeDevice) return;
+  deviceIdEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
+  powerHistory = buildInitialPowerHistory(activeDevice);
+  renderPowerModal();
+  clearInterval(powerModalTimer);
+  powerModalTimer = setInterval(() => {
+    const idEl = document.getElementById('pmDeviceId');
+    if (idEl) idEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
+    tickPowerModal();
+  }, 2000);
 }
 
 function renderPowerModal() {
@@ -591,8 +602,10 @@ function togglePowerLine(key) {
 
 document.addEventListener('click', e => {
   const pm=document.getElementById('powerModal');
-  if(pm.classList.contains('open') && e.target===pm) closePowerModal();
+  if(pm && pm.classList.contains('open') && e.target===pm) closePowerModal();
 });
 
 // ═══════════════════════ START ═══════════════════════
-init();
+init().then(() => {
+  initInlinePowerLive();
+});
