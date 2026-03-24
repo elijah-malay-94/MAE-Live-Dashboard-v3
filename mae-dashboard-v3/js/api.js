@@ -221,17 +221,65 @@ async function fetchDevicesInfo(deviceId) {
     const data = await apiFetch(`/api/v1/devices/${deviceId}/info`);
     if (!data || typeof data !== 'object') return null;
 
+    const formatLastConnection = (datePart, timePart, tsPart) => {
+      const rawDate = String(datePart ?? '').trim();
+      let rawTime = String(timePart ?? '').trim();
+      const rawTs = String(tsPart ?? '').trim();
+
+      if (rawTime && /^\d{2}:\d{2}$/.test(rawTime)) rawTime = `${rawTime}:00`;
+
+      const normalizeDate = (v) => {
+        if (!v) return '';
+        // yyyy-MM-dd or yyyy/MM/dd -> dd/MM/yyyy
+        if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(v)) {
+          const [y, m, d] = v.split(/[-/]/);
+          return `${d}/${m}/${y}`;
+        }
+        // dd-MM-yyyy or dd/MM/yyyy -> dd/MM/yyyy
+        if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(v)) {
+          const [d, m, y] = v.split(/[-/]/);
+          return `${d}/${m}/${y}`;
+        }
+        return '';
+      };
+
+      const dateFmt = normalizeDate(rawDate);
+      if (dateFmt && rawTime) return `${dateFmt} ${rawTime}`;
+
+      // Fallback: parse single timestamp field if present.
+      if (rawTs) {
+        const dt = new Date(rawTs.replace(' ', 'T'));
+        if (!isNaN(dt.getTime())) {
+          const dd = String(dt.getDate()).padStart(2, '0');
+          const mm = String(dt.getMonth() + 1).padStart(2, '0');
+          const yyyy = dt.getFullYear();
+          const HH = String(dt.getHours()).padStart(2, '0');
+          const MM = String(dt.getMinutes()).padStart(2, '0');
+          const SS = String(dt.getSeconds()).padStart(2, '0');
+          return `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
+        }
+      }
+
+      return '—';
+    };
+
     const batt   = parseFloat(data['battery-voltage'] ?? data.batteryVoltage ?? 0);
     const usb    = parseFloat(data['usb-voltage']     ?? data.usbVoltage     ?? 0);
     const aux    = parseFloat(data['aux-voltage']     ?? data.auxVoltage     ?? 0);
     const sdFree = parseFloat(data['sd-free']         ?? data.sdFree         ?? 0);
     const sdSize = parseFloat(data['sd-size']         ?? data.sdSize         ?? 0);
     const gps    = data['gps-position'] ?? data.gpsPosition ?? '';
+    const lastConn = formatLastConnection(
+      data.date ?? data['connection-date'] ?? data.last_date,
+      data.time ?? data['connection-time'] ?? data.last_time,
+      data.timestamp ?? data['last-connection'] ?? data.last_connection
+    );
 
     if (batt  > 0) activeDevice.battery = batt;
     if (usb   > 0) activeDevice.usb     = usb;
     if (aux   > 0) activeDevice.aux     = aux;
     if (sdFree > 0) activeDevice.memory = `${(sdFree / 1024).toFixed(1)} Gb`;
+    activeDevice.lastConnection = lastConn;
 
     if (gps && gps !== '-;-') {
       const [lat, lng] = gps.split(';').map(Number);

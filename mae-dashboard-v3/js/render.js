@@ -60,6 +60,7 @@ function renderDeviceInfo() {
     <div class="info-row"><span class="info-key">Name</span><span class="info-val">${d.name}</span></div>
     <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
     <div class="info-row"><span class="info-key">Typology</span><span class="info-val">${d.type}</span></div>
+    <div class="info-row"><span class="info-key">Last connection</span><span class="info-val">${d.lastConnection || '—'}</span></div>
     <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge badge-green">● ${d.signal} / 4</span></span></div>
     <div class="info-row"><span class="info-key">Memory</span><span class="info-val">${d.memory || '—'}</span></div>
     <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
