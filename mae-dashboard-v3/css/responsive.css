@@ -2,5 +2,43 @@
    responsive.css — Responsive breakpoints — media queries only
    ================================================================ */
 
-@media(max-width:1100px) { .main-grid,.bottom-grid { grid-template-columns:1fr; } .kpi-grid { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:700px) { .sidebar { display:none; } .kpi-grid { grid-template-columns:1fr 1fr; } }
+@media (max-width: 1100px) {
+  .main-grid,
+  .bottom-grid { grid-template-columns: 1fr; }
+
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .secondary-channels-card,
+  #isbcCharts { min-height: 0; }
+}
+
+@media (max-width: 900px) {
+  .main { padding: 20px; }
+  .card { padding: 16px; }
+  .topbar { margin-bottom: 18px; }
+}
+
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main { padding: 14px; }
+
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi-card { padding: 14px; }
+  .kpi-value { font-size: 24px; }
+
+  .controls { gap: 8px; padding: 10px 12px; }
+  .controls-sep { display: none; }
+
+  .chart-wrap { padding-left: 34px; }
+  .chart-stats { gap: 12px; }
+
+  .power-legend { gap: 8px; }
+  .table-controls { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+  .table-search { width: 100%; }
+}
+
+@media (max-width: 520px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .topbar-right { width: 100%; }
+  .topbar-right .btn { flex: 1; justify-content: center; }
+  .status-pill { width: 100%; justify-content: center; }
+}

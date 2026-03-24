@@ -129,7 +129,7 @@
   grid-template-columns:1fr 300px; 
   gap:16px; 
   margin-bottom:16px; 
-  align-items:start; 
+  align-items:stretch; 
 }
 .bottom-grid { 
   display:grid; 
@@ -142,6 +142,10 @@
   display:flex; 
   flex-direction:column; 
   gap:14px; 
+  height:100%;
+}
+.side-panel > .card:last-child {
+  flex:1;
 }
 
 /* ── CARD ── */
@@ -340,8 +344,8 @@
   border-radius:50%; 
 }
 /* ── MINI CHART ── */
-.secondary-channels-card { min-height:390px; }
-#isbcCharts { min-height:320px; }
+.secondary-channels-card { min-height:0; }
+#isbcCharts { min-height:0; }
 .mini-chart-block { 
   background:var(--surface2); 
   border-radius:10px; 
