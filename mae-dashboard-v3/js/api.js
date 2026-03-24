@@ -484,7 +484,7 @@ async function fetchDeviceFile(deviceId, fileName) {
 
   const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/file/${encodeURIComponent(safeName)}`;
   const data = await apiFetch(path);
-  const base64 = data?.data ?? data?.base64 ?? data?.file ?? '';
+  const base64 = data?.content ?? data?.data ?? data?.base64 ?? data?.file ?? '';
   return {
     ...data,
     base64: typeof base64 === 'string' ? base64 : '',
