@@ -110,99 +110,25 @@
 
   <!-- MAIN GRID -->
   <div class="main-grid">
-    <!-- CHART CARD -->
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title" id="chartTitle">PT-50 fs1 — Time Series</span>
-        <span class="card-badge" id="chartBadge">Ch1 · mm</span>
-      </div>
-      <div class="chart-wrap">
-        <div class="chart-y" id="chartYLabels"></div>
-        <div class="chart-svg-area"><svg id="mainChartSvg" viewBox="0 0 700 160" preserveAspectRatio="none"></svg></div>
-        <div class="chart-x" id="chartXLabels"></div>
-      </div>
-      <div class="chart-stats" id="chartStats"></div>
-      <div class="inline-live-view">
-        <div class="power-modal-header" style="padding:14px 0 12px; border-bottom:1px solid var(--border); background:none;">
-          <div class="power-modal-htitle">
-            <div class="power-modal-icon">⚡</div>
-            <div>
-              <h2>Power Supply — Live Monitor</h2>
-              <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates every 2s</p>
-            </div>
-          </div>
-          <div class="power-modal-actions">
-            <div class="pm-live-pill"><div class="pm-live-dot"></div>LIVE</div>
-          </div>
+    <div class="side-panel">
+      <!-- CHART CARD -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" id="chartTitle">PT-50 fs1 — Time Series</span>
+          <span class="card-badge" id="chartBadge">Ch1 · mm</span>
         </div>
-        <div class="power-modal-body" style="padding:14px 0 0; overflow:visible;">
-          <div class="power-kpi-strip">
-            <div class="power-kpi batt">
-              <div class="power-kpi-label">Battery</div>
-              <div class="power-kpi-val" id="pm_battVal">—</div>
-              <div class="power-kpi-sub" id="pm_battSub">Nominal: 3.7V – 4.2V</div>
-              <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar" style="width:0%"></div></div>
-            </div>
-            <div class="power-kpi usb">
-              <div class="power-kpi-label">USB Voltage</div>
-              <div class="power-kpi-val" id="pm_usbVal">—</div>
-              <div class="power-kpi-sub" id="pm_usbSub">Nominal: 5.0V</div>
-              <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar" style="width:0%"></div></div>
-            </div>
-            <div class="power-kpi aux">
-              <div class="power-kpi-label">AUX Voltage</div>
-              <div class="power-kpi-val" id="pm_auxVal">—</div>
-              <div class="power-kpi-sub" id="pm_auxSub">External supply</div>
-              <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
-            </div>
-          </div>
-          <div class="pm-section-label">Combined View — All Channels<span class="live-tag">Streaming</span></div>
-          <div class="power-full-chart">
-            <div class="pm-tooltip" id="pmTooltip">
-              <div class="pm-tooltip-time" id="pmTTTime"></div>
-              <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#ef4444"></span><span class="pm-tooltip-label">Battery</span><span class="pm-tooltip-val" id="pmTTBatt" style="color:#ef4444"></span></div>
-              <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#3b82f6"></span><span class="pm-tooltip-label">USB</span><span class="pm-tooltip-val" id="pmTTUsb" style="color:#3b82f6"></span></div>
-              <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#10b981"></span><span class="pm-tooltip-label">AUX</span><span class="pm-tooltip-val" id="pmTTAux" style="color:#10b981"></span></div>
-            </div>
-            <svg id="powerModalSvg" height="220" viewBox="0 0 720 220" preserveAspectRatio="none"></svg>
-            <div class="pm-chart-legend">
-              <div class="pm-legend-item" id="leg_batt" onclick="togglePowerLine('batt')">
-                <div class="pm-legend-line" style="background:#ef4444"></div>
-                <span class="pm-legend-text">Battery</span>
-                <span class="pm-legend-cur" style="color:#ef4444" id="leg_batt_cur">—</span>
-              </div>
-              <div class="pm-legend-item" id="leg_usb" onclick="togglePowerLine('usb')">
-                <div class="pm-legend-line" style="background:#3b82f6"></div>
-                <span class="pm-legend-text">USB</span>
-                <span class="pm-legend-cur" style="color:#3b82f6" id="leg_usb_cur">—</span>
-              </div>
-              <div class="pm-legend-item" id="leg_aux" onclick="togglePowerLine('aux')">
-                <div class="pm-legend-line" style="background:#10b981"></div>
-                <span class="pm-legend-text">AUX</span>
-                <span class="pm-legend-cur" style="color:#10b981" id="leg_aux_cur">—</span>
-              </div>
-              <div class="pm-legend-item" style="margin-left:auto; cursor:default;">
-                <span class="pm-legend-text">Updated</span>
-                <span class="pm-legend-cur" id="leg_last_time">—</span>
-              </div>
-            </div>
-          </div>
-          <div class="pm-section-label" style="margin-top:4px;">Individual Channel History</div>
-          <div class="pm-channel-grid">
-            <div class="pm-channel-card">
-              <div class="pm-channel-title">Battery <span class="pm-cur-val" id="pm_ch_batt" style="color:#ef4444">—</span></div>
-              <svg id="pm_spark_batt" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
-            </div>
-            <div class="pm-channel-card">
-              <div class="pm-channel-title">USB Voltage <span class="pm-cur-val" id="pm_ch_usb" style="color:#3b82f6">—</span></div>
-              <svg id="pm_spark_usb" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
-            </div>
-            <div class="pm-channel-card">
-              <div class="pm-channel-title">AUX Voltage <span class="pm-cur-val" id="pm_ch_aux" style="color:#10b981">—</span></div>
-              <svg id="pm_spark_aux" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
-            </div>
-          </div>
+        <div class="chart-wrap">
+          <div class="chart-y" id="chartYLabels"></div>
+          <div class="chart-svg-area"><svg id="mainChartSvg" viewBox="0 0 700 160" preserveAspectRatio="none"></svg></div>
+          <div class="chart-x" id="chartXLabels"></div>
         </div>
+        <div class="chart-stats" id="chartStats"></div>
+      </div>
+
+      <!-- SECONDARY CHANNELS CARD (moved from bottom section) -->
+      <div class="card secondary-channels-card">
+        <div class="card-header"><span class="card-title" id="miniChartsTitle">Secondary Channels</span></div>
+        <div id="isbcCharts"></div>
       </div>
     </div>
 
@@ -222,6 +148,12 @@
           <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Batt <span id="legBatt">4.1V</span></div>
           <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>USB <span id="legUsb">5.0V</span></div>
           <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>AUX <span id="legAux">0.1V</span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+          <button class="btn" onclick="openPowerModal()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+            Power Supply — Live Monitor
+          </button>
         </div>
       </div>
     </div>
@@ -245,12 +177,6 @@
         <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()">Export CSV</button>
       </div>
     </div>
-
-    <!-- ISBC CHARTS -->
-    <div class="card">
-      <div class="card-header"><span class="card-title" id="miniChartsTitle">Secondary Channels</span></div>
-      <div id="isbcCharts"></div>
-    </div>
   </div>
 
   <!-- API HINT -->
@@ -271,6 +197,93 @@
     </div>
   </div>
 </main>
+</div>
+
+<!-- ═══════════════════════ MAP MODAL ═══════════════════════ -->
+<div class="power-modal-overlay" id="powerModal">
+  <div class="power-modal">
+    <div class="power-modal-header">
+      <div class="power-modal-htitle">
+        <div class="power-modal-icon">⚡</div>
+        <div>
+          <h2>Power Supply — Live Monitor</h2>
+          <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates every 2s</p>
+        </div>
+      </div>
+      <div class="power-modal-actions">
+        <div class="pm-live-pill"><div class="pm-live-dot"></div>LIVE</div>
+        <div class="power-modal-close" onclick="closePowerModal()">✕</div>
+      </div>
+    </div>
+    <div class="power-modal-body">
+      <div class="power-kpi-strip">
+        <div class="power-kpi batt">
+          <div class="power-kpi-label">Battery</div>
+          <div class="power-kpi-val" id="pm_battVal">—</div>
+          <div class="power-kpi-sub" id="pm_battSub">Nominal: 3.7V – 4.2V</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar" style="width:0%"></div></div>
+        </div>
+        <div class="power-kpi usb">
+          <div class="power-kpi-label">USB Voltage</div>
+          <div class="power-kpi-val" id="pm_usbVal">—</div>
+          <div class="power-kpi-sub" id="pm_usbSub">Nominal: 5.0V</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar" style="width:0%"></div></div>
+        </div>
+        <div class="power-kpi aux">
+          <div class="power-kpi-label">AUX Voltage</div>
+          <div class="power-kpi-val" id="pm_auxVal">—</div>
+          <div class="power-kpi-sub" id="pm_auxSub">External supply</div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="pm-section-label">Combined View — All Channels<span class="live-tag">Streaming</span></div>
+      <div class="power-full-chart">
+        <div class="pm-tooltip" id="pmTooltip">
+          <div class="pm-tooltip-time" id="pmTTTime"></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#ef4444"></span><span class="pm-tooltip-label">Battery</span><span class="pm-tooltip-val" id="pmTTBatt" style="color:#ef4444"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#3b82f6"></span><span class="pm-tooltip-label">USB</span><span class="pm-tooltip-val" id="pmTTUsb" style="color:#3b82f6"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#10b981"></span><span class="pm-tooltip-label">AUX</span><span class="pm-tooltip-val" id="pmTTAux" style="color:#10b981"></span></div>
+        </div>
+        <svg id="powerModalSvg" height="220" viewBox="0 0 720 220" preserveAspectRatio="none"></svg>
+        <div class="pm-chart-legend">
+          <div class="pm-legend-item" id="leg_batt" onclick="togglePowerLine('batt')">
+            <div class="pm-legend-line" style="background:#ef4444"></div>
+            <span class="pm-legend-text">Battery</span>
+            <span class="pm-legend-cur" style="color:#ef4444" id="leg_batt_cur">—</span>
+          </div>
+          <div class="pm-legend-item" id="leg_usb" onclick="togglePowerLine('usb')">
+            <div class="pm-legend-line" style="background:#3b82f6"></div>
+            <span class="pm-legend-text">USB</span>
+            <span class="pm-legend-cur" style="color:#3b82f6" id="leg_usb_cur">—</span>
+          </div>
+          <div class="pm-legend-item" id="leg_aux" onclick="togglePowerLine('aux')">
+            <div class="pm-legend-line" style="background:#10b981"></div>
+            <span class="pm-legend-text">AUX</span>
+            <span class="pm-legend-cur" style="color:#10b981" id="leg_aux_cur">—</span>
+          </div>
+          <div class="pm-legend-item" style="margin-left:auto; cursor:default;">
+            <span class="pm-legend-text">Updated</span>
+            <span class="pm-legend-cur" id="leg_last_time">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="pm-section-label" style="margin-top:4px;">Individual Channel History</div>
+      <div class="pm-channel-grid">
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">Battery <span class="pm-cur-val" id="pm_ch_batt" style="color:#ef4444">—</span></div>
+          <svg id="pm_spark_batt" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">USB Voltage <span class="pm-cur-val" id="pm_ch_usb" style="color:#3b82f6">—</span></div>
+          <svg id="pm_spark_usb" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="pm-channel-card">
+          <div class="pm-channel-title">AUX Voltage <span class="pm-cur-val" id="pm_ch_aux" style="color:#10b981">—</span></div>
+          <svg id="pm_spark_aux" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════ MAP MODAL ═══════════════════════ -->

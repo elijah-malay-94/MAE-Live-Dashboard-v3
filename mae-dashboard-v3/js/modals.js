@@ -441,13 +441,14 @@ function buildInitialPowerHistory(device) {
 }
 
 function openPowerModal() {
-  // Power modal has been replaced by inline live view.
-  // Keep this function for backward compatibility.
+  const modal = document.getElementById('powerModal');
+  if (modal) modal.classList.add('open');
   initInlinePowerLive();
 }
 
 function closePowerModal() {
-  // No modal to close in inline mode.
+  const modal = document.getElementById('powerModal');
+  if (modal) modal.classList.remove('open');
 }
 
 function tickPowerModal() {
