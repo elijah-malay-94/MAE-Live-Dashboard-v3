@@ -33,6 +33,17 @@ async function init() {
   document.getElementById('dateFrom').value = today;
   document.getElementById('dateTo').value   = today;
 
+  // Visible login: if no token is saved, prompt the user.
+  const existingToken = (typeof loadAuthTokenFromStorage === 'function') ? loadAuthTokenFromStorage() : '';
+  if (!existingToken) {
+    try {
+      await openLoginModal();
+    } catch (err) {
+      showErrorMessage(`Authentication failed: ${err.message}`);
+      return;
+    }
+  }
+
   allDevices = await fetchDevicesData(48); // TODO: make customerId dynamic
   if (allDevices.length > 0) {
     activeDevice = allDevices[0];

@@ -137,6 +137,13 @@ const DEVICE_TYPE_CONFIG = {
   },
 };
 
+// ═══════════════════════ AUTH (temporary demo) ═══════════════════════
+// TODO: Replace with a real login UI + secure credential handling.
+const DEMO_AUTH = {
+  username: 'demo',
+  password: 'demous',
+};
+
 // Maps API tipologia string → config key
 function getTypeKey(tipologia) {
   if (!tipologia) return 'DL';
