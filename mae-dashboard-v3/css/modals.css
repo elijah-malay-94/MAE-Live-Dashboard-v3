@@ -2,6 +2,31 @@
    modals.css — Threshold panel, export modal, footer, API hint, power modal, map modal, mini map preview
    ================================================================ */
 
+/* ── LOGIN OVERLAY ── */
+.login-overlay { display:none; position:fixed; inset:0; background:var(--bg); z-index:1000; align-items:center; justify-content:center; }
+.login-overlay.open { display:flex; }
+.login-card { background:var(--surface); border:1px solid var(--border2); border-radius:20px; padding:40px; width:360px; max-width:90vw; box-shadow:0 30px 80px rgba(0,0,0,0.5); animation:modalIn 0.25s ease; }
+.login-logo-wrap { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+.login-brand { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
+.login-brand-sub { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1px; }
+.login-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px; }
+.login-sub { font-size:12px; color:var(--muted2); margin-bottom:24px; }
+.login-field { margin-bottom:16px; }
+.login-field label { display:block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.login-field input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'DM Mono',monospace; font-size:13px; padding:10px 12px; border-radius:10px; outline:none; box-sizing:border-box; transition:border-color 0.15s; }
+.login-field input:focus { border-color:var(--accent); }
+.login-error { font-size:12px; color:#ef4444; margin-bottom:14px; min-height:16px; }
+.login-btn { width:100%; justify-content:center; padding:12px; font-size:14px; }
+
+/* ── TOPBAR USER + LOGOUT ── */
+.topbar-divider { width:1px; height:22px; background:var(--border2); margin:0 2px; flex-shrink:0; }
+.topbar-user-group { display:flex; align-items:center; gap:8px; }
+.topbar-user { display:flex; align-items:center; gap:6px; }
+.topbar-user-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; animation:pulse 2s ease-in-out infinite; }
+.topbar-user span { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted2); white-space:nowrap; }
+.logout-item { color:var(--muted2) !important; padding:8px 12px !important; }
+.logout-item:hover { color:#ef4444 !important; border-color:rgba(239,68,68,0.3) !important; background:rgba(239,68,68,0.06) !important; }
+
 /* ── THRESHOLD PANEL ── */
 .threshold-panel { display:none; position:fixed; top:0; right:0; width:340px; height:100vh; background:var(--surface); border-left:1px solid var(--border); z-index:100; padding:24px; overflow-y:auto; box-shadow:-20px 0 60px rgba(0,0,0,0.4); animation:panelSlide 0.25s ease; }
 @keyframes panelSlide { from{transform:translateX(100%);} to{transform:translateX(0);} }

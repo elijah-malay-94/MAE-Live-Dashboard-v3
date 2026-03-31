@@ -48,9 +48,9 @@ const DEVICE_TYPE_CONFIG = {
     mapRow: (item) => ({
       date:  formatApiDate(item.date),
       time:  item.time || '',
-      pt50:  parseFloat(item.pt50  ?? item['pt-50']  ?? item.pt_50  ?? 0),
-      isbcX: parseFloat(item.isbcX ?? item['isbc-x'] ?? item.isbc_x ?? 0),
-      isbcY: parseFloat(item.isbcY ?? item['isbc-y'] ?? item.isbc_y ?? 0),
+      pt50:  parseFloat(item.pt50  ?? item['pt-50']  ?? item.pt_50  ?? item.ch1 ?? 0),
+      isbcX: parseFloat(item.isbcX ?? item['isbc-x'] ?? item.isbc_x ?? item.ch2 ?? 0),
+      isbcY: parseFloat(item.isbcY ?? item['isbc-y'] ?? item.isbc_y ?? item.ch3 ?? 0),
     }),
   },
 
@@ -90,10 +90,10 @@ const DEVICE_TYPE_CONFIG = {
     mapRow: (item) => ({
       date:         formatApiDate(item.date),
       time:         item.time || '',
-      displacement: parseFloat(item.displacement ?? item.displ ?? 0),
-      frequency:    parseFloat(item.frequency    ?? item.freq  ?? 0),
-      temperature:  parseFloat(item.temperature  ?? item.temp  ?? 0),
-      voltage:      parseFloat(item.voltage      ?? item.volt  ?? 0),
+      displacement: parseFloat(item.displacement ?? item.displ ?? item.ch1 ?? 0),
+      frequency:    parseFloat(item.frequency    ?? item.freq  ?? item.ch2 ?? 0),
+      temperature:  parseFloat(item.temperature  ?? item.temp  ?? item.ch3 ?? 0),
+      voltage:      parseFloat(item.voltage      ?? item.volt  ?? item.ch4 ?? 0),
     }),
   },
 
@@ -141,7 +141,8 @@ const DEVICE_TYPE_CONFIG = {
 // TODO: Replace with a real login UI + secure credential handling.
 const DEMO_AUTH = {
   username: 'demo',
-  password: 'demous',
+  // MAEService auth expects an MD5-hashed password string.
+  password: 'a764c5d938225b22a171b72bc14d021d',
 };
 
 // Maps API tipologia string → config key

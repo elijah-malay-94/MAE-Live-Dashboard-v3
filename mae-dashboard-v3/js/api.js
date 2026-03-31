@@ -23,23 +23,24 @@ function formatApiDate(dateStr) {
   return dateStr.replace(/-/g, '/');
 }
 
-// Builds the correct URL — direct call in production, CORS proxy on localhost
+// Builds the correct URL — direct call in production.
 const API_BASE = 'https://www.maeservice.it';
-// Auto-enable proxy when running locally / from file:// (avoids CORS "Failed to fetch").
-const USE_CORS_PROXY = Boolean(
-  globalThis.API_USE_CORS_PROXY
-  ?? (window.location.hostname === 'localhost'
+// Enable proxy automatically on localhost / file:// to avoid browser CORS "Failed to fetch".
+// You can override explicitly with: window.API_USE_CORS_PROXY = true/false
+const USE_CORS_PROXY = (globalThis.API_USE_CORS_PROXY !== undefined)
+  ? Boolean(globalThis.API_USE_CORS_PROXY)
+  : (window.location.hostname === 'localhost'
     || window.location.hostname === '127.0.0.1'
-    || window.location.protocol === 'file:')
-);
+    || window.location.protocol === 'file:');
 const CORS_PROXY = 'https://corsproxy.io/?url=';
 
-// ═══════════════════════ AUTH ═══════════════════════
+// ═══════════════════════ AUTH (localStorage token) ═══════════════════════
 const AUTH_TOKEN_STORAGE_KEY = 'mae_dashboard_auth_token';
 let authToken = '';
 
 function setAuthToken(token) {
   authToken = String(token || '').trim();
+  if (/^bearer\s+/i.test(authToken)) authToken = authToken.replace(/^bearer\s+/i, '').trim();
   try {
     if (authToken) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, authToken);
     else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
@@ -185,6 +186,7 @@ async function authLogin(username, password) {
 
     const pwd = String(password || '').trim();
     const passwordToSend = /^[a-f0-9]{32}$/i.test(pwd) ? pwd : md5(pwd);
+    console.log('%c[auth] Logging in…', 'color:#2563eb;font-weight:700', { user: username });
     res = await apiFetchWithHeaders('/api/v1/auth/login', {
       method: 'POST',
       body: { username, password: passwordToSend },
@@ -198,58 +200,68 @@ async function authLogin(username, password) {
   }
 
   const data = res?.data || {};
+  const nested = (data && typeof data === 'object')
+    ? (data.data || data.result || data.payload || null)
+    : null;
+
+  const headerAuth =
+    res?.headers?.get?.('authorization')
+    || res?.headers?.get?.('Authorization')
+    || '';
+
   const token =
     data.token ||
     data.access_token ||
     data.accessToken ||
     data.jwt ||
     data.bearer ||
+    nested?.token ||
+    nested?.access_token ||
+    nested?.accessToken ||
+    nested?.jwt ||
+    nested?.bearer ||
+    headerAuth ||
     '';
 
-  if (!token) {
-    throw new Error('Login succeeded but no token was returned by the API response.');
-  }
+  if (!token) throw new Error('Login succeeded but no token was returned by the API response.');
   setAuthToken(token);
+  console.log('%c[auth] Login OK — token saved to localStorage', 'color:#16a34a;font-weight:700');
   return token;
 }
 
 async function ensureAuth() {
   const existing = loadAuthTokenFromStorage();
-  if (existing) return existing;
-  if (!globalThis.DEMO_AUTH?.username || !globalThis.DEMO_AUTH?.password) {
-    throw new Error('Missing DEMO_AUTH credentials (config.js).');
+  if (existing) {
+    console.log('%c[auth] Using token from localStorage', 'color:#16a34a;font-weight:700');
+    return existing;
   }
-  return await authLogin(globalThis.DEMO_AUTH.username, globalThis.DEMO_AUTH.password);
+  if (!DEMO_AUTH?.username || !DEMO_AUTH?.password) {
+    throw new Error('Missing DEMO_AUTH (config.js).');
+  }
+  console.log('%c[auth] No token found — auto-login with DEMO_AUTH', 'color:#f59e0b;font-weight:700');
+  return await authLogin(DEMO_AUTH.username, DEMO_AUTH.password);
 }
 
 function apiUrl(path) {
   const full = `${API_BASE}${path}`;
-  // corsproxy.io expects the URL NOT encoded — it handles encoding internally
   return USE_CORS_PROXY ? `${CORS_PROXY}${full}` : full;
 }
 
 // ─── FIX 1: timeout increased to 30s ───────────────────────────
-async function apiFetch(path, timeoutMs = 30000) {
+async function apiFetch(path, timeoutMs = 30000, _retried = false) {
   const ctrl = new AbortController();
   const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
+    console.log('%c[apiFetch] GET', 'color:#2563eb', path);
     const res = await fetch(apiUrl(path), {
       method: 'GET',
       headers: { 'Accept': 'application/json', ...getAuthHeader() },
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-    // If token is expired, retry once after re-auth.
-    if (res.status === 401 && path !== '/api/v1/auth/login') {
-      setAuthToken('');
-      await ensureAuth();
-      const retry = await fetch(apiUrl(path), {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', ...getAuthHeader() },
-        signal: ctrl.signal,
-      });
-      if (!retry.ok) throw new Error(`HTTP ${retry.status} ${retry.statusText}`);
-      return await retry.json();
+    if (res.status === 401 && !_retried) {
+      try { await authLogin(DEMO_AUTH.username, DEMO_AUTH.password); } catch (_) { /* fall through */ }
+      return apiFetch(path, timeoutMs, true);
     }
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     return await res.json();
@@ -264,6 +276,7 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
   const ctrl = new AbortController();
   const tid  = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
+    console.log('%c[apiFetch] ' + String(options.method || 'GET'), 'color:#2563eb', path);
     const defaultHeaders = { 'Accept': 'application/json' };
     if (options.body && typeof options.body === 'object') {
       defaultHeaders['Content-Type'] = 'application/json';
@@ -277,11 +290,9 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-    // If token is expired, retry once after re-auth.
-    if (res.status === 401 && !_retried && path !== '/api/v1/auth/login') {
-      setAuthToken('');
-      await ensureAuth();
-      return await apiFetchWithHeaders(path, options, timeoutMs, true);
+    if (res.status === 401 && !_retried) {
+      try { await authLogin(DEMO_AUTH.username, DEMO_AUTH.password); } catch (_) { /* fall through */ }
+      return apiFetchWithHeaders(path, options, timeoutMs, true);
     }
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     const data = await res.json();
@@ -331,6 +342,31 @@ const MOCK_DATA = {
   ],
 };
 MOCK_DATA.SISMALOG = MOCK_DATA.DL.map(r => ({...r}));
+
+// Minimal mock device list so the dashboard can render even when the API is unreachable (CORS/401/offline).
+const MOCK_DEVICES = [
+  {
+    id: 'demo-001',
+    serial: 'DL-DEMO-001',
+    name: 'Demo Device (DL)',
+    type: 'DL8',
+    status: 'online',
+    signal: 3,
+    memory: '3.2 Gb',
+    battery: 12.4,
+    usb: 5.0,
+    aux: 3.3,
+    city: '—',
+    position: '—',
+    lat: 45.4642,
+    lng: 9.1900,
+    ip: '192.168.1.100',
+    port: '502',
+    ip_public: '—',
+    port_public: '—',
+    lastConnection: '12/02/2026 17:02:06',
+  },
+];
 
 function getMockFallback() {
   const key  = getTypeKey(activeDevice?.type);
@@ -390,7 +426,9 @@ async function fetchDevicesData(customerId) {
 
     if (!Array.isArray(data) || data.length === 0) {
       showErrorMessage('No devices returned by API.');
-      return [];
+      // Fall back so the UI is usable in demo/offline mode.
+      showErrorMessage('No devices returned by API — using mock demo device.');
+      return [...MOCK_DEVICES];
     }
 
     return data.map(item => {
@@ -420,8 +458,8 @@ async function fetchDevicesData(customerId) {
   } catch (err) {
     showLoadingState(false);
     const label = err.name === 'AbortError' ? 'Request timed out.' : err.message;
-    showErrorMessage(`Could not load device list: ${label}`);
-    return [];
+    showErrorMessage(`Could not load device list: ${label} — using mock demo device.`);
+    return [...MOCK_DEVICES];
   }
 }
 
@@ -515,6 +553,11 @@ async function fetchDevicesInfo(deviceId) {
     return data;
   } catch (err) {
     console.warn('[fetchDevicesInfo]', err.message);
+    // Demo/offline mode: keep whatever we already have on activeDevice (or a mock entry).
+    if (activeDevice && (String(activeDevice.id) === String(deviceId))) {
+      if (!activeDevice.lastConnection) activeDevice.lastConnection = '—';
+      return activeDevice;
+    }
     return null;
   }
 }
@@ -548,7 +591,6 @@ async function fetchData(deviceId, dateFrom, dateTo) {
     const fullUrl  = `${API_BASE}${dataPath}`;
     console.log('%c[fetchData] Calling API', 'color:blue;font-weight:bold');
     console.log('  URL:', fullUrl);
-    console.log('  Via proxy:', USE_CORS_PROXY);
     console.log('  Range:', startDate, '→', endDate);
 
     // ── FIX 4: auto-retry with 30 min window on 408 / timeout ─────────
@@ -564,7 +606,8 @@ async function fetchData(deviceId, dateFrom, dateTo) {
       console.log('  Has records?', Array.isArray(data?.records), '— count:', data?.records?.length ?? 'n/a');
       console.log('  Has header?', !!data?.header);
     } catch (firstErr) {
-      console.error('%c[fetchData] API call failed', 'color:red;font-weight:bold', firstErr.message);
+      if (firstErr.message && firstErr.message.includes('500')) throw firstErr;
+      console.warn('[fetchData] API call failed:', firstErr.message);
       if (firstErr.message.includes('408') || firstErr.message.includes('413') || firstErr.name === 'AbortError') {
         console.warn('[fetchData] Retrying with just today…');
         showLoadingState(true);
@@ -596,9 +639,14 @@ async function fetchData(deviceId, dateFrom, dateTo) {
     let headerArray = null;
     if (!parsedHeaders && data && Array.isArray(data.header)) {
       headerArray = data.header;
+      // Skip "date" and "time" columns — those are handled separately in the row object
+      const dataHeaders = headerArray.filter(h => {
+        const s = String(h).toLowerCase().trim();
+        return !s.startsWith('date') && !s.startsWith('time');
+      });
       parsedHeaders = [];
-      for (let i = 0; i < headerArray.length; i++) {
-        const str   = String(headerArray[i]);
+      for (let i = 0; i < dataHeaders.length; i++) {
+        const str   = String(dataHeaders[i]);
         const match = str.match(/^(.+?)(?:\(([^)]*)\))?$/);
         const name  = match ? match[1].trim() : str;
         const unit  = match && match[2] ? match[2].trim() : '';
@@ -665,8 +713,8 @@ async function fetchData(deviceId, dateFrom, dateTo) {
     showLoadingState(false);
 
     if (rows.length === 0) {
-      showErrorMessage('No measurement data from API — showing mock data.');
-      return getMockFallback();
+      showErrorMessage('No data available for the selected date range. Try a different period.');
+      return [];
     }
 
     const cfg    = getDeviceConfig();
@@ -677,10 +725,14 @@ async function fetchData(deviceId, dateFrom, dateTo) {
 
   } catch (err) {
     showLoadingState(false);
+    if (err.message && err.message.includes('500')) {
+      showErrorMessage('No data available for the selected date range. Try a different period.');
+      return [];
+    }
+    console.warn('[fetchData] error:', err.message);
     const label = err.name === 'AbortError' ? 'Request timed out' : err.message;
-    showErrorMessage(`API error: ${label} — showing mock data.`);
-    console.error('[fetchData] fatal error:', err);
-    return getMockFallback();
+    showErrorMessage(`API error: ${label}`);
+    return [];
   }
 }
 

@@ -27,7 +27,11 @@ function startAutoRefresh() {
     countdown--;
     document.getElementById('refreshCountdown').textContent  = `${countdown}s`;
     document.getElementById('refreshCountdown2').textContent = `${countdown}s`;
-    if (countdown <= 0) { countdown = 30; await loadData(); }
+    if (countdown <= 0) {
+      countdown = 30;
+      if (!activeDevice) return;
+      await loadData();
+    }
   }, 1000);
 }
 
@@ -55,74 +59,6 @@ function toggleAutoRefresh() {
 // ═══════════════════════ EXPORT ═══════════════════════
 function openExport()  { document.getElementById('exportModal').classList.add('open'); }
 function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
-
-// ═══════════════════════ LOGIN ═══════════════════════
-let loginResolve = null;
-
-function openLoginModal() {
-  const modal = document.getElementById('loginModal');
-  const errEl = document.getElementById('loginError');
-  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
-  if (modal) modal.classList.add('open');
-
-  // Prefill from DEMO_AUTH if available.
-  const u = document.getElementById('loginUsername');
-  const p = document.getElementById('loginPassword');
-  if (globalThis.DEMO_AUTH?.username && u) u.value = globalThis.DEMO_AUTH.username;
-  if (globalThis.DEMO_AUTH?.password && p) p.value = globalThis.DEMO_AUTH.password;
-
-  setTimeout(() => { try { u?.focus(); } catch (e) {} }, 0);
-
-  return new Promise((resolve) => {
-    loginResolve = resolve;
-  });
-}
-
-function closeLoginModal() {
-  const modal = document.getElementById('loginModal');
-  if (modal) modal.classList.remove('open');
-}
-
-async function submitLogin() {
-  const btn = document.getElementById('loginSubmitBtn');
-  const errEl = document.getElementById('loginError');
-  const username = document.getElementById('loginUsername')?.value?.trim();
-  const password = document.getElementById('loginPassword')?.value?.trim();
-
-  if (!username || !password) {
-    if (errEl) { errEl.textContent = 'Please enter username and password.'; errEl.style.display = 'block'; }
-    return;
-  }
-
-  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
-  if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
-
-  try {
-    await authLogin(username, password);
-    closeLoginModal();
-    loginResolve?.(true);
-  } catch (err) {
-    if (errEl) {
-      errEl.textContent = `Login failed: ${err.message}`;
-      errEl.style.display = 'block';
-    }
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign in'; }
-  }
-}
-
-document.addEventListener('keydown', (e) => {
-  const modal = document.getElementById('loginModal');
-  if (!modal || !modal.classList.contains('open')) return;
-  if (e.key === 'Enter') submitLogin();
-});
-
-// ═══════════════════════ LOGOUT ═══════════════════════
-function logout() {
-  try { authLogout(); } catch (e) { /* ignore */ }
-  // Reload to reset state cleanly and trigger login modal again.
-  window.location.reload();
-}
 
 let currentDeviceFiles = [];
 let filesPagination = {
@@ -683,6 +619,67 @@ document.addEventListener('click', e => {
   const pm=document.getElementById('powerModal');
   if(pm && pm.classList.contains('open') && e.target===pm) closePowerModal();
 });
+
+// ═══════════════════════ LOGIN / LOGOUT ═══════════════════════
+function showLoginModal() {
+  document.getElementById('loginOverlay').classList.add('open');
+  document.getElementById('loginUsername').focus();
+}
+
+function hideLoginModal() {
+  document.getElementById('loginOverlay').classList.remove('open');
+  document.getElementById('loginError').textContent = '';
+}
+
+async function submitLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const errEl    = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+
+  if (!username || !password) {
+    errEl.textContent = 'Please enter username and password.';
+    return;
+  }
+
+  btn.textContent = 'Signing in…';
+  btn.disabled    = true;
+  errEl.textContent = '';
+
+  try {
+    await authLogin(username, password);
+    hideLoginModal();
+    document.getElementById('sidebarUsername').textContent = username;
+    await initDashboard();
+    initInlinePowerLive();
+  } catch (err) {
+    errEl.textContent = err.message || 'Login failed. Check your credentials.';
+  } finally {
+    btn.textContent = 'Sign In';
+    btn.disabled    = false;
+  }
+}
+
+function doLogout() {
+  clearInterval(refreshTimer);
+  clearInterval(powerModalTimer);
+  authLogout();
+  allDevices        = [];
+  allData           = [];
+  filteredData      = [];
+  activeDevice      = null;
+  activeChannelHeaders = null;
+  liveMode          = true;
+  document.getElementById('deviceList').innerHTML  = '';
+  document.getElementById('kpiGrid').innerHTML     = '';
+  document.getElementById('tableBody').innerHTML   = '';
+  document.getElementById('mainChartSvg').innerHTML = '';
+  document.getElementById('isbcCharts').innerHTML  = '';
+  document.getElementById('loginUsername').value   = '';
+  document.getElementById('loginPassword').value   = '';
+  document.getElementById('sidebarUsername').textContent = '—';
+  showLoginModal();
+}
 
 // ═══════════════════════ START ═══════════════════════
 init().then(() => {

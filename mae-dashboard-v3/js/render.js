@@ -43,7 +43,10 @@ async function switchDevice(id) {
   document.getElementById('pageSubtitle').textContent =
     `DEVICE: ${activeDevice.type} · ${activeDevice.serial || activeDevice.id} · ${activeDevice.name} · ${liveMode ? 'AUTO-REFRESH ON' : 'PAUSED'}`;
   document.getElementById('footerDevice').textContent = activeDevice.serial || activeDevice.id;
+  clearInterval(refreshTimer);
   await loadData();
+  if (allData.length > 0) startAutoRefresh();
+  else showErrorMessage('No data for this device in the selected period — try a different date range.');
 }
 
 function renderDeviceInfo() {
@@ -301,15 +304,15 @@ function renderPowerChart() {
   const bY = 80 - ((d.battery||0) / 6) * 80;
   const uY = 80 - ((d.usb||0)     / 6) * 80;
   const aY = 80 - ((d.aux||0)     / 6) * 80;
-  function flatLine(y, wobble=0) {
-    return Array.from({length:10},(_,i)=>`${i*33},${y+(Math.random()-0.5)*wobble}`).join(' ');
+  function flatLine(y) {
+    return Array.from({length:10},(_,i)=>`${i*33},${y}`).join(' ');
   }
   document.getElementById('powerSvg').innerHTML = `
     <text x="4" y="${uY-2}" fill="#64748b" font-size="7" font-family="monospace">${d.usb||0}V</text>
     <text x="4" y="${bY-2}" fill="#64748b" font-size="7" font-family="monospace">${d.battery||0}V</text>
-    <polyline points="${flatLine(uY,0.5)}" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
-    <polyline points="${flatLine(bY,1.5)}" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(239,68,68,0.5))"/>
-    <polyline points="${flatLine(aY,0.3)}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2,4" opacity="0.4"/>
+    <polyline points="${flatLine(uY)}" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+    <polyline points="${flatLine(bY)}" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(239,68,68,0.5))"/>
+    <polyline points="${flatLine(aY)}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2,4" opacity="0.4"/>
   `;
 }
 

@@ -28,23 +28,26 @@ let activeChannelHeaders = null; // populated from data.header on each fetchData
 
 // ═══════════════════════ INIT ═══════════════════════
 async function init() {
-  // ── Default date pickers to today ──────────────────
-  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  document.getElementById('dateFrom').value = today;
-  document.getElementById('dateTo').value   = today;
+  console.log('%c[init] Starting dashboard init()', 'color:#2563eb;font-weight:700');
+  const today   = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  document.getElementById('dateFrom').value = sevenDaysAgo.toISOString().slice(0, 10);
+  document.getElementById('dateTo').value   = today.toISOString().slice(0, 10);
 
-  // Visible login: if no token is saved, prompt the user.
-  const existingToken = (typeof loadAuthTokenFromStorage === 'function') ? loadAuthTokenFromStorage() : '';
-  if (!existingToken) {
-    try {
-      await openLoginModal();
-    } catch (err) {
-      showErrorMessage(`Authentication failed: ${err.message}`);
-      return;
-    }
+  try {
+    await ensureAuth();
+    console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
+    document.getElementById('sidebarUsername').textContent = DEMO_AUTH.username;
+    await initDashboard();
+  } catch (err) {
+    showLoginModal();
   }
+}
 
-  allDevices = await fetchDevicesData(48); // TODO: make customerId dynamic
+async function initDashboard() {
+  allDevices = await fetchDevicesData(1);
+  const usingMockDevices = allDevices.length > 0 && allDevices[0].id === 'demo-001';
   if (allDevices.length > 0) {
     activeDevice = allDevices[0];
     await fetchDevicesInfo(activeDevice.id);
@@ -52,7 +55,13 @@ async function init() {
     renderDeviceInfo();
     renderPowerChart();
     await loadData();
-    startAutoRefresh();
+    if (usingMockDevices) {
+      showErrorMessage('Could not load real devices — check customer ID and credentials. Showing demo data.');
+    } else if (allData.length > 0) {
+      startAutoRefresh();
+    } else {
+      showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
+    }
   } else {
     showErrorMessage('No devices found. Check customer ID and API connection.');
   }
@@ -60,6 +69,10 @@ async function init() {
 }
 
 async function loadData() {
+  if (!activeDevice) {
+    showErrorMessage('No active device selected yet. Please wait for devices to load.');
+    return;
+  }
   const from = document.getElementById('dateFrom').value;
   const to   = document.getElementById('dateTo').value;
   allData = await fetchData(activeDevice.id, from, to);
@@ -84,7 +97,13 @@ function applyFilters() {
   renderAll();
 }
 
-function applyDateFilter() { loadData(); }
+async function applyDateFilter() {
+  try {
+    await loadData();
+  } catch (err) {
+    showErrorMessage(err?.message || 'Failed to load data.');
+  }
+}
 
 function renderAll() {
   updateChannelSelect(); // rebuild dropdown for current device type
