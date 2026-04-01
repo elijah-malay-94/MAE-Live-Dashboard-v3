@@ -674,6 +674,7 @@ function doLogout() {
   document.getElementById('kpiGrid').innerHTML     = '';
   document.getElementById('tableBody').innerHTML   = '';
   document.getElementById('mainChartSvg').innerHTML = '';
+  document.getElementById('chartStats').innerHTML = '';
   document.getElementById('channelsCharts').innerHTML  = '';
   document.getElementById('loginUsername').value   = '';
   document.getElementById('loginPassword').value   = '';
