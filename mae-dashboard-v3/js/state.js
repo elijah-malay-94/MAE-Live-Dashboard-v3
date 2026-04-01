@@ -38,7 +38,7 @@ async function init() {
   try {
     await ensureAuth();
     console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
-    document.getElementById('sidebarUsername').textContent = DEMO_AUTH.username;
+    document.getElementById('sidebarUsername').textContent = getUserName();
     await initDashboard();
   } catch (err) {
     showLoginModal();
@@ -46,8 +46,7 @@ async function init() {
 }
 
 async function initDashboard() {
-  allDevices = await fetchDevicesData(getUserId() || 1);
-  const usingMockDevices = allDevices.length > 0 && allDevices[0].id === 'demo-001';
+  allDevices = await fetchDevicesData(getUserId());  
   if (allDevices.length > 0) {
     const savedId = (() => { try { return localStorage.getItem('mae_dashboard_active_device'); } catch(e) { return null; } })();
     activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];
@@ -56,9 +55,7 @@ async function initDashboard() {
     renderDeviceInfo();
     renderPowerChart();
     await loadData();
-    if (usingMockDevices) {
-      showErrorMessage('Could not load real devices — check customer ID and credentials. Showing demo data.');
-    } else if (allData.length > 0) {
+    if (allData.length > 0) {
       startAutoRefresh();
     } else {
       showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
@@ -116,7 +113,7 @@ function renderAll() {
   checkAlerts();
   renderKPIs();
   renderChart();
-  renderIsbcCharts();
+  renderChannelsCharts();
   renderTable();
   document.getElementById('footerRecords').textContent = `${filteredData.length} records`;
 }

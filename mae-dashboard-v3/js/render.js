@@ -8,11 +8,11 @@
 // ║  • renderKPIs()          KPI cards                           ║
 // ║  • getThresholds() / getValueState() / checkAlerts()         ║
 // ║  • updateChannelSelect() / renderChart()  main SVG chart     ║
-// ║  • renderIsbcCharts()    secondary mini charts               ║
+// ║  • renderChannelsCharts()    secondary mini charts           ║
 // ║  • renderPowerChart()    sidebar power SVG                   ║
 // ║  • renderTable()         measurement log table               ║
 // ║                                                              ║
-// ║  Dependencies: config.js, api.js, state.js                  ║
+// ║  Dependencies: config.js, api.js, state.js                   ║
 // ║  Load order:   4th                                           ║
 // ╚══════════════════════════════════════════════════════════════╝
 
@@ -264,9 +264,9 @@ function renderChart() {
 }
 
 // ═══════════════════════ MINI CHARTS ═══════════════════════
-function renderIsbcCharts() {
+function renderChannelsCharts() {
   const cfg = getDeviceConfig();
-  document.getElementById('isbcCharts').innerHTML = cfg.miniCharts.map(ch => {
+  document.getElementById('channelsCharts').innerHTML = cfg.miniCharts.map(ch => {
     const data = [...filteredData].reverse();
     if (!data.length) return '';
     const vals = data.map(d => d[ch.key] ?? 0);

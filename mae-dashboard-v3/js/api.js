@@ -4,7 +4,6 @@
 // ║  Contains:                                                   ║
 // ║  • formatApiDate()       date string normaliser              ║
 // ║  • apiUrl() / apiFetch() / apiFetchWithHeaders()             ║
-// ║  • MOCK_DATA + getMockFallback()                             ║
 // ║  • showLoadingState() / showErrorMessage() / showSuccess()   ║
 // ║  • fetchDevicesData()    GET /api/v1/customers/:id/devices   ║
 // ║  • fetchDevicesInfo()    GET /api/v1/devices/:id/info        ║
@@ -37,8 +36,10 @@ const CORS_PROXY = 'https://corsproxy.io/?url=';
 // ═══════════════════════ AUTH (localStorage token + user_id) ═══════════════════════
 const AUTH_TOKEN_STORAGE_KEY  = 'mae_dashboard_auth_token';
 const AUTH_USER_ID_STORAGE_KEY = 'mae_dashboard_user_id';
+const AUTH_USER_NAME_STORAGE_KEY = 'mae_dashboard_user_name';
 let authToken = '';
 let authUserId = '';
+let authUserName = '';
 
 function setAuthToken(token) {
   authToken = String(token || '').trim();
@@ -50,7 +51,7 @@ function setAuthToken(token) {
 }
 
 function setUserId(id) {
-  authUserId = String(id || '').trim();
+  authUserId = String(id || '').trim();  
   try {
     if (authUserId) localStorage.setItem(AUTH_USER_ID_STORAGE_KEY, authUserId);
     else localStorage.removeItem(AUTH_USER_ID_STORAGE_KEY);
@@ -62,6 +63,23 @@ function getUserId() {
   try {
     const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
     if (id) { authUserId = String(id).trim(); return authUserId; }
+  } catch (e) { /* ignore */ }
+  return '';
+}
+
+function setUserName(name) {
+  authUserName = String(name || '').trim();  
+  try {
+    if (authUserName) localStorage.setItem(AUTH_USER_NAME_STORAGE_KEY, authUserName);
+    else localStorage.removeItem(AUTH_USER_NAME_STORAGE_KEY);
+  } catch (e) { /* ignore */ }
+}
+
+function getUserName() {
+  if (authUserName) return authUserName;
+  try {
+    const name = localStorage.getItem(AUTH_USER_NAME_STORAGE_KEY);
+    if (name) { authUserName = String(name).trim(); return authUserName; }
   } catch (e) { /* ignore */ }
   return '';
 }
@@ -93,6 +111,7 @@ function getAuthHeader() {
 function authLogout() {
   setAuthToken('');
   setUserId('');
+  setUserName('');
 }
 
 async function authLogin(username, password) {
@@ -256,6 +275,7 @@ async function authLogin(username, password) {
 
   if (!token) throw new Error('Login succeeded but no token was returned by the API response.');
   setAuthToken(token);
+  setUserName(username);
 
   // Extract user_id from JWT payload and persist it
   const payload = decodeJwtPayload(token);
@@ -275,11 +295,7 @@ async function ensureAuth() {
     console.log('%c[auth] Using token from localStorage', 'color:#16a34a;font-weight:700');
     return existing;
   }
-  if (!DEMO_AUTH?.username || !DEMO_AUTH?.password) {
-    throw new Error('Missing DEMO_AUTH (config.js).');
-  }
-  console.log('%c[auth] No token found — auto-login with DEMO_AUTH', 'color:#f59e0b;font-weight:700');
-  return await authLogin(DEMO_AUTH.username, DEMO_AUTH.password);
+ return "";
 }
 
 function apiUrl(path) {
@@ -299,10 +315,7 @@ async function apiFetch(path, timeoutMs = 30000, _retried = false) {
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-    if (res.status === 401 && !_retried) {
-      try { await authLogin(DEMO_AUTH.username, DEMO_AUTH.password); } catch (_) { /* fall through */ }
-      return apiFetch(path, timeoutMs, true);
-    }
+  
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     return await res.json();
   } catch (err) {
@@ -330,10 +343,6 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-    if (res.status === 401 && !_retried) {
-      try { await authLogin(DEMO_AUTH.username, DEMO_AUTH.password); } catch (_) { /* fall through */ }
-      return apiFetchWithHeaders(path, options, timeoutMs, true);
-    }
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     const data = await res.json();
     return { data, headers: res.headers };
@@ -341,89 +350,6 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
     clearTimeout(tid);
     throw err;
   }
-}
-
-// ═══════════════════════ MOCK FALLBACK DATA ═══════════════════════
-// Used whenever the API is unreachable. Remove or empty these once the backend is stable.
-const MOCK_DATA = {
-  DL: [
-    { "timestamp": "2026-02-12 17:02:06", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:59:36", "data": [ 36.13, -0.61, -1.61 ] },
-    { "timestamp": "2026-02-12 16:57:06", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:54:36", "data": [ 36.14, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:52:06", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:49:36", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:47:06", "data": [ 36.13, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:44:36", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:24:36", "data": [ 36.14, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:22:06", "data": [ 36.14, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:19:36", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:17:06", "data": [ 36.14, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:14:36", "data": [ 36.14, -0.60, -1.60 ] },
-    { "timestamp": "2026-02-12 16:12:06", "data": [ 36.13, -0.60, -1.61 ] },
-    { "timestamp": "2026-02-12 16:09:36", "data": [ 36.13, -0.60, -1.61 ] },
-  ],
-  VMR: [
-    { "timestamp": "2026-02-12 17:02:06", "data": [ 1.24, 49.98, 22.4, 230.1 ] },
-    { "timestamp": "2026-02-12 16:59:36", "data": [ 1.25, 49.97, 22.5, 229.8 ] },
-    { "timestamp": "2026-02-12 16:57:06", "data": [ 1.23, 50.01, 22.4, 230.3 ] },
-    { "timestamp": "2026-02-12 16:54:36", "data": [ 1.26, 49.99, 22.6, 230.0 ] },
-    { "timestamp": "2026-02-12 16:52:06", "data": [ 1.24, 50.00, 22.5, 229.9 ] },
-    { "timestamp": "2026-02-12 16:49:36", "data": [ 1.22, 50.02, 22.3, 230.2 ] },
-    { "timestamp": "2026-02-12 16:47:06", "data": [ 1.25, 49.98, 22.5, 230.1 ] },
-    { "timestamp": "2026-02-12 16:44:36", "data": [ 1.23, 49.97, 22.4, 229.7 ] },
-    { "timestamp": "2026-02-12 16:24:36", "data": [ 1.27, 50.01, 22.6, 230.4 ] },
-    { "timestamp": "2026-02-12 16:22:06", "data": [ 1.24, 50.00, 22.5, 230.0 ] },
-    { "timestamp": "2026-02-12 16:19:36", "data": [ 1.23, 49.99, 22.4, 229.9 ] },
-    { "timestamp": "2026-02-12 16:17:06", "data": [ 1.25, 50.02, 22.5, 230.2 ] },
-    { "timestamp": "2026-02-12 16:14:36", "data": [ 1.22, 49.98, 22.3, 229.8 ] },
-    { "timestamp": "2026-02-12 16:12:06", "data": [ 1.26, 50.00, 22.6, 230.1 ] },
-    { "timestamp": "2026-02-12 16:09:36", "data": [ 1.24, 49.97, 22.4, 229.6 ] },
-  ],
-};
-MOCK_DATA.SISMALOG = MOCK_DATA.DL.map(r => ({...r}));
-
-// Minimal mock device list so the dashboard can render even when the API is unreachable (CORS/401/offline).
-const MOCK_DEVICES = [
-  {
-    id: 'demo-001',
-    serial: 'DL-DEMO-001',
-    name: 'Demo Device (DL)',
-    type: 'DL8',
-    status: 'online',
-    signal: 3,
-    memory: '3.2 Gb',
-    battery: 12.4,
-    usb: 5.0,
-    aux: 3.3,
-    city: '—',
-    position: '—',
-    lat: 45.4642,
-    lng: 9.1900,
-    ip: '192.168.1.100',
-    port: '502',
-    ip_public: '—',
-    port_public: '—',
-    lastConnection: '12/02/2026 17:02:06',
-  },
-];
-
-function getMockFallback() {
-  const key  = getTypeKey(activeDevice?.type);
-  const raw  = MOCK_DATA[key] || MOCK_DATA.DL;
-  const rows = raw.map(record => {
-    const ts   = record.timestamp || '';
-    const dt   = ts ? new Date(ts) : null;
-    const date = dt ? dt.toLocaleDateString('en-GB').replace(/\//g, '/') : '';
-    const time = dt ? dt.toTimeString().slice(0, 8) : '';
-    const obj  = { date, time };
-    if (Array.isArray(record.data)) {
-      record.data.forEach((val, i) => { obj[`ch${i + 1}`] = parseFloat(val) || 0; });
-    }
-    return obj;
-  });
-  const cfg = getDeviceConfig();
-  return rows.map(item => cfg.mapRow(item));
 }
 
 // ═══════════════════════ STATUS BAR HELPERS ═══════════════════════
@@ -466,9 +392,7 @@ async function fetchDevicesData(customerId) {
 
     if (!Array.isArray(data) || data.length === 0) {
       showErrorMessage('No devices returned by API.');
-      // Fall back so the UI is usable in demo/offline mode.
-      showErrorMessage('No devices returned by API — using mock demo device.');
-      return [...MOCK_DEVICES];
+      return [];
     }
 
     return data.map(item => {
@@ -513,8 +437,7 @@ async function fetchDevicesData(customerId) {
   } catch (err) {
     showLoadingState(false);
     const label = err.name === 'AbortError' ? 'Request timed out.' : err.message;
-    showErrorMessage(`Could not load device list: ${label} — using mock demo device.`);
-    return [...MOCK_DEVICES];
+    showErrorMessage(`Could not load device list: ${label}.`);
   }
 }
 
@@ -608,11 +531,6 @@ async function fetchDevicesInfo(deviceId) {
     return data;
   } catch (err) {
     console.warn('[fetchDevicesInfo]', err.message);
-    // Demo/offline mode: keep whatever we already have on activeDevice (or a mock entry).
-    if (activeDevice && (String(activeDevice.id) === String(deviceId))) {
-      if (!activeDevice.lastConnection) activeDevice.lastConnection = '—';
-      return activeDevice;
-    }
     return null;
   }
 }
@@ -630,7 +548,6 @@ async function fetchDevicesInfo(deviceId) {
 //   }
 //
 // Only the first 100 records are processed (data.records.slice(0, 100)).
-// Falls back to mock data if unreachable.
 async function fetchData(deviceId, dateFrom, dateTo) {
   showLoadingState(true);
 

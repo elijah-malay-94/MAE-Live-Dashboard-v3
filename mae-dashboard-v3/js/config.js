@@ -207,7 +207,7 @@ function buildConfigFromHeaders(header) {
   });
 
   // Mini charts = every channel except the first (mirrors the static DL pattern)
-  const miniCharts = entries.slice(1).map((e, i) => ({
+  const miniCharts = entries.map((e, i) => ({
     key:    e.key,
     label:  `${e.name}${e.unit ? ' (' + e.unit + ')' : ''}`,
     color:  palette(i + 1).chart,
