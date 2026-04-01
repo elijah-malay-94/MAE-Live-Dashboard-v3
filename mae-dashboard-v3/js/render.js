@@ -183,12 +183,20 @@ function checkAlerts() {
 
 // ═══════════════════════ MAIN CHART ═══════════════════════
 function updateChannelSelect() {
-  const cfg = getDeviceConfig();
-  const sel = document.getElementById('channelSelect');
-  const cur = sel.value;
-  sel.innerHTML = cfg.channels.map(ch =>
+  const cfg  = getDeviceConfig();
+  const sel  = document.getElementById('channelSelect');
+  const cur  = sel.value;
+  const data = filteredData.length > 0 ? filteredData : allData;
+
+  // Only show channels that have at least one non-zero, non-null value
+  const activeChannels = cfg.channels.filter(ch =>
+    data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
+  );
+
+  sel.innerHTML = activeChannels.map(ch =>
     `<option value="${ch.key}">${ch.label}${ch.unit ? ' (' + ch.unit + ')' : ''}</option>`
   ).join('');
+
   if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
 }
 

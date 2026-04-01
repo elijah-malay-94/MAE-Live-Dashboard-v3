@@ -98,7 +98,14 @@ function loadAuthTokenFromStorage() {
     const t = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
     if (t) authToken = String(t).trim();
     const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
-    if (id) authUserId = String(id).trim();
+    if (id) {
+      authUserId = String(id).trim();
+    } else if (authToken) {
+      // Recover user_id from JWT payload if not stored (old session)
+      const payload = decodeJwtPayload(authToken);
+      const uid = payload?.user_id || payload?.userId || payload?.sub || '';
+      if (uid) setUserId(uid);
+    }
   } catch (e) { /* ignore */ }
   return authToken;
 }

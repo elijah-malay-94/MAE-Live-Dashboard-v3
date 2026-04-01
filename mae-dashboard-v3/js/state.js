@@ -38,7 +38,8 @@ async function init() {
   try {
     await ensureAuth();
     console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
-    document.getElementById('sidebarUsername').textContent = getUserName();
+    const usernameEl = document.getElementById('sidebarUsername');
+    if (usernameEl) usernameEl.textContent = getUserName();
     await initDashboard();
   } catch (err) {
     showLoginModal();
@@ -46,7 +47,7 @@ async function init() {
 }
 
 async function initDashboard() {
-  allDevices = await fetchDevicesData(getUserId());  
+  allDevices = await fetchDevicesData(getUserId() || 1);
   if (allDevices.length > 0) {
     const savedId = (() => { try { return localStorage.getItem('mae_dashboard_active_device'); } catch(e) { return null; } })();
     activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];

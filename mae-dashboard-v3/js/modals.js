@@ -269,6 +269,84 @@ function doExport(fmt) {
   }
 }
 
+function doPrintReport() {
+  closeExport();
+  const cfg    = getDeviceConfig();
+  const data   = allData.length > 0 ? allData : filteredData;  // use all records, not filtered
+  const dev    = activeDevice || {};
+  const serial = dev.serial || dev.id || '—';
+  const from   = document.getElementById('dateFrom')?.value || '—';
+  const to     = document.getElementById('dateTo')?.value   || '—';
+  const now    = new Date().toLocaleString('en-GB');
+
+  // Build channel headers using dynamic names if available, fallback to config
+  const channelKeys = cfg.channels.map(c => c.key);
+  const channelHeaders = cfg.channels.map(ch => {
+    const unit = ch.unit ? ` (${ch.unit})` : '';
+    return `${ch.label}${unit}`;
+  });
+  const headers = ['Date', 'Time', ...channelHeaders];
+
+  const rows = data.map(r =>
+    `<tr><td>${r.date ?? '—'}</td><td>${r.time ?? '—'}</td>${channelKeys.map(k =>
+      `<td>${r[k] !== undefined && r[k] !== null ? r[k] : '—'}</td>`).join('')}</tr>`
+  ).join('');
+
+  const ip       = [dev.ip, dev.port].filter(Boolean).join(':')             || '—';
+  const pubIp    = [dev.ip_public, dev.port_public].filter(Boolean).join(':') || '—';
+  const lastConn = dev.lastConnection || '—';
+  const memory   = dev.memory   || '—';
+  const battery  = dev.battery  ? `${dev.battery} V`  : '—';
+  const status   = dev.status   || '—';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Device Report — ${serial}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #0f172a; margin: 30px; }
+    h1 { font-size: 22px; margin-bottom: 2px; }
+    .sub { color: #64748b; font-size: 11px; margin-bottom: 24px; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin: 20px 0 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+    .info-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+    .info-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .info-val { font-size: 13px; font-weight: bold; margin-top: 3px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; }
+    th { background: #f1f5f9; padding: 7px 10px; text-align: left; border: 1px solid #e2e8f0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 6px 10px; border: 1px solid #e2e8f0; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .footer { margin-top: 24px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+    @media print { body { margin: 15px; } }
+  </style></head><body>
+  <h1>Device Export Report</h1>
+  <div class="sub">Generated: ${now}</div>
+
+  <h2>Device Information</h2>
+  <div class="info-grid">
+    <div class="info-box"><div class="info-label">Device Name</div><div class="info-val">${dev.name || '—'}</div></div>
+    <div class="info-box"><div class="info-label">Serial No.</div><div class="info-val">${serial}</div></div>
+    <div class="info-box"><div class="info-label">Type</div><div class="info-val">${dev.type || '—'}</div></div>
+    <div class="info-box"><div class="info-label">Status</div><div class="info-val">${status}</div></div>
+    <div class="info-box"><div class="info-label">Last Connection</div><div class="info-val">${lastConn}</div></div>
+    <div class="info-box"><div class="info-label">Memory Free</div><div class="info-val">${memory}</div></div>
+    <div class="info-box"><div class="info-label">Battery</div><div class="info-val">${battery}</div></div>
+    <div class="info-box"><div class="info-label">IP Address</div><div class="info-val">${ip}</div></div>
+    <div class="info-box"><div class="info-label">Public IP</div><div class="info-val">${pubIp}</div></div>
+  </div>
+
+  <h2>Data Records — ${from} → ${to} &nbsp;·&nbsp; ${data.length} records</h2>
+  <table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+  <tbody>${rows || '<tr><td colspan="' + headers.length + '" style="text-align:center;color:#94a3b8;padding:16px;">No data available for this period</td></tr>'}</tbody>
+  </table>
+  <div class="footer">MAE DataLogger Dashboard &nbsp;·&nbsp; ${serial} &nbsp;·&nbsp; ${from} → ${to} &nbsp;·&nbsp; Generated ${now}</div>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+}
+
 function downloadFile(name, type, content) {
   const a = Object.assign(document.createElement('a'), {
     href: URL.createObjectURL(new Blob([content], {type})), download: name,
@@ -649,7 +727,6 @@ async function submitLogin() {
   try {
     await authLogin(username, password);
     hideLoginModal();
-    document.getElementById('sidebarUsername').textContent = username;
     await initDashboard();
     initInlinePowerLive();
   } catch (err) {
@@ -676,9 +753,8 @@ function doLogout() {
   document.getElementById('mainChartSvg').innerHTML = '';
   document.getElementById('chartStats').innerHTML = '';
   document.getElementById('channelsCharts').innerHTML  = '';
-  document.getElementById('loginUsername').value   = '';
-  document.getElementById('loginPassword').value   = '';
-  document.getElementById('sidebarUsername').textContent = '—';
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
   showLoginModal();
 }
 
