@@ -46,10 +46,11 @@ async function init() {
 }
 
 async function initDashboard() {
-  allDevices = await fetchDevicesData(1);
+  allDevices = await fetchDevicesData(getUserId() || 1);
   const usingMockDevices = allDevices.length > 0 && allDevices[0].id === 'demo-001';
   if (allDevices.length > 0) {
-    activeDevice = allDevices[0];
+    const savedId = (() => { try { return localStorage.getItem('mae_dashboard_active_device'); } catch(e) { return null; } })();
+    activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];
     await fetchDevicesInfo(activeDevice.id);
     renderDeviceList();
     renderDeviceInfo();
@@ -75,7 +76,12 @@ async function loadData() {
   }
   const from = document.getElementById('dateFrom').value;
   const to   = document.getElementById('dateTo').value;
-  allData = await fetchData(activeDevice.id, from, to);
+  try {
+    allData = await fetchData(activeDevice.id, from, to);
+  } catch (err) {
+    allData = [];
+    showErrorMessage('Could not load data: ' + (err.message || 'Server error. Try a different date range.'));
+  }
   applyFilters();
 }
 

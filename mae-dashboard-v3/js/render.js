@@ -35,6 +35,7 @@ function renderDeviceList() {
 async function switchDevice(id) {
   activeDevice = allDevices.find(d => d.id === id);
   if (!activeDevice) return;
+  try { localStorage.setItem('mae_dashboard_active_device', id); } catch(e) { /* ignore */ }
   activeChannelHeaders = null; // reset — will be populated by the next fetchData() call
   await fetchDevicesInfo(activeDevice.id);
   renderDeviceList();

@@ -230,7 +230,11 @@ body::before {
   justify-content: space-between;
   margin-bottom: 24px;
   gap: 16px;
-  flex-wrap: wrap;
+}
+
+.topbar-left {
+  flex: 1;
+  min-width: 0;
 }
 
 .topbar-left h1 {
@@ -238,6 +242,9 @@ body::before {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-left .subtitle {
@@ -246,6 +253,13 @@ body::before {
   color: var(--muted);
   letter-spacing: 1px;
   margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-right {
+  flex-shrink: 0;
 }
 
 .topbar-right {

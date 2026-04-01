@@ -34,9 +34,11 @@ const USE_CORS_PROXY = (globalThis.API_USE_CORS_PROXY !== undefined)
     || window.location.protocol === 'file:');
 const CORS_PROXY = 'https://corsproxy.io/?url=';
 
-// ═══════════════════════ AUTH (localStorage token) ═══════════════════════
-const AUTH_TOKEN_STORAGE_KEY = 'mae_dashboard_auth_token';
+// ═══════════════════════ AUTH (localStorage token + user_id) ═══════════════════════
+const AUTH_TOKEN_STORAGE_KEY  = 'mae_dashboard_auth_token';
+const AUTH_USER_ID_STORAGE_KEY = 'mae_dashboard_user_id';
 let authToken = '';
+let authUserId = '';
 
 function setAuthToken(token) {
   authToken = String(token || '').trim();
@@ -47,10 +49,38 @@ function setAuthToken(token) {
   } catch (e) { /* ignore */ }
 }
 
+function setUserId(id) {
+  authUserId = String(id || '').trim();
+  try {
+    if (authUserId) localStorage.setItem(AUTH_USER_ID_STORAGE_KEY, authUserId);
+    else localStorage.removeItem(AUTH_USER_ID_STORAGE_KEY);
+  } catch (e) { /* ignore */ }
+}
+
+function getUserId() {
+  if (authUserId) return authUserId;
+  try {
+    const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
+    if (id) { authUserId = String(id).trim(); return authUserId; }
+  } catch (e) { /* ignore */ }
+  return '';
+}
+
+function decodeJwtPayload(token) {
+  try {
+    const parts = String(token).split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(payload));
+  } catch (e) { return null; }
+}
+
 function loadAuthTokenFromStorage() {
   try {
     const t = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
     if (t) authToken = String(t).trim();
+    const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
+    if (id) authUserId = String(id).trim();
   } catch (e) { /* ignore */ }
   return authToken;
 }
@@ -62,6 +92,7 @@ function getAuthHeader() {
 
 function authLogout() {
   setAuthToken('');
+  setUserId('');
 }
 
 async function authLogin(username, password) {
@@ -225,7 +256,16 @@ async function authLogin(username, password) {
 
   if (!token) throw new Error('Login succeeded but no token was returned by the API response.');
   setAuthToken(token);
-  console.log('%c[auth] Login OK — token saved to localStorage', 'color:#16a34a;font-weight:700');
+
+  // Extract user_id from JWT payload and persist it
+  const payload = decodeJwtPayload(token);
+  const uid = payload?.user_id || payload?.userId || payload?.sub || '';
+  if (uid) {
+    setUserId(uid);
+    console.log('%c[auth] Login OK — token + user_id saved to localStorage', 'color:#16a34a;font-weight:700', { user_id: uid });
+  } else {
+    console.log('%c[auth] Login OK — token saved (no user_id in JWT payload)', 'color:#16a34a;font-weight:700');
+  }
   return token;
 }
 
@@ -433,26 +473,41 @@ async function fetchDevicesData(customerId) {
 
     return data.map(item => {
       const coords = (item.posizione || '0;0').split(';');
+      // Format the `updated` field (e.g. "2024-04-17 11:51:13") as dd/MM/yyyy HH:mm:ss
+      let lastConn = '—';
+      if (item.updated) {
+        const dt = new Date(String(item.updated).replace(' ', 'T'));
+        if (!isNaN(dt.getTime())) {
+          const dd   = String(dt.getDate()).padStart(2, '0');
+          const mm   = String(dt.getMonth() + 1).padStart(2, '0');
+          const yyyy = dt.getFullYear();
+          const HH   = String(dt.getHours()).padStart(2, '0');
+          const MM   = String(dt.getMinutes()).padStart(2, '0');
+          const SS   = String(dt.getSeconds()).padStart(2, '0');
+          lastConn = `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
+        }
+      }
       return {
-        id:       String(item.id),
-        serial:   item.matricola   || '',
-        name:     item.descrizione || item.matricola || `Device ${item.id}`,
-        type:     item.tipologia   || 'DL8',
-        status:   item.enabled === '1' ? 'online' : 'offline',
-        signal:   0,
-        memory:   '',
-        battery:  0,
-        usb:      0,
-        aux:      0,
-        city:     '',
-        position: '',
-        lat:      parseFloat(coords[0]) || 0,
-        lng:      parseFloat(coords[1]) || 0,
+        id:             String(item.id),
+        serial:         item.matricola   || '',
+        name:           item.descrizione || item.matricola || `Device ${item.id}`,
+        type:           item.tipologia   || 'DL8',
+        status:         item.enabled === '1' ? 'online' : 'offline',
+        signal:         0,
+        memory:         '',
+        battery:        0,
+        usb:            0,
+        aux:            0,
+        city:           '',
+        position:       '',
+        lat:            parseFloat(coords[0]) || 0,
+        lng:            parseFloat(coords[1]) || 0,
+        lastConnection: lastConn,
         // Network info (if provided by /devices endpoint)
-        ip:        item.ip ?? item.ipPublic ?? item['ip_public'] ?? '',
-        port:      item.port ?? item.portPublic ?? item['port_public'] ?? '',
-        ip_public: item.ip_public ?? item.ipPublic ?? item['ip_public'] ?? '',
-        port_public: item.port_public ?? item.portPublic ?? item['port_public'] ?? '',
+        ip:          item.ip         ?? '',
+        port:        item.port       ?? '',
+        ip_public:   item.ip_public  ?? '',
+        port_public: item.port_public ?? '',
       };
     });
   } catch (err) {
