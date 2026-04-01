@@ -208,6 +208,9 @@ body::before {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .device-status {
