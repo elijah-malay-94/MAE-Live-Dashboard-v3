@@ -269,14 +269,61 @@ function doExport(fmt) {
   }
 }
 
+function previewReportSample() {
+  closeExport();
+  const cfg = getDeviceConfig();
+  const keys = cfg.channels.map(c => c.key);
+
+  // Generate 60 realistic sample records (sine waves + noise per channel)
+  const sampleData = [];
+  const baseDate = new Date(); baseDate.setDate(baseDate.getDate() - 30);
+  // Per-channel wave params: [center, amplitude, period, phase]
+  const waveParams = keys.map((_, i) => {
+    const presets = [
+      [120, 45, 20, 0],
+      [2.1, 3.8, 14, 1.2],
+      [-0.8, 2.5, 18, 2.5],
+      [55, 5, 10, 0.8],
+      [3.9, 0.3, 25, 1.5],
+    ];
+    return presets[i % presets.length];
+  });
+
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(baseDate.getTime() + i * 12 * 3600 * 1000);
+    const pad = n => String(n).padStart(2, '0');
+    const dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    const row = { date: dateStr, time: timeStr };
+    keys.forEach((k, ki) => {
+      const [center, amp, period, phase] = waveParams[ki];
+      const noise = (Math.random() - 0.5) * amp * 0.3;
+      row[k] = parseFloat((center + amp * Math.sin((i / period) * Math.PI * 2 + phase) + noise).toFixed(3));
+    });
+    sampleData.push(row);
+  }
+
+  const mockDev = {
+    name: 'Sample Device', serial: 'DEMO-0001', type: activeDevice?.type || 'DL',
+    status: 'Online', lastConnection: new Date().toLocaleString('en-GB'),
+    memory: '512 KB', battery: '3.85', ip: '192.168.1.100', port: '8080',
+    ip_public: '85.12.34.56', port_public: '8080',
+  };
+  _buildAndOpenReport(cfg, sampleData, mockDev, '2026-03-02', '2026-04-02');
+}
+
 function doPrintReport() {
   closeExport();
-  const cfg    = getDeviceConfig();
-  const data   = allData.length > 0 ? allData : filteredData;  // use all records, not filtered
-  const dev    = activeDevice || {};
+  const cfg  = getDeviceConfig();
+  const data = allData.length > 0 ? allData : filteredData;
+  const dev  = activeDevice || {};
+  const from = document.getElementById('dateFrom')?.value || '—';
+  const to   = document.getElementById('dateTo')?.value   || '—';
+  _buildAndOpenReport(cfg, data, dev, from, to);
+}
+
+function _buildAndOpenReport(cfg, data, dev, from, to) {
   const serial = dev.serial || dev.id || '—';
-  const from   = document.getElementById('dateFrom')?.value || '—';
-  const to     = document.getElementById('dateTo')?.value   || '—';
   const now    = new Date().toLocaleString('en-GB');
 
   // Build channel headers using dynamic names if available, fallback to config
@@ -302,9 +349,14 @@ function doPrintReport() {
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Device Report — ${serial}</title>
   <style>
-    body { font-family: Arial, sans-serif; font-size: 12px; color: #0f172a; margin: 30px; }
-    h1 { font-size: 22px; margin-bottom: 2px; }
-    .sub { color: #64748b; font-size: 11px; margin-bottom: 24px; }
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #0f172a; margin: 0; }
+    .report-header { background: linear-gradient(120deg, #0f172a 0%, #1e3a5f 50%, #0e7490 100%); padding: 28px 36px 24px; margin-bottom: 28px; position: relative; overflow: hidden; }
+    .report-header::after { content:''; position:absolute; right:-60px; top:-60px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.04); }
+    .report-header::before { content:''; position:absolute; right:80px; bottom:-40px; width:130px; height:130px; border-radius:50%; background:rgba(14,116,144,0.25); }
+    .report-header h1 { font-size: 24px; color: #fff; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.3px; }
+    .report-header .sub { color: rgba(255,255,255,0.55); font-size: 11px; margin: 0; }
+    .report-header .badge { display:inline-block; margin-top:12px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); border-radius:20px; padding:3px 12px; font-size:10px; color:rgba(255,255,255,0.8); letter-spacing:0.5px; }
+    .page-body { padding: 0 30px 30px; }
     h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin: 20px 0 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
     .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
     .info-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
@@ -315,10 +367,24 @@ function doPrintReport() {
     td { padding: 6px 10px; border: 1px solid #e2e8f0; }
     tr:nth-child(even) td { background: #f8fafc; }
     .footer { margin-top: 24px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 8px; }
-    @media print { body { margin: 15px; } }
+    .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px; }
+    .ch-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px 8px; background: #fafbfc; }
+    .ch-card-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .ch-card-range { font-size: 9px; color: #94a3b8; font-weight: 400; font-family: monospace; }
+    .ch-card canvas { display: block; width: 100%; border-radius: 4px; }
+    .overview-card { border: none; border-radius: 10px; padding: 14px 16px 12px; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #0e7490 100%); margin-top: 8px; box-shadow: 0 4px 18px rgba(14,116,144,0.18); }
+    .overview-card h2-label { color: rgba(255,255,255,0.55); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .overview-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 9px; }
+    .overview-legend-item { display: flex; align-items: center; gap: 5px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; color: rgba(255,255,255,0.85); }
+    .overview-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 4px currentColor; }
+    @media print { body { margin: 0; } .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .overview-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style></head><body>
-  <h1>Device Export Report</h1>
-  <div class="sub">Generated: ${now}</div>
+  <div class="report-header">
+    <h1>Device Export Report</h1>
+    <div class="sub">Generated: ${now}</div>
+    <div class="badge">&#9679;&nbsp; ${serial} &nbsp;·&nbsp; ${dev.type || 'MAE DataLogger'} &nbsp;·&nbsp; ${from} → ${to}</div>
+  </div>
+  <div class="page-body">
 
   <h2>Device Information</h2>
   <div class="info-grid">
@@ -337,7 +403,258 @@ function doPrintReport() {
   <table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
   <tbody>${rows || '<tr><td colspan="' + headers.length + '" style="text-align:center;color:#94a3b8;padding:16px;">No data available for this period</td></tr>'}</tbody>
   </table>
+  <h2>Data Visualization</h2>
+  <div class="charts-grid" id="chartsGrid"></div>
+  <script>
+  (function(){
+    var raw    = ${JSON.stringify(data.map(r => { const o = {date: r.date, time: r.time}; channelKeys.forEach(k => { o[k] = r[k]; }); return o; }))};
+    var keys   = ${JSON.stringify(channelKeys)};
+    var labels = ${JSON.stringify(cfg.channels.map(ch => ch.label + (ch.unit ? ' (' + ch.unit + ')' : '')))};
+    var colors = ${JSON.stringify(channelKeys.map(k => (cfg.chartMeta && cfg.chartMeta[k]) ? cfg.chartMeta[k].color : '#3b82f6'))};
+    var grid   = document.getElementById('chartsGrid');
+
+    function drawMiniChart(canvas, vals, color) {
+      var W = canvas.parentElement.clientWidth - 28;
+      var H = 70;
+      canvas.width  = W;
+      canvas.height = H;
+      var ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, W, H);
+
+      if (vals.length < 2) {
+        // grid placeholder
+        ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+        for (var gi = 0; gi <= 3; gi++) {
+          var gy = (H / 3) * gi;
+          ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+        }
+        ctx.fillStyle = '#cbd5e1'; ctx.font = '9px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('No data', W / 2, H / 2 + 3);
+        return { min: 0, max: 0 };
+      }
+
+      var minV = Math.min.apply(null, vals);
+      var maxV = Math.max.apply(null, vals);
+      var range = maxV - minV || 0.02;
+      var yMin  = minV - range * 0.4;
+      var yMax  = maxV + range * 0.4;
+      var toY   = function(v) { return H - ((v - yMin) / (yMax - yMin)) * H; };
+      var toX   = function(i) { return (i / (vals.length - 1 || 1)) * W; };
+
+      // grid lines
+      ctx.strokeStyle = 'rgba(100,116,139,0.1)'; ctx.lineWidth = 1;
+      [0.25, 0.5, 0.75].forEach(function(f) {
+        ctx.beginPath(); ctx.moveTo(0, H * f); ctx.lineTo(W, H * f); ctx.stroke();
+      });
+
+      // area fill
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0,   color + '55');
+      grad.addColorStop(0.6, color + '18');
+      grad.addColorStop(1,   color + '00');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(vals[0]));
+      for (var i = 1; i < vals.length; i++) ctx.lineTo(toX(i), toY(vals[i]));
+      ctx.lineTo(toX(vals.length - 1), H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // line with glow
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur  = 5;
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 2;
+      ctx.lineJoin    = 'round';
+      ctx.lineCap     = 'round';
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(vals[0]));
+      for (var j = 1; j < vals.length; j++) ctx.lineTo(toX(j), toY(vals[j]));
+      ctx.stroke();
+      ctx.restore();
+
+      // end dot
+      var lx = toX(vals.length - 1), ly = toY(vals[vals.length - 1]);
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI * 2); ctx.stroke();
+
+      return { min: minV, max: maxV };
+    }
+
+    keys.forEach(function(k, ki) {
+      var color  = colors[ki] || '#3b82f6';
+      var label  = labels[ki] || k;
+      var vals   = raw.map(function(r) { return parseFloat(r[k]); }).filter(function(v) { return !isNaN(v); });
+
+      var card = document.createElement('div');
+      card.className = 'ch-card';
+
+      var titleBar = document.createElement('div');
+      titleBar.className = 'ch-card-title';
+      titleBar.style.color = color;
+
+      var titleSpan = document.createElement('span'); titleSpan.textContent = label;
+      var rangeSpan = document.createElement('span'); rangeSpan.className = 'ch-card-range';
+
+      titleBar.appendChild(titleSpan);
+      titleBar.appendChild(rangeSpan);
+      card.appendChild(titleBar);
+
+      var canvas = document.createElement('canvas');
+      canvas.height = 70;
+      card.appendChild(canvas);
+      grid.appendChild(card);
+
+      var result = drawMiniChart(canvas, vals, color);
+      if (vals.length >= 2) {
+        rangeSpan.textContent = result.min.toFixed(2) + ' → ' + result.max.toFixed(2);
+      }
+    });
+  })();
+  </script>
+
+  <h2>Combined Overview</h2>
+  <div class="overview-card">
+    <canvas id="overviewCanvas" height="130" style="display:block;width:100%;border-radius:4px;"></canvas>
+    <div class="overview-legend" id="overviewLegend"></div>
+  </div>
+  <script>
+  (function(){
+    var raw    = ${JSON.stringify(data.map(r => { const o = {date: r.date, time: r.time}; channelKeys.forEach(k => { o[k] = r[k]; }); return o; }))};
+    var keys   = ${JSON.stringify(channelKeys)};
+    var labels = ${JSON.stringify(cfg.channels.map(ch => ch.label + (ch.unit ? ' (' + ch.unit + ')' : '')))};
+    var colors = ${JSON.stringify(channelKeys.map(k => (cfg.chartMeta && cfg.chartMeta[k]) ? cfg.chartMeta[k].color : '#3b82f6'))};
+
+    var canvas  = document.getElementById('overviewCanvas');
+    var legend  = document.getElementById('overviewLegend');
+    var W = canvas.parentElement.clientWidth - 28;
+    var H = 130;
+    canvas.width  = W;
+    canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // 3-color background gradient matching the card
+    var bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0,    '#0f172a');
+    bgGrad.addColorStop(0.55, '#1e3a5f');
+    bgGrad.addColorStop(1,    '#0e7490');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // subtle grid lines on dark bg
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75].forEach(function(f) {
+      ctx.beginPath(); ctx.moveTo(0, H * f); ctx.lineTo(W, H * f); ctx.stroke();
+    });
+
+    var n = raw.length;
+    if (n < 2) {
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
+      ctx.fillText('No data', W / 2, H / 2 + 4);
+      return;
+    }
+
+    var toX = function(i) { return (i / (n - 1)) * W; };
+
+    // collect per-channel series with per-channel normalisation (0→1) so all fit in view
+    keys.forEach(function(k, ki) {
+      var color = colors[ki] || '#3b82f6';
+      var vals  = raw.map(function(r) { return parseFloat(r[k]); });
+      var clean = vals.filter(function(v) { return !isNaN(v); });
+      if (clean.length < 2) return;
+
+      var minV = Math.min.apply(null, clean);
+      var maxV = Math.max.apply(null, clean);
+      var range = maxV - minV || 0.02;
+      var yMin  = minV - range * 0.1;
+      var yMax  = maxV + range * 0.1;
+      var toY   = function(v) { return H - ((v - yMin) / (yMax - yMin)) * H; };
+
+      // filled area — brighter fill on dark background
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0,   color + 'aa');
+      grad.addColorStop(0.6, color + '33');
+      grad.addColorStop(1,   color + '00');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      var started = false;
+      var firstX = 0, firstY = H;
+      for (var i = 0; i < n; i++) {
+        var v = vals[i];
+        if (isNaN(v)) continue;
+        var x = toX(i), y = toY(v);
+        if (!started) { ctx.moveTo(x, y); firstX = x; started = true; } else { ctx.lineTo(x, y); }
+      }
+      ctx.lineTo(toX(n - 1), H);
+      ctx.lineTo(firstX, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // line
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur  = 4;
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 2;
+      ctx.lineJoin    = 'round';
+      ctx.lineCap     = 'round';
+      ctx.beginPath();
+      started = false;
+      for (var j = 0; j < n; j++) {
+        var vj = vals[j];
+        if (isNaN(vj)) { started = false; continue; }
+        var xj = toX(j), yj = toY(vj);
+        if (!started) { ctx.moveTo(xj, yj); started = true; } else { ctx.lineTo(xj, yj); }
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // end dot
+      var lastIdx = n - 1;
+      while (lastIdx > 0 && isNaN(vals[lastIdx])) lastIdx--;
+      if (!isNaN(vals[lastIdx])) {
+        var ex = toX(lastIdx), ey = toY(vals[lastIdx]);
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(ex, ey, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(ex, ey, 3.5, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      // legend item
+      var item = document.createElement('div');
+      item.className = 'overview-legend-item';
+      var dot = document.createElement('div');
+      dot.className = 'overview-legend-dot';
+      dot.style.background = color;
+      dot.style.boxShadow = '0 0 5px ' + color;
+      var txt = document.createElement('span');
+      txt.textContent = labels[ki] || k;
+      txt.style.color = 'rgba(255,255,255,0.85)';
+      item.appendChild(dot); item.appendChild(txt);
+      legend.appendChild(item);
+    });
+
+    // x-axis date labels (first, middle, last)
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'left';
+    var fmt = function(r) { return (r.date || '') + (r.time ? ' ' + r.time : ''); };
+    ctx.fillText(fmt(raw[0]), 2, H - 2);
+    ctx.textAlign = 'center';
+    ctx.fillText(fmt(raw[Math.floor((n-1)/2)]), W/2, H - 2);
+    ctx.textAlign = 'right';
+    ctx.fillText(fmt(raw[n-1]), W - 2, H - 2);
+  })();
+  </script>
+
   <div class="footer">MAE DataLogger Dashboard &nbsp;·&nbsp; ${serial} &nbsp;·&nbsp; ${from} → ${to} &nbsp;·&nbsp; Generated ${now}</div>
+  </div>
   </body></html>`;
 
   const w = window.open('', '_blank');
@@ -640,7 +957,7 @@ function renderPowerCombinedChart() {
     dots+=`<circle cx="${toX(n-1)}" cy="${toY(last[ch.key])}" r="7" fill="${ch.color}" opacity="0.15"/>`;
   });
   let hoverRects='';
-  powerHistory.forEach((p,i)=>{ const x=toX(i)-(cW/n/2),w=cW/n; hoverRects+=`<rect x="${x}" y="${PAD_T}" width="${w}" height="${cH}" fill="transparent" onmouseover="showPowerTooltip(event,${i})" onmouseout="hidePowerTooltip()"/>`; });
+  powerHistory.forEach((_,i)=>{ const x=toX(i)-(cW/n/2),w=cW/n; hoverRects+=`<rect x="${x}" y="${PAD_T}" width="${w}" height="${cH}" fill="transparent" onmouseover="showPowerTooltip(event,${i})" onmouseout="hidePowerTooltip()"/>`; });
   dots+=`<line id="pmHoverLine" x1="0" y1="${PAD_T}" x2="0" y2="${PAD_T+cH}" stroke="rgba(15,30,60,0.2)" stroke-width="1" stroke-dasharray="3,3" display="none"/>`;
   svg.innerHTML = defs+gridLines+yLabels+xLabels+areas+lines+dots+hoverRects;
 }
