@@ -40,10 +40,14 @@
 @media (max-width: 768px) {
   /* Sidebar: compact */
   .sidebar { width: 150px; padding: 16px 0; }
-  .sidebar-logo { padding: 0 10px 14px; gap: 8px; }
+  .sidebar-logo { padding: 0 10px 22px; gap: 8px; position: relative; }
   .sidebar-logo-text { font-size: 12px; }
   .sidebar-logo-text small { font-size: 8px; }
   .logo-mark { width: 34px; height: 34px; font-size: 10px; }
+  .logo-stack { width: 34px; }
+  .logo-caption { width: 34px; font-size: 6px; margin-top: 2px; }
+  .logo-caption--full { width: 100%; }
+  .sidebar-caption { left: 10px; top: 34px; width: calc(100% - 20px); max-width: calc(100% - 20px); font-size: 7px; white-space: nowrap; overflow: hidden; text-overflow: clip; } /* 0px gap under 34px logo */
   .nav-section { font-size: 9px; padding: 6px 10px 3px; letter-spacing: 1px; }
   .nav-item { font-size: 11px; padding: 8px 10px; gap: 7px; }
   .nav-item svg { width: 13px; height: 13px; }
