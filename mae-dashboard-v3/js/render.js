@@ -32,11 +32,57 @@ function renderDeviceList() {
   `).join('');
 }
 
+// Clears all data-driven UI so we never show stale data when switching devices or date ranges.
+function clearDataViews(message = 'No data') {
+  // KPIs
+  const kpi = document.getElementById('kpiGrid');
+  if (kpi) {
+    kpi.innerHTML = `
+      <div class="kpi-card" style="grid-column:1/-1;opacity:0.7">
+        <div class="kpi-label">KPI</div>
+        <div class="kpi-value">—</div>
+        <div class="kpi-sub">${message}</div>
+      </div>
+    `;
+  }
+
+  // Main chart
+  const title = document.getElementById('chartTitle');
+  const badge = document.getElementById('chartBadge');
+  const svg   = document.getElementById('mainChartSvg');
+  const ylabs = document.getElementById('chartYLabels');
+  const xlabs = document.getElementById('chartXLabels');
+  const stats = document.getElementById('chartStats');
+  if (title) title.textContent = '—';
+  if (badge) badge.textContent = '';
+  if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+  if (ylabs) ylabs.innerHTML = '';
+  if (xlabs) xlabs.innerHTML = '';
+  if (stats) stats.innerHTML = '';
+
+  // Mini charts (secondary channels)
+  const mini = document.getElementById('channelsCharts');
+  if (mini) mini.innerHTML = '';
+
+  // Table
+  const body = document.getElementById('tableBody');
+  if (body) body.innerHTML = '';
+  const count = document.getElementById('tableCount');
+  if (count) count.textContent = '0 records';
+}
+
 async function switchDevice(id) {
   activeDevice = allDevices.find(d => d.id === id);
   if (!activeDevice) return;
   try { localStorage.setItem('mae_dashboard_active_device', id); } catch(e) { /* ignore */ }
   activeChannelHeaders = null; // reset — will be populated by the next fetchData() call
+
+  // Prevent stale UI: clear all previous device data immediately.
+  allData = [];
+  filteredData = [];
+  activeAlerts = [];
+  clearDataViews('Loading…');
+
   await fetchDevicesInfo(activeDevice.id);
   renderDeviceList();
   renderDeviceInfo();
@@ -90,7 +136,19 @@ function renderDeviceInfo() {
 
 // ═══════════════════════ KPI CARDS ═══════════════════════
 function renderKPIs() {
-  if (!filteredData.length) return;
+  if (!filteredData.length) {
+    const kpi = document.getElementById('kpiGrid');
+    if (kpi) {
+      kpi.innerHTML = `
+        <div class="kpi-card" style="grid-column:1/-1;opacity:0.7">
+          <div class="kpi-label">KPI</div>
+          <div class="kpi-value">—</div>
+          <div class="kpi-sub">No data</div>
+        </div>
+      `;
+    }
+    return;
+  }
   const latest = filteredData[0];
   const prev   = filteredData[1] || latest;
   const cfg    = getDeviceConfig();
@@ -193,6 +251,11 @@ function updateChannelSelect() {
     data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
   );
 
+  if (activeChannels.length === 0) {
+    sel.innerHTML = `<option value="">—</option>`;
+    return;
+  }
+
   sel.innerHTML = activeChannels.map(ch =>
     `<option value="${ch.key}">${ch.label}${ch.unit ? ' (' + ch.unit + ')' : ''}</option>`
   ).join('');
@@ -203,9 +266,28 @@ function updateChannelSelect() {
 function renderChart() {
   const cfg  = getDeviceConfig();
   const ch   = document.getElementById('channelSelect').value;
+  if (!ch) {
+    clearDataViews('No data');
+    return;
+  }
   const meta = cfg.chartMeta[ch] || Object.values(cfg.chartMeta)[0];
   const data = [...filteredData].reverse();
-  if (!data.length) return;
+  if (!data.length) {
+    // Clear chart-specific areas so we don't keep the previous device/date range rendering.
+    const title = document.getElementById('chartTitle');
+    const badge = document.getElementById('chartBadge');
+    const svg   = document.getElementById('mainChartSvg');
+    const ylabs = document.getElementById('chartYLabels');
+    const xlabs = document.getElementById('chartXLabels');
+    const stats = document.getElementById('chartStats');
+    if (title) title.textContent = '—';
+    if (badge) badge.textContent = '';
+    if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+    if (ylabs) ylabs.innerHTML = '';
+    if (xlabs) xlabs.innerHTML = '';
+    if (stats) stats.innerHTML = '';
+    return;
+  }
 
   document.getElementById('chartTitle').textContent = meta.label;
   document.getElementById('chartBadge').textContent = meta.badge;

@@ -72,6 +72,12 @@ async function loadData() {
     showErrorMessage('No active device selected yet. Please wait for devices to load.');
     return;
   }
+  // Ensure we never show stale data while a new device/date range is loading.
+  allData = [];
+  filteredData = [];
+  activeAlerts = [];
+  if (typeof clearDataViews === 'function') clearDataViews('Loading…');
+
   const from = document.getElementById('dateFrom').value;
   const to   = document.getElementById('dateTo').value;
   try {
