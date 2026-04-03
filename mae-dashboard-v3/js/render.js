@@ -37,28 +37,30 @@ function clearDataViews(message = 'No data') {
   // KPIs
   const kpi = document.getElementById('kpiGrid');
   if (kpi) {
-    kpi.innerHTML = `
-      <div class="kpi-card" style="grid-column:1/-1;opacity:0.7">
-        <div class="kpi-label">KPI</div>
-        <div class="kpi-value">—</div>
-        <div class="kpi-sub">${message}</div>
-      </div>
-    `;
+    // Keep it clean: when there is no data we hide the KPI row entirely (avoids huge empty blocks).
+    kpi.innerHTML = '';
+    kpi.style.display = 'none';
   }
 
   // Main chart
   const title = document.getElementById('chartTitle');
   const badge = document.getElementById('chartBadge');
   const svg   = document.getElementById('mainChartSvg');
+  const svgWrap = document.querySelector('.chart-svg-area');
   const ylabs = document.getElementById('chartYLabels');
   const xlabs = document.getElementById('chartXLabels');
   const stats = document.getElementById('chartStats');
   if (title) title.textContent = '—';
   if (badge) badge.textContent = '';
   if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+  if (svgWrap) svgWrap.style.height = '48px';
   if (ylabs) ylabs.innerHTML = '';
   if (xlabs) xlabs.innerHTML = '';
   if (stats) stats.innerHTML = '';
+  const chartX = document.getElementById('chartXLabels');
+  const chartY = document.getElementById('chartYLabels');
+  if (chartX) chartX.style.display = 'none';
+  if (chartY) chartY.style.display = 'none';
 
   // Mini charts (secondary channels)
   const mini = document.getElementById('channelsCharts');
@@ -139,16 +141,14 @@ function renderKPIs() {
   if (!filteredData.length) {
     const kpi = document.getElementById('kpiGrid');
     if (kpi) {
-      kpi.innerHTML = `
-        <div class="kpi-card" style="grid-column:1/-1;opacity:0.7">
-          <div class="kpi-label">KPI</div>
-          <div class="kpi-value">—</div>
-          <div class="kpi-sub">No data</div>
-        </div>
-      `;
+      kpi.innerHTML = '';
+      kpi.style.display = 'none';
     }
     return;
   }
+  // Ensure visible when we have data.
+  const kpiGrid = document.getElementById('kpiGrid');
+  if (kpiGrid) kpiGrid.style.display = 'grid';
   const latest = filteredData[0];
   const prev   = filteredData[1] || latest;
   const cfg    = getDeviceConfig();
@@ -277,17 +277,30 @@ function renderChart() {
     const title = document.getElementById('chartTitle');
     const badge = document.getElementById('chartBadge');
     const svg   = document.getElementById('mainChartSvg');
+    const svgWrap = document.querySelector('.chart-svg-area');
     const ylabs = document.getElementById('chartYLabels');
     const xlabs = document.getElementById('chartXLabels');
     const stats = document.getElementById('chartStats');
     if (title) title.textContent = '—';
     if (badge) badge.textContent = '';
     if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+    if (svgWrap) svgWrap.style.height = '48px';
     if (ylabs) ylabs.innerHTML = '';
     if (xlabs) xlabs.innerHTML = '';
     if (stats) stats.innerHTML = '';
+    const chartX = document.getElementById('chartXLabels');
+    const chartY = document.getElementById('chartYLabels');
+    if (chartX) chartX.style.display = 'none';
+    if (chartY) chartY.style.display = 'none';
     return;
   }
+  // We have data: restore standard sizes and axes visibility.
+  const svgWrap = document.querySelector('.chart-svg-area');
+  if (svgWrap) svgWrap.style.height = '160px';
+  const chartX = document.getElementById('chartXLabels');
+  const chartY = document.getElementById('chartYLabels');
+  if (chartX) chartX.style.display = 'flex';
+  if (chartY) chartY.style.display = 'flex';
 
   document.getElementById('chartTitle').textContent = meta.label;
   document.getElementById('chartBadge').textContent = meta.badge;
