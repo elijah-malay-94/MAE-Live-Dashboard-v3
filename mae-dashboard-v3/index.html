@@ -108,7 +108,9 @@
       </button>
       <div class="topbar-divider"></div>
       <div class="topbar-user-group">
-        <div class="topbar-user-dot"></div>
+        <div class="topbar-user">
+          <div class="topbar-user-dot"></div>
+        </div>
         <button class="btn logout-item" onclick="doLogout()" title="Logout">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Logout
@@ -463,10 +465,6 @@
       <div class="export-option" onclick="doPrintReport()">
         <span class="export-icon">🖨️</span>
         <div class="export-info"><div class="export-name">Print / PDF</div><div class="export-desc">Save as PDF via browser print dialog</div></div>
-      </div>
-      <div class="export-option" onclick="previewReportSample()">
-        <span class="export-icon">👁️</span>
-        <div class="export-info"><div class="export-name">Preview PDF (sample data)</div><div class="export-desc">See how the report looks with realistic demo data</div></div>
       </div>
       <div class="export-option" onclick="openFilesModal()">
         <span class="export-icon">📁</span>

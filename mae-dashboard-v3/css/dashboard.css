@@ -34,7 +34,7 @@
   padding:2px 6px; 
   border-radius:4px; 
 }
-.alert-close:hover { background:rgba(15,30,60,0.06); }
+.alert-close:hover { background:rgba(255,255,255,0.06); }
 
 /* ── KPI GRID ── */
 .kpi-grid {
@@ -419,14 +419,14 @@
   display:grid; 
   grid-template-columns:100px 90px 1fr 90px 90px 90px; 
   padding:10px 18px; 
-  border-bottom:1px solid rgba(15,30,60,0.04); 
+  border-bottom:1px solid rgba(255,255,255,0.06); 
   transition:background 0.15s; 
   cursor:default; 
   overflow:visible; 
 }
 /* Note: grid-template-columns is overridden by JS (renderTable) for dynamic channel counts */
 .table-row:hover { 
-  background:rgba(15,30,60,0.04); 
+  background:rgba(255,255,255,0.04); 
 }
 .table-row.new-row { 
   animation:flashIn 1s ease; 

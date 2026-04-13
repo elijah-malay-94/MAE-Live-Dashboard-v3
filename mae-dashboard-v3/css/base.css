@@ -3,12 +3,13 @@
    ================================================================ */
 
 :root {
-  --bg: #f0f4f8;
+  /* Light theme */
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface2: #f8fafc;
-  --surface3: #eef2f7;
-  --border: rgba(15,30,60,0.09);
-  --border2: rgba(15,30,60,0.15);
+  --surface2: #f1f5f9;
+  --surface3: #f8fafc;
+  --border: rgba(15,23,42,0.10);
+  --border2: rgba(15,23,42,0.18);
   --accent: #2563eb;
   --accent2: #0891b2;
   --accent3: #d97706;
@@ -17,7 +18,7 @@
   --orange: #ea580c;
   --text: #0f172a;
   --muted: #64748b;
-  --muted2: #475569;
+  --muted2: #334155;
 }
 
 * {
@@ -39,8 +40,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 0;
@@ -170,6 +171,7 @@ body::before {
   font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
+  margin-top: 14px;
 }
 
 .sidebar-logo-text small {
@@ -204,7 +206,7 @@ body::before {
 
 .nav-item:hover {
   color: var(--text);
-  background: rgba(15,30,60,0.05);
+  background: rgba(255,255,255,0.06);
 }
 
 .nav-item.active {
@@ -246,7 +248,7 @@ body::before {
 }
 
 .device-item:hover {
-  background: rgba(15,30,60,0.05);
+  background: rgba(255,255,255,0.06);
 }
 
 .device-item.active {
@@ -388,7 +390,7 @@ body::before {
 
 .btn:hover {
   color: var(--text);
-  border-color: rgba(15,30,60,0.25);
+  border-color: rgba(255,255,255,0.24);
 }
 
 .btn.btn-primary {

@@ -38,8 +38,9 @@ async function init() {
   try {
     await ensureAuth();
     console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
-    const usernameEl = document.getElementById('sidebarUsername');
-    if (usernameEl) usernameEl.textContent = getUserName();
+    const name = getUserName();
+    const usernameEl = document.getElementById('topbarUsername');
+    if (usernameEl) usernameEl.textContent = name ? name : '';
     await initDashboard();
   } catch (err) {
     showLoginModal();

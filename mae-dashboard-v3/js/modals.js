@@ -1044,6 +1044,8 @@ async function submitLogin() {
   try {
     await authLogin(username, password);
     hideLoginModal();
+    const topbarUser = document.getElementById('topbarUsername');
+    if (topbarUser) topbarUser.textContent = getUserName() || username;
     await initDashboard();
     initInlinePowerLive();
   } catch (err) {
@@ -1058,6 +1060,8 @@ function doLogout() {
   clearInterval(refreshTimer);
   clearInterval(powerModalTimer);
   authLogout();
+  const topbarUser = document.getElementById('topbarUsername');
+  if (topbarUser) topbarUser.textContent = '';
   allDevices        = [];
   allData           = [];
   filteredData      = [];
