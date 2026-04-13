@@ -129,7 +129,7 @@ body::before {
   color: var(--muted);
   text-align: center;
   letter-spacing: 0.4px;
-  text-transform: uppercase;
+  text-transform: initial;
   word-break: break-word;
   white-space: nowrap;
   overflow: hidden;
