@@ -72,13 +72,23 @@ body::before {
 }
 
 .sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px 26px; /* tighter space under the logo */
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  /* Row 1 matches logo height so text can align with it */
+  grid-template-rows: 44px auto;
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: start;
+  padding: 0 20px 18px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 12px;
   position: relative;
+}
+
+.sidebar-logo .logo-stack {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
 }
 
 .logo-mark {
@@ -135,15 +145,14 @@ body::before {
   letter-spacing: 0.5px;
 }
 
-/* Fixed caption under the logo (does not move the "DataLogger" text) */
+/* Payoff under the logo */
 .sidebar-caption {
-  position: absolute;
-  left: 20px;            /* matches sidebar-logo horizontal padding */
-  top: 44px;             /* directly under 44px logo (0px gap) */
-  width: calc(100% - 40px); /* span full sidebar width minus padding */
-  max-width: calc(100% - 40px);
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: 0;
+  width: 100%;
   font-family: 'DM Sans', sans-serif;
-  font-size: 7px;        /* slightly smaller to ensure full word fits */
+  font-size: 8px;
   line-height: 1.2;
   color: rgba(37,99,235,0.70);  /* softer blue */
   font-weight: 600;
@@ -171,8 +180,11 @@ body::before {
   font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
-  /* Push "DataLogger / MONITOR v2" lower, keeping payoff fixed */
-  margin-top: 26px;
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  width: 100%;
+  align-self: center; /* vertically align with logo */
 }
 
 .sidebar-logo-text small {
