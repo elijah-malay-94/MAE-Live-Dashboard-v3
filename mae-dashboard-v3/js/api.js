@@ -68,7 +68,9 @@ function getUserId() {
 }
 
 function setUserName(name) {
-  authUserName = String(name || '').trim();  
+  authUserName = String(name || '').trim();
+  // Never persist the old demo username.
+  if (authUserName.toLowerCase() === 'demo') authUserName = '';
   try {
     if (authUserName) localStorage.setItem(AUTH_USER_NAME_STORAGE_KEY, authUserName);
     else localStorage.removeItem(AUTH_USER_NAME_STORAGE_KEY);
@@ -79,7 +81,15 @@ function getUserName() {
   if (authUserName) return authUserName;
   try {
     const name = localStorage.getItem(AUTH_USER_NAME_STORAGE_KEY);
-    if (name) { authUserName = String(name).trim(); return authUserName; }
+    if (name) {
+      const cleaned = String(name).trim();
+      if (cleaned.toLowerCase() === 'demo') {
+        localStorage.removeItem(AUTH_USER_NAME_STORAGE_KEY);
+        return '';
+      }
+      authUserName = cleaned;
+      return authUserName;
+    }
   } catch (e) { /* ignore */ }
   return '';
 }

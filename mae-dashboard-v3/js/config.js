@@ -137,14 +137,6 @@ const DEVICE_TYPE_CONFIG = {
   },
 };
 
-// ═══════════════════════ AUTH (temporary demo) ═══════════════════════
-// TODO: Replace with a real login UI + secure credential handling.
-const DEMO_AUTH = {
-  username: 'demo',
-  // MAEService auth expects an MD5-hashed password string.
-  password: 'a764c5d938225b22a171b72bc14d021d',
-};
-
 // Maps API tipologia string → config key
 function getTypeKey(tipologia) {
   if (!tipologia) return 'DL';
