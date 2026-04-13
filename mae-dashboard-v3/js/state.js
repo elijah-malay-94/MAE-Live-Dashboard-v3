@@ -98,11 +98,17 @@ function applyFilters() {
   let data = [...allData];
 
   const hasTs = data.some(r => Number.isFinite(Number(r?.ts)) && Number(r.ts) > 0);
-  if (hasTs) data.sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0)); // newest first
+  // Preserve original ordering (API order) — do not sort here.
 
   if (interval === 'hour' || interval === 'day') {
     if (hasTs) {
-      const now = Date.now();
+      // Filter relative to the newest reading we currently have, not the PC clock.
+      // This makes "Last hour / Last 24h" work even when viewing historical ranges.
+      const newestTs = data.reduce((max, r) => {
+        const t = Number(r?.ts) || 0;
+        return t > max ? t : max;
+      }, 0);
+      const now = newestTs || Date.now();
       const windowMs = interval === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
       const cutoff = now - windowMs;
       data = data.filter(r => Number(r?.ts) >= cutoff);
