@@ -171,7 +171,8 @@ body::before {
   font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
-  margin-top: 14px;
+  /* Push "DataLogger / MONITOR v2" lower, keeping payoff fixed */
+  margin-top: 26px;
 }
 
 .sidebar-logo-text small {
