@@ -48,6 +48,7 @@ const DEVICE_TYPE_CONFIG = {
     mapRow: (item) => ({
       date:  formatApiDate(item.date),
       time:  item.time || '',
+      ts:    Number(item.ts) || 0,
       pt50:  parseFloat(item.pt50  ?? item['pt-50']  ?? item.pt_50  ?? item.ch1 ?? 0),
       isbcX: parseFloat(item.isbcX ?? item['isbc-x'] ?? item.isbc_x ?? item.ch2 ?? 0),
       isbcY: parseFloat(item.isbcY ?? item['isbc-y'] ?? item.isbc_y ?? item.ch3 ?? 0),
@@ -90,6 +91,7 @@ const DEVICE_TYPE_CONFIG = {
     mapRow: (item) => ({
       date:         formatApiDate(item.date),
       time:         item.time || '',
+      ts:           Number(item.ts) || 0,
       displacement: parseFloat(item.displacement ?? item.displ ?? item.ch1 ?? 0),
       frequency:    parseFloat(item.frequency    ?? item.freq  ?? item.ch2 ?? 0),
       temperature:  parseFloat(item.temperature  ?? item.temp  ?? item.ch3 ?? 0),
@@ -130,6 +132,7 @@ const DEVICE_TYPE_CONFIG = {
     mapRow: (item) => ({
       date: formatApiDate(item.date),
       time: item.time || '',
+      ts:   Number(item.ts) || 0,
       ch1:  parseFloat(item.ch1 ?? item.pt50  ?? item['pt-50']  ?? 0),
       ch2:  parseFloat(item.ch2 ?? item.isbcX ?? item['isbc-x'] ?? 0),
       ch3:  parseFloat(item.ch3 ?? item.isbcY ?? item['isbc-y'] ?? 0),
@@ -235,7 +238,7 @@ function buildConfigFromHeaders(header) {
   };
 
   const mapRow = (item) => {
-    const out = { date: formatApiDate(item.date), time: item.time || '' };
+    const out = { date: formatApiDate(item.date), time: item.time || '', ts: Number(item.ts) || 0 };
     entries.forEach(e => { out[e.key] = parseFloat(item[e.key] ?? 0); });
     return out;
   };

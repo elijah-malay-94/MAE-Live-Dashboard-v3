@@ -96,14 +96,27 @@ const TRIM_FRACTION       = 0.05;  // trim 5% from each end before capping
 function applyFilters() {
   const interval = document.getElementById('intervalSelect').value;
   let data = [...allData];
-  if (interval === 'hour') data = data.slice(0, 6);
-  else if (interval === 'day') data = data.slice(0, 10);
-  else {
+
+  const hasTs = data.some(r => Number.isFinite(Number(r?.ts)) && Number(r.ts) > 0);
+  if (hasTs) data.sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0)); // newest first
+
+  if (interval === 'hour' || interval === 'day') {
+    if (hasTs) {
+      const now = Date.now();
+      const windowMs = interval === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+      const cutoff = now - windowMs;
+      data = data.filter(r => Number(r?.ts) >= cutoff);
+    } else {
+      // Fallback if timestamps are unavailable
+      data = interval === 'hour' ? data.slice(0, 6) : data.slice(0, 10);
+    }
+  } else {
     // Trim 5% from the oldest end, then cap newest end at MAX_DISPLAY_RECORDS
     const trimEnd = Math.floor(data.length * TRIM_FRACTION);
     if (trimEnd > 0) data = data.slice(0, data.length - trimEnd); // drop oldest 5%
     data = data.slice(0, MAX_DISPLAY_RECORDS);                    // keep newest 500
   }
+
   filteredData = data;
   renderAll();
 }

@@ -672,7 +672,7 @@ async function fetchData(deviceId, dateFrom, dateTo) {
         const dt   = ts ? new Date(ts) : null;
         const date = dt ? dt.toLocaleDateString('en-GB').replace(/\//g, '/') : '';
         const time = dt ? dt.toTimeString().slice(0, 8) : '';
-        const obj  = { date, time };
+        const obj  = { date, time, ts: dt ? dt.getTime() : 0 };
         if (Array.isArray(record.data)) {
           record.data.forEach((val, i) => {
             obj[`ch${i + 1}`] = parseFloat(val) || 0;
