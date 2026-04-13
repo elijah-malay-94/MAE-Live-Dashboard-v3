@@ -315,7 +315,11 @@ function previewReportSample() {
 function doPrintReport() {
   closeExport();
   const cfg  = getDeviceConfig();
-  const data = allData.length > 0 ? allData : filteredData;
+  // Export what the user is currently looking at (filtered dataset).
+  // Fall back to allData only if filtering produced an empty view.
+  const data = (filteredData && filteredData.length > 0)
+    ? filteredData
+    : allData;
   const dev  = activeDevice || {};
   const from = document.getElementById('dateFrom')?.value || '—';
   const to   = document.getElementById('dateTo')?.value   || '—';
