@@ -26,29 +26,96 @@ let countdown           = 30;
 let activeAlerts        = [];
 let activeChannelHeaders = null; // populated from data.header on each fetchData() call
 
+function updateDashboardAuthButton() {
+  const btn = document.getElementById('authBtn');
+  if (!btn) return;
+
+  const getCurrentPage = () => {
+    try {
+      const qp = new URLSearchParams(window.location.search || '');
+      const p = (qp.get('page') || '').toLowerCase().trim();
+      return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+    } catch (e) { return 'dashboard'; }
+  };
+
+  const page = getCurrentPage();
+  const token = loadAuthTokenFromStorage();
+  const loggedIn = Boolean(token);
+
+  // UX rule:
+  // - On dashboard: always show "Login" (landing page)
+  // - On works: show "Logout" when logged in, otherwise "Login"
+  const shouldShowLogout = (page === 'works') && loggedIn;
+
+  // Update label + action
+  btn.title = shouldShowLogout ? 'Logout' : 'Login';
+  btn.onclick = shouldShowLogout
+    ? doLogout
+    : showLoginModal;
+
+  // Swap text node while keeping the icon SVG
+  const label = shouldShowLogout ? 'Logout' : 'Login';
+  const svg = btn.querySelector('svg');
+  btn.innerHTML = '';
+  if (svg) btn.appendChild(svg);
+  btn.appendChild(document.createTextNode('\n          ' + label + '\n        '));
+}
+
 // ═══════════════════════ INIT ═══════════════════════
 async function init() {
-  console.log('%c[init] Starting dashboard init()', 'color:#2563eb;font-weight:700');
+  const getCurrentPage = () => {
+    try {
+      const qp = new URLSearchParams(window.location.search || '');
+      const p = (qp.get('page') || '').toLowerCase().trim();
+      return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+    } catch (e) { return 'dashboard'; }
+  };
+
+  const page = getCurrentPage();
+  console.log('%c[init] Starting app init()', 'color:#2563eb;font-weight:700', { page });
+
   const today   = new Date();
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(today.getDate() - 7);
-  document.getElementById('dateFrom').value = sevenDaysAgo.toISOString().slice(0, 10);
-  document.getElementById('dateTo').value   = today.toISOString().slice(0, 10);
+  const dateFromEl = document.getElementById('dateFrom');
+  const dateToEl = document.getElementById('dateTo');
+  if (dateFromEl) dateFromEl.value = sevenDaysAgo.toISOString().slice(0, 10);
+  if (dateToEl) dateToEl.value   = today.toISOString().slice(0, 10);
 
-  try {
-    await ensureAuth();
-    console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
-    const name = getUserName();
-    const usernameEl = document.getElementById('topbarUsername');
-    if (usernameEl) usernameEl.textContent = name ? name : '';
-    await initDashboard();
-  } catch (err) {
-    showLoginModal();
+  await ensureAuth();
+  console.log('%c[init] Auth step completed', 'color:#16a34a;font-weight:700');
+
+  const name = getUserName();
+  const usernameEl = document.getElementById('topbarUsername');
+  if (usernameEl) usernameEl.textContent = name ? name : '';
+
+  // If the user is logged out (no token), do NOT force a login popup.
+  // Show the dashboard shell and an informational hint instead.
+  const token = loadAuthTokenFromStorage();
+  updateDashboardAuthButton();
+  if (!token && page === 'dashboard') {
+    showErrorMessage('You are logged out. Sign in to load devices and measures.');
+    return;
   }
+
+  if (page === 'works') {
+    // Works page initialization is handled by works.js (it shows login overlay if needed).
+    return;
+  }
+
+  // Work-scoped dashboard: if logged in but no work selected, send user to Works.
+  const workId = (typeof getActiveWorkId === 'function') ? getActiveWorkId() : '';
+  if (token && !String(workId || '').trim()) {
+    window.location.href = 'index.html?page=works';
+    return;
+  }
+
+  await initDashboard();
 }
 
 async function initDashboard() {
   allDevices = await fetchDevicesData(getUserId() || 1);
+  if (!Array.isArray(allDevices)) allDevices = [];
   if (allDevices.length > 0) {
     const savedId = (() => { try { return localStorage.getItem('mae_dashboard_active_device'); } catch(e) { return null; } })();
     activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];

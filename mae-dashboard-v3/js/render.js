@@ -118,14 +118,8 @@ function renderDeviceInfo() {
     <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
     <div class="info-row"><span class="info-key">Public IP</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
     <div class="info-row">
-      <span class="info-key">City</span>
-      <span class="info-val" style="display:flex;align-items:center;gap:8px;">
-        ${d.city || '—'}
-        <span onclick="openMapModal()" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          MAP
-        </span>
-      </span>
+      <span class="info-key">Location</span>
+      <span class="info-val">${d.location || d.city || '—'}</span>
     </div>
     <div class="info-row"><span class="info-key">Position</span><span class="info-val">${d.position || '—'}</span></div>
     <div class="info-row"><span class="info-key">Coordinates</span><span class="info-val" style="font-size:10px;color:var(--muted2);">${(d.lat||0).toFixed(4)}°, ${(d.lng||0).toFixed(4)}°</span></div>

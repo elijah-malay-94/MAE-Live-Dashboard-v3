@@ -717,6 +717,8 @@ function buildMapUrl(lat, lng, zoom, style) {
 function openMapModal(deviceId) {
   mapDevice = (deviceId ? allDevices.find(d => d.id === deviceId) : null) || activeDevice;
   if (!mapDevice) return;
+  // Client requirement: if gps-position is 0.00000;0.00000, skip map entirely.
+  if (!mapDevice.hasValidGps || !(Number(mapDevice.lat) || 0) || !(Number(mapDevice.lng) || 0)) return;
   document.getElementById('mapModal').classList.add('open');
   document.getElementById('mapIframe').onload = onMapLoad; // assigned in JS, never as HTML attribute
   renderMapSidebar();
@@ -727,10 +729,11 @@ function closeMapModal() { document.getElementById('mapModal').classList.remove(
 
 function loadMapForDevice(device) {
   if (!device) return;
+  if (!device.hasValidGps || !(Number(device.lat) || 0) || !(Number(device.lng) || 0)) return;
   document.getElementById('mapLoading').classList.remove('hidden');
   document.getElementById('mapIframe').src = buildMapUrl(device.lat||0, device.lng||0, mapZoom, currentMapStyle);
 
-  document.getElementById('mapBadgeName').textContent  = `${device.name} — ${device.city||''}`;
+  document.getElementById('mapBadgeName').textContent  = `${device.name} — ${(device.location || device.city) || ''}`;
   document.getElementById('mapBadgeCoord').textContent = `${(device.lat||0).toFixed(4)}°N, ${(device.lng||0).toFixed(4)}°E`;
   const online   = device.status === 'online';
   const statusEl = document.getElementById('mapBadgeStatus');
@@ -738,9 +741,9 @@ function loadMapForDevice(device) {
   statusEl.style.color = online ? 'var(--green)' : 'var(--muted)';
   statusEl.previousElementSibling.style.background = online ? 'var(--green)' : 'var(--muted)';
 
-  document.getElementById('mapModalSub').textContent  = `DEVICE: ${device.id} · ${device.city||''} · ${(device.lat||0).toFixed(4)}°, ${(device.lng||0).toFixed(4)}°`;
+  document.getElementById('mapModalSub').textContent  = `DEVICE: ${device.id} · ${(device.location || device.city) || ''} · ${(device.lat||0).toFixed(4)}°, ${(device.lng||0).toFixed(4)}°`;
   document.getElementById('mapInfoId').textContent    = device.id;
-  document.getElementById('mapInfoCity').textContent  = device.city    || '—';
+  document.getElementById('mapInfoCity').textContent  = (device.location || device.city) || '—';
   document.getElementById('mapInfoPos').textContent   = device.position || '—';
   document.getElementById('mapInfoLat').textContent   = (device.lat||0).toFixed(6) + '°';
   document.getElementById('mapInfoLng').textContent   = (device.lng||0).toFixed(6) + '°';
@@ -760,7 +763,7 @@ function renderMapSidebar() {
           <div class="map-device-id">${d.serial||d.id} · ${d.type}</div>
         </div>
       </div>
-      <div class="map-device-coords">📍 ${d.city||'—'} — ${(d.lat||0).toFixed(3)}°, ${(d.lng||0).toFixed(3)}°</div>
+      <div class="map-device-coords">📍 ${(d.location || d.city) || '—'} — ${(d.lat||0).toFixed(3)}°, ${(d.lng||0).toFixed(3)}°</div>
     </div>
   `).join('');
 }
@@ -801,6 +804,7 @@ function renderMiniMapPreview() {
   if (!d) return;
   const existing = document.getElementById('miniMapPreviewWrap');
   if (existing) existing.remove();
+  if (!d.hasValidGps || !(Number(d.lat) || 0) || !(Number(d.lng) || 0)) return;
   const wrap = document.createElement('div');
   wrap.id = 'miniMapPreviewWrap';
   wrap.className = 'mini-map-preview';
@@ -1050,8 +1054,8 @@ async function submitLogin() {
     hideLoginModal();
     const topbarUser = document.getElementById('topbarUsername');
     if (topbarUser) topbarUser.textContent = getUserName() || username;
-    await initDashboard();
-    initInlinePowerLive();
+    // After login, redirect to the "user home" (works list) inside index.html.
+    window.location.href = 'index.html?page=works';
   } catch (err) {
     errEl.textContent = err.message || 'Login failed. Check your credentials.';
   } finally {
@@ -1080,7 +1084,9 @@ function doLogout() {
   document.getElementById('channelsCharts').innerHTML  = '';
   document.getElementById('loginUsername').value = '';
   document.getElementById('loginPassword').value = '';
-  showLoginModal();
+  if (typeof updateDashboardAuthButton === 'function') updateDashboardAuthButton();
+  // After logout, always return to the main dashboard landing page.
+  window.location.href = 'index.html?page=dashboard';
 }
 
 // ═══════════════════════ START ═══════════════════════

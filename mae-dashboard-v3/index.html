@@ -11,6 +11,52 @@
 <link rel="stylesheet" href="css/dashboard.css">
 <link rel="stylesheet" href="css/modals.css">
 <link rel="stylesheet" href="css/responsive.css">
+<style>
+  /* Works page styles (migrated from removed works.html) */
+  .works-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 12px;}
+  .works-search{flex:1 1 320px;max-width:520px;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:10px 12px;border-radius:10px;outline:none;}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{padding:7px 10px;border-radius:999px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;user-select:none;}
+  .chip.active{border-color:var(--accent);background:rgba(56,189,248,0.14);color:var(--text);}
+
+  .works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+  @media (max-width:1100px){.works-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:720px){.works-grid{grid-template-columns:1fr;}}
+
+  .work-card{position:relative;padding:14px 14px 12px;border-radius:14px;border:1px solid var(--border2);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 12px 30px rgba(0,0,0,0.28);overflow:hidden;width:100%;}
+  .work-card::after{content:'';position:absolute;inset:-1px;pointer-events:none;background:radial-gradient(700px 220px at 10% 0%,rgba(56,189,248,0.06),transparent 55%),radial-gradient(700px 220px at 90% 0%,rgba(16,185,129,0.05),transparent 55%);opacity:.9;}
+  .work-card>*{position:relative;z-index:1;}
+  .work-top{display:flex;gap:10px;align-items:flex-start;}
+  .work-title{font-family:'Syne',system-ui,sans-serif;font-weight:700;letter-spacing:0.2px;color:var(--text);font-size:15px;line-height:1.15;margin:0;}
+  .work-meta{margin-top:8px;display:grid;gap:6px;}
+  .meta-row{display:flex;gap:8px;align-items:baseline;color:var(--muted);font-size:12px;}
+  .meta-key{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2,var(--muted));text-transform:uppercase;letter-spacing:0.7px;min-width:72px;}
+  .meta-val{color:var(--text);opacity:0.9;}
+  .work-badges{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .led{width:10px;height:10px;border-radius:999px;box-shadow:0 0 0 2px rgba(255,255,255,0.04) inset;}
+  .led.active{background:var(--green);box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset,0 0 16px rgba(16,185,129,0.45);}
+  .led.inactive{background:#f97316;box-shadow:0 0 0 2px rgba(255,255,255,0.05) inset;opacity:0.85;}
+
+  .summary-panel{position:relative;padding:14px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);box-shadow:0 12px 30px rgba(15,23,42,0.12);overflow:hidden;margin:12px 0 14px;}
+  .summary-panel::after{content:'';position:absolute;inset:-1px;pointer-events:none;background:radial-gradient(980px 260px at 18% 0%,rgba(255,255,255,0.06),transparent 60%),radial-gradient(980px 260px at 70% 10%,rgba(56,189,248,0.10),transparent 62%),radial-gradient(980px 260px at 92% 70%,rgba(234,179,8,0.09),transparent 58%);opacity:0.9;}
+  .summary-panel>*{position:relative;z-index:1;}
+  .summary-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .summary-title{font-family:'Syne',system-ui,sans-serif;font-weight:900;letter-spacing:0.2px;font-size:13px;color:var(--text);}
+  .summary-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);opacity:0.85;white-space:nowrap;}
+  .summary-body{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch;}
+  .summary-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+  @media (max-width:980px){.summary-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:520px){.summary-stats{grid-template-columns:1fr;}}
+  .stat-tile{padding:10px;border-radius:12px;background:var(--surface3);border:1px solid var(--border);}
+  .stat-k{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);opacity:0.88;text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:8px;}
+  .stat-v{margin-top:6px;font-family:'Syne',system-ui,sans-serif;font-weight:900;font-size:20px;color:var(--text);line-height:1.05;}
+  .stat-hint{margin-top:3px;font-size:11px;color:var(--muted);opacity:0.9;}
+  .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0;}
+  .dot.active{background:var(--green);box-shadow:0 0 14px rgba(16,185,129,0.45);}
+  .dot.inactive{background:#f97316;}
+  .dot.total{background:var(--accent);box-shadow:0 0 14px rgba(56,189,248,0.35);}
+  .dot.yellow{background:#eab308;box-shadow:0 0 12px rgba(234,179,8,0.22);}
+</style>
 </head>
 <body>
 <!-- ═══════════════════════ LOGIN MODAL ═══════════════════════ -->
@@ -57,10 +103,14 @@
   </div>
 
   <div class="nav-section">Navigation</div>
-  <div class="nav-item active" onclick="setPage('dashboard')" id="navDashboard">
+  <a class="nav-item active" href="index.html?page=dashboard" style="text-decoration:none;" id="navDashboard">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Dashboard
-  </div>
+  </a>
+  <a class="nav-item" href="index.html?page=works" style="text-decoration:none;" id="navWorks">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2"/></svg>
+    Works
+  </a>
   <div class="nav-item" onclick="openThresholds()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     Alerts
@@ -75,7 +125,7 @@
     Settings
   </div>
 
-  <div class="device-list">
+  <div class="device-list" id="sidebarDevices">
     <div class="device-section-label">Devices</div>
     <div id="deviceList"></div>
   </div>
@@ -93,6 +143,7 @@
       <div class="subtitle" id="pageSubtitle">DEVICE: M22MOP0007 · DL8 · AUTO-REFRESH ON</div>
     </div>
     <div class="topbar-right">
+      <div id="dashboardTopbarControls" style="display:flex;align-items:center;gap:10px;">
       <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
       <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -106,13 +157,14 @@
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export
       </button>
+      </div>
       <div class="topbar-divider"></div>
       <div class="topbar-user-group">
         <div class="topbar-user">
           <div class="topbar-user-dot"></div>
           <span id="topbarUsername"></span>
         </div>
-        <button class="btn logout-item" onclick="doLogout()" title="Logout">
+        <button class="btn logout-item" id="authBtn" title="Logout">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Logout
         </button>
@@ -120,7 +172,62 @@
     </div>
   </div>
 
-  <!-- CONTROLS -->
+  <!-- WORKS PAGE (single-file navigation: ?page=works) -->
+  <div id="worksPage" style="display:none;">
+    <div class="api-hint" id="apiHintWorks" style="display:none;"></div>
+
+    <div class="works-toolbar">
+      <input id="worksSearch" class="works-search" value="" placeholder="Search works…" />
+      <div class="chip-row">
+        <span class="chip active" data-work-filter="all">All</span>
+        <span class="chip" data-work-filter="active">Active</span>
+        <span class="chip" data-work-filter="inactive">Inactive</span>
+      </div>
+    </div>
+
+    <div class="summary-panel">
+      <div class="summary-head">
+        <div class="summary-title">Summary</div>
+        <div class="summary-sub" id="summarySub">—</div>
+      </div>
+      <div class="summary-body">
+        <div class="summary-stats">
+          <div class="stat-tile">
+            <div class="stat-k"><span class="dot total"></span>Total works</div>
+            <div class="stat-v" id="sumTotal">—</div>
+            <div class="stat-hint" id="sumTotalHint">—</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-k"><span class="dot active"></span>Active works</div>
+            <div class="stat-v" id="sumActive">—</div>
+            <div class="stat-hint" id="sumActiveHint">—</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-k"><span class="dot inactive"></span>Inactive works</div>
+            <div class="stat-v" id="sumInactive">—</div>
+            <div class="stat-hint" id="sumInactiveHint">—</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-k"><span class="dot yellow"></span>Devices</div>
+            <div class="stat-v" id="sumDevices">—</div>
+            <div class="stat-hint" id="sumDevicesHint">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="works-grid" id="worksGrid"></div>
+
+    <div class="footer" style="margin-top: 16px;">
+      <div class="footer-left">DataLogger · User Page · Works</div>
+      <div class="footer-chips">
+        <div class="footer-chip">Click a work to open measures</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE (single-file navigation: ?page=dashboard) -->
+  <div id="dashboardPage">
   <div class="controls">
     <span class="controls-label">Period</span>
     <input type="date" class="date-input" id="dateFrom">
@@ -238,6 +345,7 @@
       <div class="footer-chip" id="footerRecords">15 records</div>
     </div>
   </div>
+  </div><!-- /#dashboardPage -->
 </main>
 </div>
 
@@ -529,17 +637,55 @@
 </div>
 
 <script>
-// Navigation stub — currently single-page, kept for future multi-page expansion
-function setPage(page) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const nav = document.getElementById('navDashboard');
-  if (nav) nav.classList.add('active');
+function getCurrentPage() {
+  try {
+    const qp = new URLSearchParams(window.location.search || '');
+    const p = (qp.get('page') || '').toLowerCase().trim();
+    return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+  } catch (e) {
+    return 'dashboard';
+  }
 }
+
+function setActiveNav(page) {
+  const dash = document.getElementById('navDashboard');
+  const works = document.getElementById('navWorks');
+  if (dash) dash.classList.toggle('active', page === 'dashboard');
+  if (works) works.classList.toggle('active', page === 'works');
+}
+
+function togglePages() {
+  const page = getCurrentPage();
+  const dash = document.getElementById('dashboardPage');
+  const works = document.getElementById('worksPage');
+  if (dash) dash.style.display = (page === 'dashboard') ? '' : 'none';
+  if (works) works.style.display = (page === 'works') ? '' : 'none';
+  setActiveNav(page);
+
+  // Make it visually obvious which "page" you are on.
+  const titleEl = document.getElementById('pageTitle');
+  const subEl = document.getElementById('pageSubtitle');
+  if (titleEl) titleEl.textContent = (page === 'works') ? 'User Page' : 'Live Dashboard';
+  if (subEl) subEl.textContent = (page === 'works')
+    ? 'Select a work to view measures'
+    : 'DEVICE: — · AUTO-REFRESH ON';
+
+  const dashControls = document.getElementById('dashboardTopbarControls');
+  if (dashControls) dashControls.style.display = (page === 'dashboard') ? 'flex' : 'none';
+
+  const sidebarDevices = document.getElementById('sidebarDevices');
+  if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard') ? '' : 'none';
+}
+
+// Run after DOM is ready (and also immediately if already ready).
+document.addEventListener('DOMContentLoaded', togglePages);
+if (document.readyState !== 'loading') togglePages();
 </script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/state.js"></script>
 <script src="js/render.js"></script>
+<script src="js/works.js"></script>
 <script src="js/modals.js"></script>
 </body>
 </html>

@@ -1,0 +1,21 @@
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Node / build artifacts (in case added later)
+node_modules/
+dist/
+build/
+.parcel-cache/
+.vite/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log

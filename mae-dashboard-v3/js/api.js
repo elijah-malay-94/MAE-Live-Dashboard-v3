@@ -24,22 +24,61 @@ function formatApiDate(dateStr) {
 
 // Builds the correct URL — direct call in production.
 const API_BASE = 'https://www.maeservice.it';
-// Enable proxy automatically on localhost / file:// to avoid browser CORS "Failed to fetch".
+// Optional CORS proxy support for development.
 // You can override explicitly with: window.API_USE_CORS_PROXY = true/false
-const USE_CORS_PROXY = (globalThis.API_USE_CORS_PROXY !== undefined)
+let USE_CORS_PROXY = (globalThis.API_USE_CORS_PROXY !== undefined)
   ? Boolean(globalThis.API_USE_CORS_PROXY)
   : (window.location.hostname === 'localhost'
     || window.location.hostname === '127.0.0.1'
     || window.location.protocol === 'file:');
+
+// Optional URL override:
+// - `?proxy=0` disables the CORS proxy
+// - `?proxy=1` forces the CORS proxy
+try {
+  const qp = new URLSearchParams(window.location.search || '');
+  const v = qp.get('proxy');
+  if (v === '0') USE_CORS_PROXY = false;
+  if (v === '1') USE_CORS_PROXY = true;
+} catch (e) { /* ignore */ }
+// corsproxy.io expects a normal URL value (not encodeURIComponent'd).
+// Example: https://corsproxy.io/?url=https://example.com/api
 const CORS_PROXY = 'https://corsproxy.io/?url=';
+// (Local proxy removed to keep this project static-only.)
 
 // ═══════════════════════ AUTH (localStorage token + user_id) ═══════════════════════
 const AUTH_TOKEN_STORAGE_KEY  = 'mae_dashboard_auth_token';
 const AUTH_USER_ID_STORAGE_KEY = 'mae_dashboard_user_id';
 const AUTH_USER_NAME_STORAGE_KEY = 'mae_dashboard_user_name';
+const ACTIVE_WORK_STORAGE_KEY = 'mae_dashboard_active_work';
 let authToken = '';
 let authUserId = '';
 let authUserName = '';
+
+function setActiveWorkId(workId) {
+  const wid = String(workId || '').trim();
+  try {
+    if (wid) localStorage.setItem(ACTIVE_WORK_STORAGE_KEY, wid);
+    else localStorage.removeItem(ACTIVE_WORK_STORAGE_KEY);
+  } catch (e) { /* ignore */ }
+  return wid;
+}
+
+function getActiveWorkId() {
+  // Prefer explicit querystring (?work_id=123) so deep links work.
+  try {
+    const qp = new URLSearchParams(window.location.search || '');
+    const q = (qp.get('work_id') || qp.get('workId') || '').trim();
+    if (q) return setActiveWorkId(q);
+  } catch (e) { /* ignore */ }
+
+  // Fallback to localStorage (selected from works.html)
+  try {
+    const s = localStorage.getItem(ACTIVE_WORK_STORAGE_KEY);
+    if (s) return String(s).trim();
+  } catch (e) { /* ignore */ }
+  return '';
+}
 
 function setAuthToken(token) {
   authToken = String(token || '').trim();
@@ -252,16 +291,49 @@ async function authLogin(username, password) {
     };
 
     const pwd = String(password || '').trim();
-    const passwordToSend = /^[a-f0-9]{32}$/i.test(pwd) ? pwd : md5(pwd);
+    const looksLikeMd5 = /^[a-f0-9]{32}$/i.test(pwd);
+    const passwordMd5 = looksLikeMd5 ? pwd : md5(pwd);
+
+    // Some environments expect the raw password, others expect an MD5.
+    // Try raw first (best UX), then retry with MD5 if needed.
+    const candidates = [];
+    if (pwd) candidates.push(pwd);
+    if (passwordMd5 && passwordMd5 !== pwd) candidates.push(passwordMd5);
+
     console.log('%c[auth] Logging in…', 'color:#2563eb;font-weight:700', { user: username });
-    res = await apiFetchWithHeaders('/api/v1/auth/login', {
-      method: 'POST',
-      body: { username, password: passwordToSend },
-    });
+    let lastErr = null;
+    for (let i = 0; i < candidates.length; i++) {
+      const attemptPwd = candidates[i];
+      try {
+        res = await apiFetchWithHeaders('/api/v1/auth/login', {
+          method: 'POST',
+          body: { username, password: attemptPwd },
+        });
+        lastErr = null;
+        break;
+      } catch (e) {
+        lastErr = e;
+        // Only retry on auth-like failures; avoid retrying on network/CORS/proxy problems.
+        const msg = String(e?.message || '');
+        const isHttpAuthish =
+          msg.includes('HTTP 400') ||
+          msg.includes('HTTP 401') ||
+          msg.includes('HTTP 403');
+        const isNetworkish =
+          msg.toLowerCase().includes('failed to fetch') ||
+          msg.toLowerCase().includes('networkerror') ||
+          msg.toLowerCase().includes('proxy');
+        if (isNetworkish || !isHttpAuthish) break;
+      }
+    }
+    if (!res && lastErr) throw lastErr;
   } catch (err) {
     // Browser "Failed to fetch" is almost always CORS/network; make it actionable.
     if (String(err?.message || '').toLowerCase().includes('failed to fetch')) {
-      throw new Error('Failed to fetch (likely CORS blocked). Try running via START_SERVER.bat or enable the CORS proxy.');
+      const hint = USE_CORS_PROXY
+        ? 'Your browser likely blocked the request due to CORS. If you enabled proxying, try `?proxy=cors` (or disable it with `?proxy=0`).'
+        : 'Your browser likely blocked the request due to CORS. Try enabling proxying with `?proxy=cors`.';
+      throw new Error(`Failed to fetch (network/CORS). ${hint}`);
     }
     throw err;
   }
@@ -317,6 +389,16 @@ async function ensureAuth() {
 
 function apiUrl(path) {
   const full = `${API_BASE}${path}`;
+  // Proxy options:
+  // - `?proxy=0` disables proxying
+  // - `?proxy=1` enables proxying (corsproxy.io)
+  // - `?proxy=cors` forces corsproxy.io
+  try {
+    const qp = new URLSearchParams(window.location.search || '');
+    const p = (qp.get('proxy') || '').toLowerCase();
+    if (p === 'cors') return `${CORS_PROXY}${full}`;
+  } catch (e) { /* ignore */ }
+
   return USE_CORS_PROXY ? `${CORS_PROXY}${full}` : full;
 }
 
@@ -360,7 +442,24 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      // Try to read a helpful error payload (json or text) for UI display/debugging.
+      let details = '';
+      try {
+        const ct = String(res.headers.get('content-type') || '').toLowerCase();
+        if (ct.includes('application/json')) {
+          const j = await res.json();
+          details = j?.message || j?.error || j?.detail || '';
+          if (!details) {
+            try { details = JSON.stringify(j); } catch (e) { /* ignore */ }
+          }
+        } else {
+          details = await res.text();
+        }
+      } catch (e) { /* ignore */ }
+      const suffix = details ? ` — ${String(details).slice(0, 300)}` : '';
+      throw new Error(`HTTP ${res.status} ${res.statusText}${suffix}`);
+    }
     const data = await res.json();
     return { data, headers: res.headers };
   } catch (err) {
@@ -400,11 +499,17 @@ function showSuccessMessage(msg) {
 }
 
 // ═══════════════════════ API: DEVICE LIST ═══════════════════════
-// GET /api/v1/customers/:id/devices
-async function fetchDevicesData(customerId) {
+// NEW (work-scoped): /api/v1/customers/:customer_id/works/:work_id/devices
+// OLD (legacy):      /api/v1/customers/:customer_id/devices
+async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
   showLoadingState(true);
   try {
-    const data = await apiFetch(`/api/v1/customers/${customerId}/devices`);
+    const cid = encodeURIComponent(customerId);
+    const wid = String(workId || '').trim();
+    const path = wid
+      ? `/api/v1/customers/${cid}/works/${encodeURIComponent(wid)}/devices`
+      : `/api/v1/customers/${cid}/devices`;
+    const data = await apiFetch(path);
     showLoadingState(false);
 
     if (!Array.isArray(data) || data.length === 0) {
@@ -459,10 +564,16 @@ async function fetchDevicesData(customerId) {
 }
 
 // ═══════════════════════ API: DEVICE INFO ═══════════════════════
-// GET /api/v1/devices/:id/info
-async function fetchDevicesInfo(deviceId) {
+// NEW (work-scoped): /api/v1/works/:work_id/devices/:device_id/info
+// OLD (legacy):      /api/v1/devices/:device_id/info
+async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
   try {
-    const data = await apiFetch(`/api/v1/devices/${deviceId}/info`);
+    const wid = String(workId || '').trim();
+    const did = encodeURIComponent(deviceId);
+    const path = wid
+      ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/info`
+      : `/api/v1/devices/${did}/info`;
+    const data = await apiFetch(path);
     if (!data || typeof data !== 'object') return null;
 
     const formatLastConnection = (datePart, timePart, tsPart) => {
@@ -513,6 +624,22 @@ async function fetchDevicesInfo(deviceId) {
     const sdFree = parseFloat(data['sd-free']         ?? data.sdFree         ?? 0);
     const sdSize = parseFloat(data['sd-size']         ?? data.sdSize         ?? 0);
     const gps    = data['gps-position'] ?? data.gpsPosition ?? '';
+    const workPlace =
+      data['work-place'] ??
+      data.work_place ??
+      data.workPlace ??
+      data.location ??
+      data.work_location ??
+      data.workLocation ??
+      '';
+    const devicePlace =
+      data['device-place'] ??
+      data.device_place ??
+      data.devicePlace ??
+      data.position ??
+      data.device_position ??
+      data.devicePosition ??
+      '';
     const lastConn = formatLastConnection(
       data.date ?? data['connection-date'] ?? data.last_date,
       data.time ?? data['connection-time'] ?? data.last_time,
@@ -525,11 +652,30 @@ async function fetchDevicesInfo(deviceId) {
     if (sdFree > 0) activeDevice.memory = `${(sdFree / 1024).toFixed(1)} Gb`;
     activeDevice.lastConnection = lastConn;
 
+    // Work-scoped mapping (Client req): Location = work-place, Position = device-place
+    if (workPlace !== undefined) activeDevice.location = String(workPlace || '').trim();
+    if (devicePlace !== undefined) activeDevice.position = String(devicePlace || '').trim();
+    // Backward-compat for existing UI pieces still using `.city`
+    if (activeDevice.location && !activeDevice.city) activeDevice.city = activeDevice.location;
+
+    // GPS rule: if gps-position is 0.00000;0.00000 do not load maps.
+    // Also, avoid carrying over coordinates from previous devices.
+    let parsedLat = 0;
+    let parsedLng = 0;
+    let hasValidGps = false;
     if (gps && gps !== '-;-') {
-      const [lat, lng] = gps.split(';').map(Number);
-      if (!isNaN(lat) && lat !== 0) activeDevice.lat = lat;
-      if (!isNaN(lng) && lng !== 0) activeDevice.lng = lng;
+      const parts = String(gps).split(';');
+      const lat = Number(parts[0]);
+      const lng = Number(parts[1]);
+      if (Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0)) {
+        parsedLat = lat;
+        parsedLng = lng;
+        hasValidGps = true;
+      }
     }
+    activeDevice.hasValidGps = hasValidGps;
+    activeDevice.lat = hasValidGps ? parsedLat : 0;
+    activeDevice.lng = hasValidGps ? parsedLng : 0;
 
     // Network info (if provided by /info endpoint)
     if (data.ip !== undefined || data.port !== undefined) {
@@ -553,7 +699,8 @@ async function fetchDevicesInfo(deviceId) {
 }
 
 // ═══════════════════════ API: MEASUREMENT DATA ═══════════════════════
-// GET /api/v1/devices/:id/data/from/:start/to/:end/limit/50/offset/0
+// NEW (work-scoped): /api/v1/works/:work_id/devices/:device_id/data/from/:start/to/:end/limit/50/offset/0
+// OLD (legacy):      /api/v1/devices/:device_id/data/from/:start/to/:end/limit/50/offset/0
 //
 // Expected response shape:
 //   {
@@ -565,7 +712,7 @@ async function fetchDevicesInfo(deviceId) {
 //   }
 //
 // Only the first 100 records are processed (data.records.slice(0, 100)).
-async function fetchData(deviceId, dateFrom, dateTo) {
+async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId()) {
   showLoadingState(true);
 
   try {
@@ -576,7 +723,11 @@ async function fetchData(deviceId, dateFrom, dateTo) {
     const endDate   = dateTo   || today;
 
     // ── Call API ──────────────────────────────────────────────────────
-    const dataPath = `/api/v1/devices/${deviceId}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`;
+    const wid = String(workId || '').trim();
+    const did = encodeURIComponent(deviceId);
+    const dataPath = wid
+      ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`
+      : `/api/v1/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`;
     const fullUrl  = `${API_BASE}${dataPath}`;
     console.log('%c[fetchData] Calling API', 'color:blue;font-weight:bold');
     console.log('  URL:', fullUrl);
@@ -600,7 +751,9 @@ async function fetchData(deviceId, dateFrom, dateTo) {
       if (firstErr.message.includes('408') || firstErr.message.includes('413') || firstErr.name === 'AbortError') {
         console.warn('[fetchData] Retrying with just today…');
         showLoadingState(true);
-        const retryPath = `/api/v1/devices/${deviceId}/data/from/${today}/to/${today}/limit/50/offset/0`;
+        const retryPath = wid
+          ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`
+          : `/api/v1/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`;
         try {
           ({ data, headers } = await apiFetchWithHeaders(
             retryPath,
@@ -756,7 +909,7 @@ function normalizeDeviceFilesResponse(raw) {
   };
 }
 
-async function fetchDeviceFiles(deviceId, filters = {}) {
+async function fetchDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId()) {
   const today = new Date().toISOString().slice(0, 10);
   const from = filters.from || filters.dateFrom || today;
   const to = filters.to || filters.dateTo || today;
@@ -766,23 +919,32 @@ async function fetchDeviceFiles(deviceId, filters = {}) {
   const validType = ['evt', 'cir', 'day'].includes(type) ? type : null;
 
   const typeSegment = validType ? `/type/${encodeURIComponent(validType)}` : '';
-  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`;
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const path = wid
+    ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`
+    : `/api/v1/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`;
   const data = await apiFetch(path);
   return normalizeDeviceFilesResponse(data);
 }
 
 // ═══════════════════════ API: FILE DOWNLOAD ═══════════════════════
-// GET /api/v1/devices/:id/file/:name
+// NEW (work-scoped): /api/v1/works/:work_id/devices/:device_id/file/:name
+// OLD (legacy):      /api/v1/devices/:device_id/file/:name
 //
 // Expected response shape:
 // { "data": "<base64 string>" } or { "base64": "<base64 string>" }
-async function fetchDeviceFile(deviceId, fileName) {
+async function fetchDeviceFile(deviceId, fileName, workId = getActiveWorkId()) {
   const safeName = String(fileName || '').trim();
   if (!safeName) {
     throw new Error('File name is required.');
   }
 
-  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/file/${encodeURIComponent(safeName)}`;
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const path = wid
+    ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/file/${encodeURIComponent(safeName)}`
+    : `/api/v1/devices/${did}/file/${encodeURIComponent(safeName)}`;
   const data = await apiFetch(path);
   const base64 = data?.content ?? data?.data ?? data?.base64 ?? data?.file ?? '';
   return {
@@ -792,13 +954,101 @@ async function fetchDeviceFile(deviceId, fileName) {
 }
 
 // ═══════════════════════ API: EVENT DETAILS ═══════════════════════
-// GET /api/v1/devices/:id/event/:evt_id
-async function fetchEventDetails(deviceId, eventId) {
+// NEW (work-scoped): /api/v1/works/:work_id/devices/:device_id/event/:evt_id
+// OLD (legacy):      /api/v1/devices/:device_id/event/:evt_id
+async function fetchEventDetails(deviceId, eventId, workId = getActiveWorkId()) {
   const safeEventId = String(eventId || '').trim();
   if (!safeEventId) {
     throw new Error('Event ID is required.');
   }
 
-  const path = `/api/v1/devices/${encodeURIComponent(deviceId)}/event/${encodeURIComponent(safeEventId)}`;
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const path = wid
+    ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/event/${encodeURIComponent(safeEventId)}`
+    : `/api/v1/devices/${did}/event/${encodeURIComponent(safeEventId)}`;
   return await apiFetch(path);
+}
+
+// ═══════════════════════ API: WORKS LIST ═══════════════════════
+// GET /api/v1/customers/:customer_id/works
+//
+// Expected response: array of works (see API.xlsx). We keep the mapping flexible because
+// field names may differ slightly between environments.
+async function fetchWorks(customerId) {
+  showLoadingState(true);
+  try {
+    const data = await apiFetch(`/api/v1/customers/${encodeURIComponent(customerId)}/works`);
+    showLoadingState(false);
+
+    const list = Array.isArray(data)
+      ? data
+      : (Array.isArray(data?.records) ? data.records : (Array.isArray(data?.data) ? data.data : []));
+
+    if (!Array.isArray(list) || list.length === 0) return [];
+
+    const isTruthy = (v) => {
+      if (v === true) return true;
+      if (v === false || v == null) return false;
+      const s = String(v).trim().toLowerCase();
+      return s === '1' || s === 'true' || s === 'yes' || s === 'active' || s === 'on';
+    };
+
+    return list.map((raw) => {
+      const id =
+        raw?.id ??
+        raw?.work_id ??
+        raw?.workId ??
+        raw?.codice ??
+        raw?.code ??
+        '';
+
+      const description =
+        raw?.description ??
+        raw?.descrizione ??
+        raw?.name ??
+        raw?.titolo ??
+        raw?.title ??
+        `Work ${id || ''}`.trim();
+
+      const location =
+        raw?.location ??
+        raw?.place ??
+        raw?.work_place ??
+        raw?.['work-place'] ??
+        raw?.['work_place'] ??
+        raw?.citta ??
+        raw?.city ??
+        '';
+
+      const devices = Array.isArray(raw?.devices) ? raw.devices : null;
+      const deviceCount =
+        Number.isFinite(Number(raw?.devices_count)) ? Number(raw.devices_count) :
+        Number.isFinite(Number(raw?.device_count)) ? Number(raw.device_count) :
+        Number.isFinite(Number(raw?.n_devices)) ? Number(raw.n_devices) :
+        (devices ? devices.length : null);
+
+      const active =
+        isTruthy(raw?.active) ||
+        isTruthy(raw?.is_active) ||
+        isTruthy(raw?.enabled) ||
+        isTruthy(raw?.running) ||
+        isTruthy(raw?.acquisition_running) ||
+        (String(raw?.status || '').toLowerCase().includes('active'));
+
+      return {
+        id: String(id),
+        description: String(description || ''),
+        location: String(location || ''),
+        active: Boolean(active),
+        deviceCount: deviceCount == null ? null : Number(deviceCount),
+        raw,
+      };
+    });
+  } catch (err) {
+    showLoadingState(false);
+    const label = err?.name === 'AbortError' ? 'Request timed out.' : (err?.message || 'Unknown error');
+    showErrorMessage(`Could not load works: ${label}.`);
+    return [];
+  }
 }
