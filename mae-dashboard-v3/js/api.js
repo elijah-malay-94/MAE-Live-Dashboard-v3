@@ -782,9 +782,22 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
     return data.map(item => {
       const coords = (item.posizione || '0;0').split(';');
       // Format the `updated` field (e.g. "2024-04-17 11:51:13") as dd/MM/yyyy HH:mm:ss
+      let lastUpdate = '—';
       let lastConn = '—';
       if (item.updated) {
         const dt = new Date(String(item.updated).replace(' ', 'T'));
+        if (!isNaN(dt.getTime())) {
+          const dd   = String(dt.getDate()).padStart(2, '0');
+          const mm   = String(dt.getMonth() + 1).padStart(2, '0');
+          const yyyy = dt.getFullYear();
+          const HH   = String(dt.getHours()).padStart(2, '0');
+          const MM   = String(dt.getMinutes()).padStart(2, '0');
+          const SS   = String(dt.getSeconds()).padStart(2, '0');
+          lastUpdate = `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
+        }
+      }
+      if (item.last_diagnostic) {
+        const dt = new Date(String(item.last_diagnostic).replace(' ', 'T'));
         if (!isNaN(dt.getTime())) {
           const dd   = String(dt.getDate()).padStart(2, '0');
           const mm   = String(dt.getMonth() + 1).padStart(2, '0');
@@ -817,7 +830,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         ip_public:   item.ip_public  ?? '',
         port_public: item.port_public ?? '',
       };
-    });
+    }).sort(function(a, b){return new Date(String(b.last_diagnostic).replace(' ', 'T')) - new Date(String(a.last_diagnostic).replace(' ', 'T'))});
   } catch (err) {
     showLoadingState(false);
     const label = err.name === 'AbortError' ? 'Request timed out.' : err.message;
