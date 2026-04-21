@@ -770,7 +770,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
     const cid = encodeURIComponent(customerId);
     const wid = String(workId || '').trim();
     const path = (wid && useWorkScopedEndpoints())
-      ? `/api/v1/customers/${cid}/works/${encodeURIComponent(wid)}/devices`
+      ? `/api/v1/works/${encodeURIComponent(wid)}/devices`
       : `/api/v1/customers/${cid}/devices`;
     const data = await apiFetch(path);
     showLoadingState(false);
@@ -842,7 +842,7 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
     const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
     const path = (wid && useWorkScopedEndpoints())
-      ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/info`
+      ? `/api/v1/devices/${did}/info`
       : `/api/v1/devices/${did}/info`;
     const data = isMockMode() ? _mockData : await apiFetch(path);
     if (!data || typeof data !== 'object') return null;
@@ -1325,7 +1325,7 @@ async function fetchWorks(customerId) {
 
   showLoadingState(true);
   try {
-    const data = await apiFetch(`/api/v1/customers/${encodeURIComponent(customerId)}/works`);
+    const data = await apiFetch(`/api/v1/works`);
     showLoadingState(false);
 
     const list = Array.isArray(data)
