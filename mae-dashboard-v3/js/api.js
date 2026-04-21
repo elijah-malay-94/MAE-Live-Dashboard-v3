@@ -25,26 +25,285 @@ function formatApiDate(dateStr) {
 // Builds the correct URL — direct call in production.
 const API_BASE = 'https://www.maeservice.it';
 // Optional CORS proxy support for development.
-// You can override explicitly with: window.API_USE_CORS_PROXY = true/false
+// Default is OFF to avoid unexpected third-party proxy behavior.
+// Enable explicitly with: `?proxy=cors` (or `?proxy=1`) or `window.API_USE_CORS_PROXY = true`.
 let USE_CORS_PROXY = (globalThis.API_USE_CORS_PROXY !== undefined)
   ? Boolean(globalThis.API_USE_CORS_PROXY)
-  : (window.location.hostname === 'localhost'
-    || window.location.hostname === '127.0.0.1'
-    || window.location.protocol === 'file:');
+  : false;
 
 // Optional URL override:
 // - `?proxy=0` disables the CORS proxy
 // - `?proxy=1` forces the CORS proxy
 try {
   const qp = new URLSearchParams(window.location.search || '');
-  const v = qp.get('proxy');
+  const vRaw = qp.get('proxy');
+  const v = String(vRaw || '').trim().toLowerCase();
   if (v === '0') USE_CORS_PROXY = false;
-  if (v === '1') USE_CORS_PROXY = true;
+  if (v === '1' || v === 'cors') USE_CORS_PROXY = true;
 } catch (e) { /* ignore */ }
 // corsproxy.io expects a normal URL value (not encodeURIComponent'd).
 // Example: https://corsproxy.io/?url=https://example.com/api
 const CORS_PROXY = 'https://corsproxy.io/?url=';
 // (Local proxy removed to keep this project static-only.)
+
+function isMockMode() {
+  try {
+    if (globalThis.MAE_MOCK_MODE === true) return true;
+    const qp = new URLSearchParams(window.location.search || '');
+    const v = String(qp.get('mock') || '').trim().toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+  } catch (e) {
+    return false;
+  }
+}
+
+// ═══════════════════════ MOCK DATA (offline) ═══════════════════════
+function _mulberry32(seed) {
+  let a = Number(seed) || 1;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function _seedFromStrings(...parts) {
+  const s = parts.map(p => String(p ?? '')).join('|');
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) || 1;
+}
+
+function _pick(rng, arr) {
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+function _clamp(n, a, b) {
+  n = Number(n);
+  if (!Number.isFinite(n)) return a;
+  return Math.max(a, Math.min(b, n));
+}
+
+function getMockDevicesList(customerId, workId = getActiveWorkId()) {
+  const cid = String(customerId || '1');
+  const wid = String(workId || '101') || '101';
+  const rng = _mulberry32(_seedFromStrings('devices', cid, wid));
+
+  // Some stable-but-varied device IDs per work
+  const count = 4 + Math.floor(rng() * 4); // 4..7
+  const cities = ['Milano', 'Torino', 'Roma', 'Bologna', 'Genova', 'Verona'];
+  const types = ['DL8', 'DL4', 'DL16'];
+  const baseLatLng = {
+    '101': [45.4642, 9.1900],  // Milano
+    '102': [45.0703, 7.6869],  // Torino
+    '103': [41.9028, 12.4964], // Roma
+  };
+  const [baseLat, baseLng] = baseLatLng[wid] || [44.4949, 11.3426]; // Bologna-ish default
+  const city = baseLatLng[wid] ? (wid === '101' ? 'Milano' : wid === '102' ? 'Torino' : 'Roma') : _pick(rng, cities);
+
+  const devices = Array.from({ length: count }, (_, i) => {
+    const idNum = Number(wid) * 100 + (i + 1);
+    const online = rng() > 0.2;
+    const jitter = (amp) => (rng() - 0.5) * amp;
+    const lat = baseLat + jitter(0.06);
+    const lng = baseLng + jitter(0.08);
+    const hasValidGps = online ? (rng() > 0.05) : (rng() > 0.15);
+    const last = new Date(Date.now() - Math.floor(rng() * 48) * 3600 * 1000);
+    const dd = String(last.getDate()).padStart(2, '0');
+    const mm = String(last.getMonth() + 1).padStart(2, '0');
+    const yyyy = last.getFullYear();
+    const HH = String(last.getHours()).padStart(2, '0');
+    const MM = String(last.getMinutes()).padStart(2, '0');
+    const SS = String(last.getSeconds()).padStart(2, '0');
+
+    return {
+      id: String(idNum),
+      serial: `M${wid}MOP${String(i + 1).padStart(4, '0')}`,
+      name: `Device ${i + 1}`,
+      type: _pick(rng, types),
+      status: online ? 'online' : 'offline',
+      signal: online ? (1 + Math.floor(rng() * 4)) : 0,
+      memory: online ? `${(0.2 + rng() * 7.5).toFixed(1)} Gb` : '',
+      battery: _clamp(3.25 + rng() * 0.95, 3.0, 4.2),
+      usb: _clamp(4.6 + rng() * 0.8, 0, 5.5),
+      aux: _clamp(rng() * 2.2, 0, 2.2),
+      city,
+      location: city,
+      position: _pick(rng, ['Roof', 'Basement', 'Site A', 'Site B', 'Warehouse', 'Cabinet 2']),
+      lat: hasValidGps ? lat : 0,
+      lng: hasValidGps ? lng : 0,
+      hasValidGps,
+      lastConnection: `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`,
+      ip: online ? `192.168.${Number(wid) % 250}.${20 + i}` : '',
+      port: online ? String(8000 + i) : '',
+      ip_public: online ? `85.12.${(Number(wid) % 250)}.${40 + i}` : '',
+      port_public: online ? String(8000 + i) : '',
+    };
+  });
+
+  console.log('%c[devices] Using mock devices list', 'color:#16a34a;font-weight:700', { customer_id: cid, work_id: wid, count: devices.length });
+  return devices;
+}
+
+function getMockDevicesInfo(deviceId, workId = getActiveWorkId()) {
+  const did = String(deviceId || '0');
+  const wid = String(workId || '101');
+  const rng = _mulberry32(_seedFromStrings('device-info', wid, did));
+
+  // Return a shape similar to the real API, with the fields we read in fetchDevicesInfo().
+  const now = new Date(Date.now() - Math.floor(rng() * 12) * 3600 * 1000);
+  const pad = (n) => String(n).padStart(2, '0');
+  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  const gpsValid = rng() > 0.08;
+  const base = (wid === '101')
+    ? [45.4642, 9.1900]
+    : (wid === '102')
+      ? [45.0703, 7.6869]
+      : (wid === '103')
+        ? [41.9028, 12.4964]
+        : [44.4949, 11.3426];
+  const gps = gpsValid
+    ? `${(base[0] + (rng() - 0.5) * 0.05).toFixed(5)};${(base[1] + (rng() - 0.5) * 0.07).toFixed(5)}`
+    : '0.00000;0.00000';
+
+  const workPlace = (wid === '101') ? 'Milano' : (wid === '102') ? 'Torino' : (wid === '103') ? 'Roma' : 'Bologna';
+  const devicePlace = _pick(rng, ['Roof', 'Basement', 'Plant 1', 'Plant 2', 'Cabinet 3', 'Control room']);
+
+  return {
+    id: did,
+    date,
+    time,
+    timestamp: `${date} ${time}`,
+    'battery-voltage': (3.25 + rng() * 0.95).toFixed(2),
+    'usb-voltage': (4.6 + rng() * 0.8).toFixed(2),
+    'aux-voltage': (rng() * 2.2).toFixed(2),
+    'sd-free': String(Math.floor((rng() * 7000) + 200)),
+    'sd-size': '8192',
+    'gps-position': gps,
+    'work-place': workPlace,
+    'device-place': devicePlace,
+    ip: `192.168.${Number(wid) % 250}.${Number(did) % 250}`,
+    port: String(8000 + (Number(did) % 30)),
+    ip_public: `85.12.${(Number(wid) % 250)}.${(Number(did) % 200) + 20}`,
+    port_public: String(8000 + (Number(did) % 30)),
+  };
+}
+
+function getMockDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId()) {
+  const did = String(deviceId || '0');
+  const wid = String(workId || '101');
+  const from = filters.from || filters.dateFrom || new Date().toISOString().slice(0, 10);
+  const to = filters.to || filters.dateTo || from;
+  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 50;
+  const offset = Number.isFinite(Number(filters.offset)) ? Number(filters.offset) : 0;
+  const type = typeof filters.type === 'string' ? filters.type.toLowerCase().trim() : '';
+  const validType = ['evt', 'cir', 'day'].includes(type) ? type : null;
+
+  const rng = _mulberry32(_seedFromStrings('files', wid, did, from, to, validType || 'all'));
+  const total = 68; // stable-ish
+  const count = Math.max(0, Math.min(limit, total - offset));
+  const has_more = (offset + count) < total;
+  const types = validType ? [validType] : ['evt', 'cir', 'day'];
+
+  const records = Array.from({ length: count }, (_, i) => {
+    const idx = offset + i + 1;
+    const t = _pick(rng, types);
+    const ts = new Date(Date.now() - Math.floor(rng() * 14) * 24 * 3600 * 1000 - Math.floor(rng() * 86400) * 1000);
+    const iso = ts.toISOString().replace('T', ' ').slice(0, 19);
+    const evtId = 1000 + Math.floor(rng() * 9000);
+    const ext = t === 'day' ? 'csv' : 'dat';
+    const name =
+      t === 'evt'
+        ? `acquisition_${wid}_${did}_${evtId}.${ext}`
+        : `log_${wid}_${did}_${idx}.${ext}`;
+    return { timestamp: iso, name, type: t };
+  });
+
+  return { header: [], total, offset, limit, count, has_more, records };
+}
+
+function getMockDeviceFile(deviceId, fileName, workId = getActiveWorkId()) {
+  const did = String(deviceId || '0');
+  const wid = String(workId || '101');
+  const name = String(fileName || '').trim() || 'file.dat';
+  const payload = `MOCK FILE\nwork_id=${wid}\ndevice_id=${did}\nname=${name}\ncreated=${new Date().toISOString()}\n`;
+  return { data: btoa(unescape(encodeURIComponent(payload))) };
+}
+
+function getMockEventDetails(deviceId, eventId, workId = getActiveWorkId()) {
+  const did = String(deviceId || '0');
+  const wid = String(workId || '101');
+  const eid = String(eventId || '').trim() || '0';
+  const rng = _mulberry32(_seedFromStrings('event', wid, did, eid));
+  const ts = new Date(Date.now() - Math.floor(rng() * 10) * 3600 * 1000).toISOString();
+  return {
+    id: eid,
+    device_id: did,
+    work_id: wid,
+    timestamp: ts,
+    type: _pick(rng, ['threshold', 'power', 'gps', 'system']),
+    severity: _pick(rng, ['info', 'warning', 'critical']),
+    message: _pick(rng, [
+      'Threshold exceeded on channel 2',
+      'Power input unstable (USB)',
+      'GPS signal recovered',
+      'Device rebooted after update',
+    ]),
+    raw: { mock: true },
+  };
+}
+
+function getMockDeviceData(deviceId, dateFrom, dateTo, workId = getActiveWorkId()) {
+  const did = String(deviceId || '0');
+  const wid = String(workId || '101');
+  const from = String(dateFrom || new Date().toISOString().slice(0, 10));
+  const to = String(dateTo || from);
+  const rng = _mulberry32(_seedFromStrings('data', wid, did, from, to));
+
+  const header = ['date', 'time', 'PT-50 fs1(mm)', 'ISBC-10 X(gr)', 'ISBC-10 Y(gr)'];
+  const points = 50;
+  const start = new Date(`${from}T00:00:00`);
+  const records = Array.from({ length: points }, (_, i) => {
+    const t = new Date(start.getTime() + i * 30 * 60 * 1000); // every 30 min
+    const ts = t.toISOString().slice(0, 19);
+    const v1 = 35 + Math.sin(i / 7) * 2 + (rng() - 0.5) * 0.6;
+    const v2 = -1 + Math.cos(i / 9) * 0.8 + (rng() - 0.5) * 0.4;
+    const v3 = -1.5 + Math.sin(i / 11) * 0.9 + (rng() - 0.5) * 0.5;
+    return { timestamp: ts, data: [Number(v1.toFixed(2)), Number(v2.toFixed(2)), Number(v3.toFixed(2))] };
+  });
+  return { header, records };
+}
+
+function shouldAutoMockOnNetworkError() {
+  try {
+    if (globalThis.MAE_AUTO_MOCK_ON_NETWORK_ERROR === false) return false;
+    // Default ON for local/static development (API not ready yet).
+    const isLocal =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.protocol === 'file:';
+    return isLocal;
+  } catch (e) {
+    return false;
+  }
+}
+
+function doMockLogin(username) {
+  const u = String(username || '').trim() || 'demo';
+  // Minimal fake token. Not a real JWT (and doesn't need to be).
+  const fakeToken = `mock.${btoa(JSON.stringify({ user_id: '1', user: u, iat: Date.now() }))}.sig`;
+  setAuthToken(fakeToken);
+  setUserId('1');
+  setUserName(u);
+  console.log('%c[auth] Mock login OK', 'color:#16a34a;font-weight:700', { user: u, user_id: '1' });
+  return fakeToken;
+}
 
 // ═══════════════════════ AUTH (localStorage token + user_id) ═══════════════════════
 const AUTH_TOKEN_STORAGE_KEY  = 'mae_dashboard_auth_token';
@@ -102,6 +361,12 @@ function getUserId() {
   try {
     const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
     if (id) { authUserId = String(id).trim(); return authUserId; }
+  } catch (e) { /* ignore */ }
+  // Fallback: allow deep links to supply a customer id.
+  try {
+    const qp = new URLSearchParams(window.location.search || '');
+    const q = (qp.get('customer_id') || qp.get('customerId') || qp.get('customer') || '').trim();
+    if (q) return q;
   } catch (e) { /* ignore */ }
   return '';
 }
@@ -171,6 +436,10 @@ function authLogout() {
 }
 
 async function authLogin(username, password) {
+  if (isMockMode()) {
+    return doMockLogin(username);
+  }
+
   let res;
   try {
     const md5 = (str) => {
@@ -294,42 +563,20 @@ async function authLogin(username, password) {
     const looksLikeMd5 = /^[a-f0-9]{32}$/i.test(pwd);
     const passwordMd5 = looksLikeMd5 ? pwd : md5(pwd);
 
-    // Some environments expect the raw password, others expect an MD5.
-    // Try raw first (best UX), then retry with MD5 if needed.
-    const candidates = [];
-    if (pwd) candidates.push(pwd);
-    if (passwordMd5 && passwordMd5 !== pwd) candidates.push(passwordMd5);
-
-    console.log('%c[auth] Logging in…', 'color:#2563eb;font-weight:700', { user: username });
-    let lastErr = null;
-    for (let i = 0; i < candidates.length; i++) {
-      const attemptPwd = candidates[i];
-      try {
-        res = await apiFetchWithHeaders('/api/v1/auth/login', {
-          method: 'POST',
-          body: { username, password: attemptPwd },
-        });
-        lastErr = null;
-        break;
-      } catch (e) {
-        lastErr = e;
-        // Only retry on auth-like failures; avoid retrying on network/CORS/proxy problems.
-        const msg = String(e?.message || '');
-        const isHttpAuthish =
-          msg.includes('HTTP 400') ||
-          msg.includes('HTTP 401') ||
-          msg.includes('HTTP 403');
-        const isNetworkish =
-          msg.toLowerCase().includes('failed to fetch') ||
-          msg.toLowerCase().includes('networkerror') ||
-          msg.toLowerCase().includes('proxy');
-        if (isNetworkish || !isHttpAuthish) break;
-      }
-    }
-    if (!res && lastErr) throw lastErr;
+    // SECURITY/CONSISTENCY REQUIREMENT:
+    // Login must ONLY be attempted using the MD5 password variant.
+    console.log('%c[auth] Logging in…', 'color:#2563eb;font-weight:700', { user: username, mode: 'md5-only' });
+    res = await apiFetchWithHeaders('/api/v1/auth/login', {
+      method: 'POST',
+      body: { username, password: passwordMd5 },
+    });
   } catch (err) {
     // Browser "Failed to fetch" is almost always CORS/network; make it actionable.
     if (String(err?.message || '').toLowerCase().includes('failed to fetch')) {
+      // If the backend isn't reachable yet (common during static dev), fall back to mock mode automatically.
+      if (shouldAutoMockOnNetworkError()) {
+        return doMockLogin(username);
+      }
       const hint = USE_CORS_PROXY
         ? 'Your browser likely blocked the request due to CORS. If you enabled proxying, try `?proxy=cors` (or disable it with `?proxy=0`).'
         : 'Your browser likely blocked the request due to CORS. Try enabling proxying with `?proxy=cors`.';
@@ -400,6 +647,19 @@ function apiUrl(path) {
   } catch (e) { /* ignore */ }
 
   return USE_CORS_PROXY ? `${CORS_PROXY}${full}` : full;
+}
+
+function useWorkScopedEndpoints() {
+  // Default OFF: legacy endpoints are more stable on current backend.
+  // Enable explicitly with: `?work=1` (or `?work=on`), or `window.MAE_USE_WORK_SCOPED_ENDPOINTS = true`.
+  try {
+    if (globalThis.MAE_USE_WORK_SCOPED_ENDPOINTS === true) return true;
+    const qp = new URLSearchParams(window.location.search || '');
+    const v = String(qp.get('work') || '').trim().toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+  } catch (e) {
+    return false;
+  }
 }
 
 // ─── FIX 1: timeout increased to 30s ───────────────────────────
@@ -502,11 +762,14 @@ function showSuccessMessage(msg) {
 // NEW (work-scoped): /api/v1/customers/:customer_id/works/:work_id/devices
 // OLD (legacy):      /api/v1/customers/:customer_id/devices
 async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
+  if (isMockMode()) {
+    return getMockDevicesList(customerId, workId);
+  }
   showLoadingState(true);
   try {
     const cid = encodeURIComponent(customerId);
     const wid = String(workId || '').trim();
-    const path = wid
+    const path = (wid && useWorkScopedEndpoints())
       ? `/api/v1/customers/${cid}/works/${encodeURIComponent(wid)}/devices`
       : `/api/v1/customers/${cid}/devices`;
     const data = await apiFetch(path);
@@ -568,12 +831,20 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
 // OLD (legacy):      /api/v1/devices/:device_id/info
 async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
   try {
+    if (isMockMode()) {
+      const data = getMockDevicesInfo(deviceId, workId);
+      // Reuse the exact mapping behavior below (activeDevice updates etc.)
+      // by falling through with the same `data` variable shape.
+      // (We keep the rest of the function identical.)
+      // eslint-disable-next-line no-unused-vars
+      var _mockData = data;
+    }
     const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
-    const path = wid
+    const path = (wid && useWorkScopedEndpoints())
       ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/info`
       : `/api/v1/devices/${did}/info`;
-    const data = await apiFetch(path);
+    const data = isMockMode() ? _mockData : await apiFetch(path);
     if (!data || typeof data !== 'object') return null;
 
     const formatLastConnection = (datePart, timePart, tsPart) => {
@@ -716,6 +987,54 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
   showLoadingState(true);
 
   try {
+    if (isMockMode()) {
+      const data = getMockDeviceData(deviceId, dateFrom, dateTo, workId);
+      // Mimic the same return path (mapped rows) without touching the network.
+      let parsedHeaders = null;
+      if (data && Array.isArray(data.header)) {
+        const dataHeaders = data.header.filter(h => {
+          const s = String(h).toLowerCase().trim();
+          return !s.startsWith('date') && !s.startsWith('time');
+        });
+        parsedHeaders = [];
+        for (let i = 0; i < dataHeaders.length; i++) {
+          const str = String(dataHeaders[i]);
+          const match = str.match(/^(.+?)(?:\(([^)]*)\))?$/);
+          const name = match ? match[1].trim() : str;
+          const unit = match && match[2] ? match[2].trim() : '';
+          parsedHeaders.push({ key: `ch${i + 1}`, name, unit });
+        }
+      }
+      if (parsedHeaders && parsedHeaders.length > 0) {
+        activeChannelHeaders = {};
+        parsedHeaders.forEach(ch => {
+          activeChannelHeaders[ch.key] = { name: ch.name, unit: ch.unit };
+        });
+      }
+
+      const rows = Array.isArray(data?.records)
+        ? data.records.map(record => {
+          const ts = record.timestamp || '';
+          const dt = ts ? new Date(ts.replace(' ', 'T')) : null;
+          const date = dt ? dt.toLocaleDateString('en-GB') : '';
+          const time = dt ? dt.toTimeString().slice(0, 8) : '';
+          const obj = { date, time, ts: dt ? dt.getTime() : 0 };
+          if (Array.isArray(record.data)) {
+            record.data.forEach((val, i) => {
+              obj[`ch${i + 1}`] = parseFloat(val) || 0;
+            });
+          }
+          return obj;
+        })
+        : [];
+
+      showLoadingState(false);
+      const cfg = getDeviceConfig();
+      const mapped = rows.map(item => cfg.mapRow(item));
+      showSuccessMessage(`✅ ${mapped.length} records loaded (mock)`);
+      return mapped;
+    }
+
     // ── Build date range ──────────────────────────────────────────────
     // Use short YYYY-MM-DD format to keep URL short (avoids 413 Too Large)
     const today = new Date().toISOString().slice(0, 10);
@@ -725,7 +1044,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
     // ── Call API ──────────────────────────────────────────────────────
     const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
-    const dataPath = wid
+    const dataPath = (wid && useWorkScopedEndpoints())
       ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`
       : `/api/v1/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`;
     const fullUrl  = `${API_BASE}${dataPath}`;
@@ -751,7 +1070,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
       if (firstErr.message.includes('408') || firstErr.message.includes('413') || firstErr.name === 'AbortError') {
         console.warn('[fetchData] Retrying with just today…');
         showLoadingState(true);
-        const retryPath = wid
+        const retryPath = (wid && useWorkScopedEndpoints())
           ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`
           : `/api/v1/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`;
         try {
@@ -910,6 +1229,10 @@ function normalizeDeviceFilesResponse(raw) {
 }
 
 async function fetchDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId()) {
+  if (isMockMode()) {
+    const res = getMockDeviceFiles(deviceId, filters, workId);
+    return normalizeDeviceFilesResponse(res);
+  }
   const today = new Date().toISOString().slice(0, 10);
   const from = filters.from || filters.dateFrom || today;
   const to = filters.to || filters.dateTo || today;
@@ -921,7 +1244,7 @@ async function fetchDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId
   const typeSegment = validType ? `/type/${encodeURIComponent(validType)}` : '';
   const wid = String(workId || '').trim();
   const did = encodeURIComponent(deviceId);
-  const path = wid
+  const path = (wid && useWorkScopedEndpoints())
     ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`
     : `/api/v1/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`;
   const data = await apiFetch(path);
@@ -940,9 +1263,15 @@ async function fetchDeviceFile(deviceId, fileName, workId = getActiveWorkId()) {
     throw new Error('File name is required.');
   }
 
+  if (isMockMode()) {
+    const data = getMockDeviceFile(deviceId, safeName, workId);
+    const base64 = data?.content ?? data?.data ?? data?.base64 ?? data?.file ?? '';
+    return { ...data, base64: typeof base64 === 'string' ? base64 : '' };
+  }
+
   const wid = String(workId || '').trim();
   const did = encodeURIComponent(deviceId);
-  const path = wid
+  const path = (wid && useWorkScopedEndpoints())
     ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/file/${encodeURIComponent(safeName)}`
     : `/api/v1/devices/${did}/file/${encodeURIComponent(safeName)}`;
   const data = await apiFetch(path);
@@ -962,9 +1291,13 @@ async function fetchEventDetails(deviceId, eventId, workId = getActiveWorkId()) 
     throw new Error('Event ID is required.');
   }
 
+  if (isMockMode()) {
+    return getMockEventDetails(deviceId, safeEventId, workId);
+  }
+
   const wid = String(workId || '').trim();
   const did = encodeURIComponent(deviceId);
-  const path = wid
+  const path = (wid && useWorkScopedEndpoints())
     ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/event/${encodeURIComponent(safeEventId)}`
     : `/api/v1/devices/${did}/event/${encodeURIComponent(safeEventId)}`;
   return await apiFetch(path);
@@ -975,7 +1308,21 @@ async function fetchEventDetails(deviceId, eventId, workId = getActiveWorkId()) 
 //
 // Expected response: array of works (see API.xlsx). We keep the mapping flexible because
 // field names may differ slightly between environments.
+function getMockWorksList(customerId) {
+  const cid = String(customerId || '1');
+  console.log('%c[works] Using mock works list', 'color:#16a34a;font-weight:700', { customer_id: cid });
+  return [
+    { id: '101', description: 'Work 101 — Demo Site A', location: 'Milano', active: true,  deviceCount: 3, raw: { id: '101' } },
+    { id: '102', description: 'Work 102 — Demo Site B', location: 'Torino', active: false, deviceCount: 1, raw: { id: '102' } },
+    { id: '103', description: 'Work 103 — Demo Site C', location: 'Roma',   active: true,  deviceCount: 5, raw: { id: '103' } },
+  ];
+}
+
 async function fetchWorks(customerId) {
+  if (isMockMode()) {
+    return getMockWorksList(customerId);
+  }
+
   showLoadingState(true);
   try {
     const data = await apiFetch(`/api/v1/customers/${encodeURIComponent(customerId)}/works`);
@@ -1046,9 +1393,17 @@ async function fetchWorks(customerId) {
       };
     });
   } catch (err) {
+    // During static/local development the API is often unreachable due to CORS.
+    // Fall back to a mock works list so the UI remains usable.
+    const msg = String(err?.message || '').toLowerCase();
+    if (shouldAutoMockOnNetworkError() && (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('cors'))) {
+      showLoadingState(false);
+      console.warn('[works] Falling back to mock works due to network/CORS error:', err?.message || err);
+      return getMockWorksList(customerId);
+    }
     showLoadingState(false);
     const label = err?.name === 'AbortError' ? 'Request timed out.' : (err?.message || 'Unknown error');
-    showErrorMessage(`Could not load works: ${label}.`);
+    showErrorMessage(`Could not load works: ${label}. (API not available yet)`);
     return [];
   }
 }

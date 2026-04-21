@@ -59,7 +59,7 @@ body::before {
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: var(--surface3);
+  background: white;
   border-right: 1px solid var(--border);
   padding: 24px 0;
   display: flex;

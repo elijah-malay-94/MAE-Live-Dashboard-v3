@@ -22,7 +22,8 @@ let filteredData        = [];
 let activeDevice        = null;
 let liveMode            = true;
 let refreshTimer        = null;
-let countdown           = 30;
+const AUTO_REFRESH_SECONDS = 120;
+let countdown           = AUTO_REFRESH_SECONDS;
 let activeAlerts        = [];
 let activeChannelHeaders = null; // populated from data.header on each fetchData() call
 
@@ -93,9 +94,20 @@ async function init() {
   // Show the dashboard shell and an informational hint instead.
   const token = loadAuthTokenFromStorage();
   updateDashboardAuthButton();
-  if (!token && page === 'dashboard') {
-    showErrorMessage('You are logged out. Sign in to load devices and measures.');
-    return;
+  if (!token) {
+    // If not logged in (or after logout), always route to the login form (overlay),
+    // not to the dashboard shell.
+    const qp = new URLSearchParams(window.location.search || '');
+    const mock = qp.get('mock');
+    const proxy = qp.get('proxy');
+    const next = new URLSearchParams();
+    next.set('page', 'works');
+    if (mock) next.set('mock', mock);
+    if (proxy) next.set('proxy', proxy);
+    if (page !== 'works') {
+      window.location.href = `index.html?${next.toString()}`;
+      return;
+    }
   }
 
   if (page === 'works') {
@@ -140,6 +152,12 @@ async function loadData() {
     showErrorMessage('No active device selected yet. Please wait for devices to load.');
     return;
   }
+  // Keep device info + power supply in sync with dashboard refresh cadence.
+  try {
+    await fetchDevicesInfo(activeDevice.id);
+    if (typeof renderDeviceInfo === 'function') renderDeviceInfo();
+    if (typeof renderPowerChart === 'function') renderPowerChart();
+  } catch (e) { /* ignore power/info refresh failures */ }
   // Ensure we never show stale data while a new device/date range is loading.
   allData = [];
   filteredData = [];

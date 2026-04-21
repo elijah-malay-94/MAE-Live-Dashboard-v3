@@ -21,14 +21,18 @@
 
 // ═══════════════════════ AUTO-REFRESH ═══════════════════════
 function startAutoRefresh() {
-  countdown = 30;
+  countdown = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
+    ? AUTO_REFRESH_SECONDS
+    : 120;
   clearInterval(refreshTimer);
   refreshTimer = setInterval(async () => {
     countdown--;
     document.getElementById('refreshCountdown').textContent  = `${countdown}s`;
     document.getElementById('refreshCountdown2').textContent = `${countdown}s`;
     if (countdown <= 0) {
-      countdown = 30;
+      countdown = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
+        ? AUTO_REFRESH_SECONDS
+        : 120;
       if (!activeDevice) return;
       await loadData();
     }
@@ -834,15 +838,17 @@ let powerLineVisibility = { batt:true, usb:true, aux:true };
 
 function buildInitialPowerHistory(device) {
   const now = Date.now();
+  const stepMs = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
+    ? (AUTO_REFRESH_SECONDS * 1000)
+    : 120000;
   return Array.from({ length: MAX_POWER_POINTS }, (_, i) => {
-    const t = new Date(now - (MAX_POWER_POINTS - 1 - i) * 2000);
-    const jitter = (base, amp) => Math.round((base + (Math.random()-0.5)*amp)*100)/100;
+    const t = new Date(now - (MAX_POWER_POINTS - 1 - i) * stepMs);
     return {
       ts: t,
       label: t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-      batt: jitter(device.battery||0, 0.06),
-      usb:  jitter(device.usb||0,  0.04),
-      aux:  jitter(device.aux||0,  0.03),
+      batt: Number(device.battery || 0),
+      usb:  Number(device.usb || 0),
+      aux:  Number(device.aux || 0),
     };
   });
 }
@@ -861,14 +867,13 @@ function closePowerModal() {
 function tickPowerModal() {
   const d = activeDevice;
   if (!d) return;
-  const jitter = (base, amp) => Math.round((base + (Math.random()-0.5)*amp)*100)/100;
   const now = new Date();
   powerHistory.push({
     ts: now,
     label: now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-    batt: jitter(d.battery||0, 0.08),
-    usb:  jitter(d.usb||0,  0.05),
-    aux:  jitter(d.aux||0,  0.04),
+    batt: Number(d.battery || 0),
+    usb:  Number(d.usb || 0),
+    aux:  Number(d.aux || 0),
   });
   if (powerHistory.length > MAX_POWER_POINTS) powerHistory.shift();
   renderPowerModal();
@@ -883,11 +888,14 @@ function initInlinePowerLive() {
   powerHistory = buildInitialPowerHistory(activeDevice);
   renderPowerModal();
   clearInterval(powerModalTimer);
+  const periodMs = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
+    ? (AUTO_REFRESH_SECONDS * 1000)
+    : 120000;
   powerModalTimer = setInterval(() => {
     const idEl = document.getElementById('pmDeviceId');
     if (idEl) idEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
     tickPowerModal();
-  }, 2000);
+  }, periodMs);
 }
 
 function renderPowerModal() {
@@ -1055,7 +1063,15 @@ async function submitLogin() {
     const topbarUser = document.getElementById('topbarUsername');
     if (topbarUser) topbarUser.textContent = getUserName() || username;
     // After login, redirect to the "user home" (works list) inside index.html.
-    window.location.href = 'index.html?page=works';
+    const qp = new URLSearchParams(window.location.search || '');
+    // Preserve dev flags like `mock=1` / `proxy=cors`
+    const mock = qp.get('mock');
+    const proxy = qp.get('proxy');
+    const next = new URLSearchParams();
+    next.set('page', 'works');
+    if (mock) next.set('mock', mock);
+    if (proxy) next.set('proxy', proxy);
+    window.location.href = `index.html?${next.toString()}`;
   } catch (err) {
     errEl.textContent = err.message || 'Login failed. Check your credentials.';
   } finally {
@@ -1085,8 +1101,15 @@ function doLogout() {
   document.getElementById('loginUsername').value = '';
   document.getElementById('loginPassword').value = '';
   if (typeof updateDashboardAuthButton === 'function') updateDashboardAuthButton();
-  // After logout, always return to the main dashboard landing page.
-  window.location.href = 'index.html?page=dashboard';
+  // After logout, always return to the login form (overlay).
+  const qp = new URLSearchParams(window.location.search || '');
+  const mock = qp.get('mock');
+  const proxy = qp.get('proxy');
+  const next = new URLSearchParams();
+  next.set('page', 'works');
+  if (mock) next.set('mock', mock);
+  if (proxy) next.set('proxy', proxy);
+  window.location.href = `index.html?${next.toString()}`;
 }
 
 // ═══════════════════════ START ═══════════════════════

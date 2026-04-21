@@ -147,7 +147,7 @@
       <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
       <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        <span id="refreshCountdown">30s</span>
+        <span id="refreshCountdown">120s</span>
       </div>  
       <button class="btn" onclick="openThresholds()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -251,7 +251,7 @@
     </select>
     <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
       <span class="controls-label">Auto-refresh</span>
-      <span id="refreshCountdown2" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">30s</span>
+      <span id="refreshCountdown2" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">120s</span>
     </div>
   </div>
 
@@ -297,7 +297,6 @@
       <div class="card">
         <div class="card-label" style="margin-bottom:0; justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" style="background:var(--accent3)"></span>Power Supply</div>
-          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);">● LIVE</span>
         </div>
         <div class="power-chart-wrap"><svg id="powerSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg></div>
         <div class="power-legend">
@@ -357,11 +356,10 @@
         <div class="power-modal-icon">⚡</div>
         <div>
           <h2>Power Supply — Live Monitor</h2>
-          <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates every 2s</p>
+          <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates with dashboard</p>
         </div>
       </div>
       <div class="power-modal-actions">
-        <div class="pm-live-pill"><div class="pm-live-dot"></div>LIVE</div>
         <div class="power-modal-close" onclick="closePowerModal()">✕</div>
       </div>
     </div>
@@ -386,7 +384,7 @@
           <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
         </div>
       </div>
-      <div class="pm-section-label">Combined View — All Channels<span class="live-tag">Streaming</span></div>
+      <div class="pm-section-label">Combined View — All Channels</div>
       <div class="power-full-chart">
         <div class="pm-tooltip" id="pmTooltip">
           <div class="pm-tooltip-time" id="pmTTTime"></div>
@@ -563,6 +561,14 @@
     <div class="modal-title">Export Data</div>
     <div class="modal-sub">Choose format and range for the current filtered dataset.</div>
     <div class="modal-options">
+      <div class="export-option" onclick="openFilesModal()">
+        <span class="export-icon">📁</span>
+        <div class="export-info"><div class="export-name">Device Files & events</div><div class="export-desc">Browse file list, download base64 files, inspect event details</div></div>
+      </div>
+      <div class="export-option" onclick="doPrintReport()">
+        <span class="export-icon">🖨️</span>
+        <div class="export-info"><div class="export-name">Print / PDF — Current view</div><div class="export-desc">Print or save as PDF using the current filtered dataset</div></div>
+      </div>
       <div class="export-option" onclick="doExport('csv')">
         <span class="export-icon">📄</span>
         <div class="export-info"><div class="export-name">CSV — Comma Separated</div><div class="export-desc">Compatible with Excel, Google Sheets, MATLAB</div></div>
@@ -570,14 +576,6 @@
       <div class="export-option" onclick="doExport('json')">
         <span class="export-icon">{ }</span>
         <div class="export-info"><div class="export-name">JSON — Raw data</div><div class="export-desc">For API integration & backend import</div></div>
-      </div>
-      <div class="export-option" onclick="doPrintReport()">
-        <span class="export-icon">🖨️</span>
-        <div class="export-info"><div class="export-name">Print / PDF — Current view</div><div class="export-desc">Print or save as PDF using the current filtered dataset</div></div>
-      </div>
-      <div class="export-option" onclick="openFilesModal()">
-        <span class="export-icon">📁</span>
-        <div class="export-info"><div class="export-name">Device Files & Events</div><div class="export-desc">Browse file list, download base64 files, inspect event details</div></div>
       </div>
     </div>
     <div class="modal-actions">

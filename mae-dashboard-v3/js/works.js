@@ -63,7 +63,7 @@ async function submitWorksLogin() {
 function doWorksLogout() {
   authLogout();
   try { localStorage.removeItem(ACTIVE_WORK_STORAGE_KEY); } catch (e) { /* ignore */ }
-  window.location.href = 'index.html?page=dashboard';
+  window.location.href = 'index.html?page=works';
 }
 
 function setWorksFilter(next) {
@@ -137,7 +137,15 @@ function renderWorks() {
       const workId = btn.getAttribute('data-work-id') || '';
       if (!workId) return;
       try { localStorage.setItem(ACTIVE_WORK_STORAGE_KEY, workId); } catch (e) { /* ignore */ }
-      window.location.href = `index.html?page=dashboard&work_id=${encodeURIComponent(workId)}`;
+      const qp = new URLSearchParams(window.location.search || '');
+      const mock = qp.get('mock');
+      const proxy = qp.get('proxy');
+      const next = new URLSearchParams();
+      next.set('page', 'dashboard');
+      next.set('work_id', workId);
+      if (mock) next.set('mock', mock);
+      if (proxy) next.set('proxy', proxy);
+      window.location.href = `index.html?${next.toString()}`;
     });
   });
 }
@@ -184,7 +192,11 @@ function escapeHtml(str) {
 }
 
 async function loadAndRenderWorks() {
-  const userId = getUserId() || 1;
+  const userId = getUserId();
+  if (!String(userId || '').trim()) {
+    showLoginOverlay();
+    return;
+  }
   allWorks = await fetchWorks(userId);
   renderOverview();
   renderWorks();
