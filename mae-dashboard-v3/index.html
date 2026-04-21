@@ -664,9 +664,15 @@ function togglePages() {
   const titleEl = document.getElementById('pageTitle');
   const subEl = document.getElementById('pageSubtitle');
   if (titleEl) titleEl.textContent = (page === 'works') ? 'User Page' : 'Live Dashboard';
-  if (subEl) subEl.textContent = (page === 'works')
-    ? 'Select a work to view measures'
-    : 'DEVICE: — · AUTO-REFRESH ON';
+  if (subEl) {
+    if (page === 'works') {
+      subEl.textContent = 'Select a work to view measures';
+    } else {
+      // Show selected work summary (preferred) instead of redundant DEVICE/AUTO-REFRESH text.
+      if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
+      else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';
+    }
+  }
 
   const dashControls = document.getElementById('dashboardTopbarControls');
   if (dashControls) dashControls.style.display = (page === 'dashboard') ? 'flex' : 'none';
