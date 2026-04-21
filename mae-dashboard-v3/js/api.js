@@ -1391,7 +1391,7 @@ async function fetchWorks(customerId) {
         deviceCount: deviceCount == null ? null : Number(deviceCount),
         raw,
       };
-    });
+    }).sort(function(a, b){return b.active - a.active});
   } catch (err) {
     // During static/local development the API is often unreachable due to CORS.
     // Fall back to a mock works list so the UI remains usable.

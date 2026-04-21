@@ -675,6 +675,8 @@ function togglePages() {
   if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard') ? '' : 'none';
 }
 
+window.MAE_USE_WORK_SCOPED_ENDPOINTS = true;
+
 // Run after DOM is ready (and also immediately if already ready).
 document.addEventListener('DOMContentLoaded', togglePages);
 if (document.readyState !== 'loading') togglePages();
