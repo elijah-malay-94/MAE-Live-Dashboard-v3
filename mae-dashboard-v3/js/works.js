@@ -114,6 +114,7 @@ function renderWorks() {
     const loc = w.location || '—';
     const desc = w.description || `Work ${w.id || ''}`.trim() || '—';
     const wid = w.id || '';
+    const devCount = Number.isFinite(Number(w.deviceCount)) ? Number(w.deviceCount) : null;
 
     return `
       <button class="work-card" data-work-id="${escapeHtml(wid)}" type="button" style="text-align:left;cursor:pointer;">
@@ -122,6 +123,7 @@ function renderWorks() {
             <p class="work-title">${escapeHtml(desc)}</p>
             <div class="work-meta">
               <div class="meta-row"><span class="meta-key">Place</span><span class="meta-val">${escapeHtml(loc)}</span></div>
+              <div class="meta-row"><span class="meta-key">Devices</span><span class="meta-val">${devCount === null ? '—' : devCount}</span></div>
             </div>
           </div>
           <div class="work-badges">
@@ -158,7 +160,12 @@ function renderOverview() {
   const inactive = Math.max(0, total - active);
 
   const withDeviceCount = allWorks.filter(w => Number.isFinite(Number(w.deviceCount)));
-  const totalDevices = withDeviceCount.reduce((sum, w) => sum + Number(w.deviceCount || 0), 0);
+  const activeWithCount = allWorks.filter(w => Boolean(w.active) && Number.isFinite(Number(w.deviceCount)));
+  const inactiveWithCount = allWorks.filter(w => !Boolean(w.active) && Number.isFinite(Number(w.deviceCount)));
+
+  const activeDevices = activeWithCount.reduce((sum, w) => sum + Number(w.deviceCount || 0), 0);
+  const inactiveDevices = inactiveWithCount.reduce((sum, w) => sum + Number(w.deviceCount || 0), 0);
+  const totalDevices = activeDevices + inactiveDevices;
 
   const sumSub = $('summarySub');
   if (sumSub) {
@@ -176,8 +183,18 @@ function renderOverview() {
   const pct = total ? Math.round((active / total) * 100) : 0;
   const totalHint = withDeviceCount.length ? `${withDeviceCount.length} works with device counts` : 'Device counts not provided';
   setText('sumTotalHint', totalHint);
-  setText('sumActiveHint', total ? `${pct}% active` : '—');
-  setText('sumInactiveHint', total ? `${100 - pct}% inactive` : '—');
+  setText(
+    'sumActiveHint',
+    total
+      ? `${pct}% active · Devices ${activeWithCount.length ? activeDevices : '—'}`
+      : '—'
+  );
+  setText(
+    'sumInactiveHint',
+    total
+      ? `${100 - pct}% inactive · Devices ${inactiveWithCount.length ? inactiveDevices : '—'}`
+      : '—'
+  );
   setText('sumDevicesHint', withDeviceCount.length ? `Avg ${(totalDevices / Math.max(withDeviceCount.length, 1)).toFixed(1)}/work` : '—');
 
   // Summary section is numbers-only (no charts).
