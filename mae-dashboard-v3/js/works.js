@@ -114,7 +114,8 @@ function renderWorks() {
     const loc = w.location || '—';
     const desc = w.description || `Work ${w.id || ''}`.trim() || '—';
     const wid = w.id || '';
-    const devCount = Number.isFinite(Number(w.deviceCount)) ? Number(w.deviceCount) : null;
+    const devCountRaw = Number(w.deviceCount);
+    const devCount = (Number.isFinite(devCountRaw) && devCountRaw > 0) ? devCountRaw : null;
 
     return `
       <button class="work-card" data-work-id="${escapeHtml(wid)}" type="button" style="text-align:left;cursor:pointer;">
@@ -159,9 +160,15 @@ function renderOverview() {
   const active = allWorks.filter(w => Boolean(w.active)).length;
   const inactive = Math.max(0, total - active);
 
-  const withDeviceCount = allWorks.filter(w => Number.isFinite(Number(w.deviceCount)));
-  const activeWithCount = allWorks.filter(w => Boolean(w.active) && Number.isFinite(Number(w.deviceCount)));
-  const inactiveWithCount = allWorks.filter(w => !Boolean(w.active) && Number.isFinite(Number(w.deviceCount)));
+  const hasMeaningfulDeviceCount = (w) => {
+    const n = Number(w?.deviceCount);
+    return Number.isFinite(n) && n > 0;
+  };
+
+  // Exclude works that have device_count = 0 (no meaningful count).
+  const withDeviceCount = allWorks.filter(hasMeaningfulDeviceCount);
+  const activeWithCount = allWorks.filter(w => Boolean(w.active) && hasMeaningfulDeviceCount(w));
+  const inactiveWithCount = allWorks.filter(w => !Boolean(w.active) && hasMeaningfulDeviceCount(w));
 
   const activeDevices = activeWithCount.reduce((sum, w) => sum + Number(w.deviceCount || 0), 0);
   const inactiveDevices = inactiveWithCount.reduce((sum, w) => sum + Number(w.deviceCount || 0), 0);
@@ -181,7 +188,9 @@ function renderOverview() {
   setText('sumDevices', withDeviceCount.length ? totalDevices : '—');
 
   const pct = total ? Math.round((active / total) * 100) : 0;
-  const totalHint = withDeviceCount.length ? `${withDeviceCount.length} works with device counts` : 'Device counts not provided';
+  const totalHint = withDeviceCount.length
+    ? `Device counts available for ${withDeviceCount.length}/${total} works · Totals based on these · Others missing`
+    : 'Device counts not provided';
   setText('sumTotalHint', totalHint);
   setText(
     'sumActiveHint',
