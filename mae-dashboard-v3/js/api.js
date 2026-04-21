@@ -357,16 +357,15 @@ function setUserId(id) {
 }
 
 function getUserId() {
-  if (authUserId) return authUserId;
-  try {
-    const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
-    if (id) { authUserId = String(id).trim(); return authUserId; }
-  } catch (e) { /* ignore */ }
-  // Fallback: allow deep links to supply a customer id.
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const q = (qp.get('customer_id') || qp.get('customerId') || qp.get('customer') || '').trim();
     if (q) return q;
+  } catch (e) { /* ignore */ }
+  if (authUserId) return authUserId;
+  try {
+    const id = localStorage.getItem(AUTH_USER_ID_STORAGE_KEY);
+    if (id) { authUserId = String(id).trim(); return authUserId; }
   } catch (e) { /* ignore */ }
   return '';
 }

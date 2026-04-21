@@ -140,9 +140,11 @@ function renderWorks() {
       const qp = new URLSearchParams(window.location.search || '');
       const mock = qp.get('mock');
       const proxy = qp.get('proxy');
+      const customerId = qp.get('customer_id') || qp.get('customerId') || qp.get('customer');
       const next = new URLSearchParams();
       next.set('page', 'dashboard');
       next.set('work_id', workId);
+      if (customerId) next.set('customer_id', customerId);
       if (mock) next.set('mock', mock);
       if (proxy) next.set('proxy', proxy);
       window.location.href = `index.html?${next.toString()}`;

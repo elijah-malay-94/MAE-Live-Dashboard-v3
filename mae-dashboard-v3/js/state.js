@@ -60,9 +60,9 @@ function updateDashboardAuthButton() {
   const loggedIn = Boolean(token);
 
   // UX rule:
-  // - On dashboard: always show "Login" (landing page)
-  // - On works: show "Logout" when logged in, otherwise "Login"
-  const shouldShowLogout = (page === 'works') && loggedIn;
+  // - If logged in: show "Logout" everywhere
+  // - If logged out: show "Login"
+  const shouldShowLogout = loggedIn;
 
   // Update label + action
   btn.title = shouldShowLogout ? 'Logout' : 'Login';
@@ -144,6 +144,42 @@ async function init() {
   }
 
   await initDashboard();
+}
+
+async function initDashboard() {
+  const customerId = getUserId();
+  if (!String(customerId || '').trim()) {
+    // Without a customer/user id we cannot load devices; route to Works/login.
+    window.location.href = 'index.html?page=works';
+    return;
+  }
+
+  allDevices = await fetchDevicesData(customerId);
+  if (!Array.isArray(allDevices)) allDevices = [];
+
+  if (allDevices.length > 0) {
+    const savedId = (() => {
+      try { return localStorage.getItem('mae_dashboard_active_device'); } catch (e) { return null; }
+    })();
+
+    activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];
+    await fetchDevicesInfo(activeDevice.id);
+    if (typeof renderDeviceList === 'function') renderDeviceList();
+    if (typeof renderDeviceInfo === 'function') renderDeviceInfo();
+    if (typeof renderPowerChart === 'function') renderPowerChart();
+    await loadData();
+
+    if (allData.length > 0 && typeof startAutoRefresh === 'function') {
+      startAutoRefresh();
+    } else if (!allData.length) {
+      showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
+    }
+  } else {
+    showErrorMessage('No devices found. Check customer ID and API connection.');
+  }
+
+  const footerDate = document.getElementById('footerDate');
+  if (footerDate) footerDate.textContent = new Date().toLocaleDateString('en-GB');
 }
 
 async function loadData() {

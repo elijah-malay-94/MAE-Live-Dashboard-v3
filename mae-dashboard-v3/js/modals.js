@@ -1067,8 +1067,10 @@ async function submitLogin() {
     // Preserve dev flags like `mock=1` / `proxy=cors`
     const mock = qp.get('mock');
     const proxy = qp.get('proxy');
+    const customerId = qp.get('customer_id') || qp.get('customerId') || qp.get('customer');
     const next = new URLSearchParams();
     next.set('page', 'works');
+    if (customerId) next.set('customer_id', customerId);
     if (mock) next.set('mock', mock);
     if (proxy) next.set('proxy', proxy);
     window.location.href = `index.html?${next.toString()}`;
