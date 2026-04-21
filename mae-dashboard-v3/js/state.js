@@ -62,6 +62,36 @@ function updateDashboardAuthButton() {
   btn.appendChild(document.createTextNode('\n          ' + label + '\n        '));
 }
 
+function showLoginModal() {
+  const el = document.getElementById('loginOverlay');
+  if (!el) return;
+  el.classList.add('open');
+  const u = document.getElementById('loginUsername');
+  if (u) u.focus();
+}
+
+function hideLoginModal() {
+  const el = document.getElementById('loginOverlay');
+  if (!el) return;
+  el.classList.remove('open');
+  const err = document.getElementById('loginError');
+  if (err) err.textContent = '';
+}
+
+  // Update label + action
+  btn.title = shouldShowLogout ? 'Logout' : 'Login';
+  btn.onclick = shouldShowLogout
+    ? doLogout
+    : showLoginModal;
+
+  // Swap text node while keeping the icon SVG
+  const label = shouldShowLogout ? 'Logout' : 'Login';
+  const svg = btn.querySelector('svg');
+  btn.innerHTML = '';
+  if (svg) btn.appendChild(svg);
+  btn.appendChild(document.createTextNode('\n          ' + label + '\n        '));
+}
+
 // ═══════════════════════ INIT ═══════════════════════
 async function init() {
   const getCurrentPage = () => {
@@ -90,24 +120,14 @@ async function init() {
   const usernameEl = document.getElementById('topbarUsername');
   if (usernameEl) usernameEl.textContent = name ? name : '';
 
-  // If the user is logged out (no token), do NOT force a login popup.
-  // Show the dashboard shell and an informational hint instead.
+  // If the user is logged out (no token), redirect to the login form.
   const token = loadAuthTokenFromStorage();
   updateDashboardAuthButton();
   if (!token) {
-    // If not logged in (or after logout), always route to the login form (overlay),
-    // not to the dashboard shell.
-    const qp = new URLSearchParams(window.location.search || '');
-    const mock = qp.get('mock');
-    const proxy = qp.get('proxy');
-    const next = new URLSearchParams();
-    next.set('page', 'works');
-    if (mock) next.set('mock', mock);
-    if (proxy) next.set('proxy', proxy);
-    if (page !== 'works') {
-      window.location.href = `index.html?${next.toString()}`;
-      return;
-    }
+    // If not logged in (or after logout), redirect to the login form (works page),
+    // not to the dashboard.
+    window.location.href = 'index.html?page=works';
+    return;
   }
 
   if (page === 'works') {
@@ -123,28 +143,6 @@ async function init() {
   }
 
   await initDashboard();
-}
-
-async function initDashboard() {
-  allDevices = await fetchDevicesData(getUserId() || 1);
-  if (!Array.isArray(allDevices)) allDevices = [];
-  if (allDevices.length > 0) {
-    const savedId = (() => { try { return localStorage.getItem('mae_dashboard_active_device'); } catch(e) { return null; } })();
-    activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];
-    await fetchDevicesInfo(activeDevice.id);
-    renderDeviceList();
-    renderDeviceInfo();
-    renderPowerChart();
-    await loadData();
-    if (allData.length > 0) {
-      startAutoRefresh();
-    } else {
-      showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
-    }
-  } else {
-    showErrorMessage('No devices found. Check customer ID and API connection.');
-  }
-  document.getElementById('footerDate').textContent = new Date().toLocaleDateString('en-GB');
 }
 
 async function loadData() {
