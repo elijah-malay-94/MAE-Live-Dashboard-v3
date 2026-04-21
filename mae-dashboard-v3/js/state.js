@@ -27,6 +27,22 @@ let countdown           = AUTO_REFRESH_SECONDS;
 let activeAlerts        = [];
 let activeChannelHeaders = null; // populated from data.header on each fetchData() call
 
+function navigateToWorks(event) {
+  if (event) event.preventDefault();
+  try {
+    const qp = new URLSearchParams(window.location.search || "");
+    const next = new URLSearchParams();
+    next.set("page", "works");
+    const mock = qp.get("mock");
+    const proxy = qp.get("proxy");
+    if (mock) next.set("mock", mock);
+    if (proxy) next.set("proxy", proxy);
+    window.location.href = `index.html?${next.toString()}`;
+  } catch (e) {
+    window.location.href = "index.html?page=works";
+  }
+}
+
 function updateDashboardAuthButton() {
   const btn = document.getElementById('authBtn');
   if (!btn) return;
@@ -78,20 +94,6 @@ function hideLoginModal() {
   if (err) err.textContent = '';
 }
 
-  // Update label + action
-  btn.title = shouldShowLogout ? 'Logout' : 'Login';
-  btn.onclick = shouldShowLogout
-    ? doLogout
-    : showLoginModal;
-
-  // Swap text node while keeping the icon SVG
-  const label = shouldShowLogout ? 'Logout' : 'Login';
-  const svg = btn.querySelector('svg');
-  btn.innerHTML = '';
-  if (svg) btn.appendChild(svg);
-  btn.appendChild(document.createTextNode('\n          ' + label + '\n        '));
-}
-
 // ═══════════════════════ INIT ═══════════════════════
 async function init() {
   const getCurrentPage = () => {
@@ -104,6 +106,10 @@ async function init() {
 
   const page = getCurrentPage();
   console.log('%c[init] Starting app init()', 'color:#2563eb;font-weight:700', { page });
+  // If on works page, let works.js handle it
+  if (page === 'works') {
+    return;
+  }
 
   const today   = new Date();
   const sevenDaysAgo = new Date(today);
@@ -127,11 +133,6 @@ async function init() {
     // If not logged in (or after logout), redirect to the login form (works page),
     // not to the dashboard.
     window.location.href = 'index.html?page=works';
-    return;
-  }
-
-  if (page === 'works') {
-    // Works page initialization is handled by works.js (it shows login overlay if needed).
     return;
   }
 
