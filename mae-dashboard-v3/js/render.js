@@ -18,9 +18,19 @@
 
 // ═══════════════════════ DEVICE LIST ═══════════════════════
 function renderDeviceList() {
+  const ledColorFromLastDiagnostic = (lastDiagnosticRaw) => {
+    if (!lastDiagnosticRaw) return 'var(--muted)'; // grey
+    const t = new Date(String(lastDiagnosticRaw).replace(' ', 'T')).getTime();
+    if (!Number.isFinite(t)) return 'var(--muted)';
+    const mins = (Date.now() - t) / 60000;
+    if (mins <= 15) return 'var(--green)'; // green
+    if (mins <= 30) return '#f97316';      // orange
+    return 'var(--red)';                   // red
+  };
+
   document.getElementById('deviceList').innerHTML = allDevices.map(d => `
     <div class="device-item ${d.id === activeDevice.id ? 'active' : ''}" onclick="switchDevice('${d.id}')">
-      <div class="device-dot" style="background:${d.status==='online'?'var(--green)':'var(--muted)'}"></div>
+      <div class="device-dot" style="background:${ledColorFromLastDiagnostic(d.last_diagnostic)}"></div>
       <div class="device-info">
         <div class="device-name">${d.name}</div>
         <div class="device-serial">${d.serial || d.id}</div>
@@ -89,8 +99,7 @@ async function switchDevice(id) {
   renderDeviceList();
   renderDeviceInfo();
   renderPowerChart();
-  document.getElementById('pageSubtitle').textContent =
-    `DEVICE: ${activeDevice.type} · ${activeDevice.serial || activeDevice.id} · ${activeDevice.name} · ${liveMode ? 'AUTO-REFRESH ON' : 'PAUSED'}`;
+  if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
   document.getElementById('footerDevice').textContent = activeDevice.serial || activeDevice.id;
   clearInterval(refreshTimer);
   await loadData();

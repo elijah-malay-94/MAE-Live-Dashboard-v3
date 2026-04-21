@@ -27,6 +27,21 @@ let countdown           = AUTO_REFRESH_SECONDS;
 let activeAlerts        = [];
 let activeChannelHeaders = null; // populated from data.header on each fetchData() call
 
+function updateWorkSubtitle() {
+  const sub = document.getElementById('pageSubtitle');
+  if (!sub) return;
+  try {
+    const desc = (localStorage.getItem('mae_dashboard_active_work_desc') || '').trim();
+    const place = (localStorage.getItem('mae_dashboard_active_work_place') || '').trim();
+    const devCnt = (localStorage.getItem('mae_dashboard_active_work_device_count') || '').trim();
+    if (desc || place || devCnt) {
+      sub.textContent = `WORK: ${desc || '—'} - PLACE: ${place || '—'} - DEVICES: ${devCnt || '—'}`;
+      return;
+    }
+  } catch (e) { /* ignore */ }
+  sub.textContent = 'WORK: — - PLACE: — - DEVICES: —';
+}
+
 function navigateToWorks(event) {
   if (event) event.preventDefault();
   try {
@@ -167,6 +182,7 @@ async function initDashboard() {
     if (typeof renderDeviceList === 'function') renderDeviceList();
     if (typeof renderDeviceInfo === 'function') renderDeviceInfo();
     if (typeof renderPowerChart === 'function') renderPowerChart();
+    updateWorkSubtitle();
     await loadData();
 
     if (allData.length > 0 && typeof startAutoRefresh === 'function') {

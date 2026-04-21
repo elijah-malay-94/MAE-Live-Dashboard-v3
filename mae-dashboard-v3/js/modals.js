@@ -47,16 +47,14 @@ function toggleAutoRefresh() {
     startAutoRefresh();
     btn.classList.remove('active');
     label.textContent = 'LIVE';
-    document.getElementById('pageSubtitle').textContent =
-      `DEVICE: ${activeDevice?.type} · ${activeDevice?.serial || activeDevice?.id} · AUTO-REFRESH ON`;
+    if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
   } else {
     clearInterval(refreshTimer);
     btn.classList.add('active');
     label.textContent = 'PAUSED';
     document.getElementById('refreshCountdown').textContent  = 'paused';
     document.getElementById('refreshCountdown2').textContent = 'paused';
-    document.getElementById('pageSubtitle').textContent =
-      `DEVICE: ${activeDevice?.type} · ${activeDevice?.serial || activeDevice?.id} · AUTO-REFRESH PAUSED`;
+    if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
   }
 }
 

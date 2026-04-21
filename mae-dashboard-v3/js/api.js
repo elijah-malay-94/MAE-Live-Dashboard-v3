@@ -824,13 +824,19 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         lat:            parseFloat(coords[0]) || 0,
         lng:            parseFloat(coords[1]) || 0,
         lastConnection: lastConn,
+        // Raw diagnostic timestamp used for LED logic (may be null).
+        last_diagnostic: item.last_diagnostic ?? null,
         // Network info (if provided by /devices endpoint)
         ip:          item.ip         ?? '',
         port:        item.port       ?? '',
         ip_public:   item.ip_public  ?? '',
         port_public: item.port_public ?? '',
       };
-    }).sort(function(a, b){return new Date(String(b.last_diagnostic).replace(' ', 'T')) - new Date(String(a.last_diagnostic).replace(' ', 'T'))});
+    }).sort(function (a, b) {
+      const ta = a?.last_diagnostic ? new Date(String(a.last_diagnostic).replace(' ', 'T')).getTime() : 0;
+      const tb = b?.last_diagnostic ? new Date(String(b.last_diagnostic).replace(' ', 'T')).getTime() : 0;
+      return (tb || 0) - (ta || 0);
+    });
   } catch (err) {
     showLoadingState(false);
     const label = err.name === 'AbortError' ? 'Request timed out.' : err.message;
