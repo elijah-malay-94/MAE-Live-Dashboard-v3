@@ -41,9 +41,6 @@ function renderDeviceList() {
         <div class="device-name">${safe(d.position || d.devicePlace || d.position_name || d.serial)}</div>
         <div class="device-serial">${safe(d.serial || d.id)}</div>
       </div>
-      <div class="device-status" style="color:${d.status==='online'?'var(--green)':'var(--muted)'}">
-        ${d.status==='online'?'●':'○'}
-      </div>
     </div>
   `).join('');
 }
