@@ -1028,10 +1028,8 @@ async function fetchPowerSupplyHistory(deviceId, limit = 10, workId = getActiveW
     const did = encodeURIComponent(deviceId);
     const lim = Math.max(1, Math.min(200, Number(limit) || 10));
     const candidates = [
-      `/api/v1/devices/${did}/diagnostic/limit/${lim}/offset/0`,
-      `/api/v1/devices/${did}/diagnostics/limit/${lim}/offset/0`,
-      `/api/v1/devices/${did}/diagnostic?limit=${lim}&offset=0`,
-      `/api/v1/devices/${did}/diagnostics?limit=${lim}&offset=0`,
+      `/api/v1/works/${workId}/devices/${did}/powersupply/limit/${lim}`,
+      `/api/v1/works/${workId}/devices/${did}/powersupply/limit/${lim}/offset/0`
     ];
 
     let lastErr = null;
