@@ -101,12 +101,14 @@ function renderWorks() {
   const grid = $('worksGrid');
   if (!grid) return;
 
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+
   const list = getFilteredWorks();
   if (list.length === 0) {
     grid.innerHTML = `
       <div class="card" style="grid-column:1/-1;padding:16px;">
-        <div class="card-label" style="margin-bottom:8px;">No works found</div>
-        <div style="color:var(--muted);font-size:12px;">Try changing the filter or search term.</div>
+        <div class="card-label" style="margin-bottom:8px;">${tr('works.emptyTitle', 'No works found')}</div>
+        <div style="color:var(--muted);font-size:12px;">${tr('works.emptyHint', 'Try changing the filter or search term.')}</div>
       </div>
     `;
     return;
@@ -114,7 +116,7 @@ function renderWorks() {
 
   grid.innerHTML = list.map(w => {
     const ledClass = w.active ? 'active' : 'inactive';
-    const ledTitle = w.active ? 'Active' : 'Inactive';
+    const ledTitle = w.active ? tr('works.active', 'Active') : tr('works.inactive', 'Inactive');
     const loc = w.location || '—';
     const desc = w.description || `Work ${w.id || ''}`.trim() || '—';
     const wid = w.id || '';
@@ -127,8 +129,8 @@ function renderWorks() {
           <div>
             <p class="work-title">${escapeHtml(desc)}</p>
             <div class="work-meta">
-              <div class="meta-row"><span class="meta-key">Place</span><span class="meta-val">${escapeHtml(loc)}</span></div>
-              <div class="meta-row"><span class="meta-key">Devices</span><span class="meta-val">${devCount === null ? '—' : devCount}</span></div>
+              <div class="meta-row"><span class="meta-key">${tr('works.place', 'Place')}</span><span class="meta-val">${escapeHtml(loc)}</span></div>
+              <div class="meta-row"><span class="meta-key">${tr('works.devicesLabel', 'Devices')}</span><span class="meta-val">${devCount === null ? '—' : devCount}</span></div>
             </div>
           </div>
           <div class="work-badges">
@@ -173,6 +175,9 @@ function renderOverview() {
   const active = allWorks.filter(w => Boolean(w.active)).length;
   const inactive = Math.max(0, total - active);
 
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const tf = (k, vars) => (typeof window.tf === 'function') ? window.tf(k, vars) : tr(k, k);
+
   const hasMeaningfulDeviceCount = (w) => {
     const n = Number(w?.deviceCount);
     return Number.isFinite(n) && n > 0;
@@ -190,8 +195,8 @@ function renderOverview() {
   const sumSub = $('summarySub');
   if (sumSub) {
     sumSub.textContent = total
-      ? `Active ${active}/${total} · Devices ${withDeviceCount.length ? totalDevices : '—'}`
-      : 'No works yet';
+      ? tf('works.summarySub', { active, total, devices: (withDeviceCount.length ? totalDevices : '—') })
+      : tr('works.noWorksYet', 'No works yet');
   }
 
   const setText = (id, v) => { const el = $(id); if (el) el.textContent = String(v); };
@@ -202,22 +207,22 @@ function renderOverview() {
 
   const pct = total ? Math.round((active / total) * 100) : 0;
   const totalHint = withDeviceCount.length
-    ? `Device counts available for ${withDeviceCount.length}/${total} works · Totals based on these · Others missing`
-    : 'Device counts not provided';
+    ? tf('works.deviceCountsHint', { with: withDeviceCount.length, total })
+    : tr('works.deviceCountsMissing', 'Device counts not provided');
   setText('sumTotalHint', totalHint);
   setText(
     'sumActiveHint',
     total
-      ? `${pct}% active · Devices ${activeWithCount.length ? activeDevices : '—'}`
+      ? tf('works.activeHint', { pct, devices: (activeWithCount.length ? activeDevices : '—') })
       : '—'
   );
   setText(
     'sumInactiveHint',
     total
-      ? `${100 - pct}% inactive · Devices ${inactiveWithCount.length ? inactiveDevices : '—'}`
+      ? tf('works.inactiveHint', { pct: (100 - pct), devices: (inactiveWithCount.length ? inactiveDevices : '—') })
       : '—'
   );
-  setText('sumDevicesHint', withDeviceCount.length ? `Avg ${(totalDevices / Math.max(withDeviceCount.length, 1)).toFixed(1)}/work` : '—');
+  setText('sumDevicesHint', withDeviceCount.length ? tf('works.avgPerWork', { avg: (totalDevices / Math.max(withDeviceCount.length, 1)).toFixed(1) }) : '—');
 
   // Summary section is numbers-only (no charts).
 }

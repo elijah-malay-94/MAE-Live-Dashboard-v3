@@ -30,16 +30,17 @@ let activeChannelHeaders = null; // populated from data.header on each fetchData
 function updateWorkSubtitle() {
   const sub = document.getElementById('pageSubtitle');
   if (!sub) return;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   try {
     const desc = (localStorage.getItem('mae_dashboard_active_work_desc') || '').trim();
     const place = (localStorage.getItem('mae_dashboard_active_work_place') || '').trim();
     const devCnt = (localStorage.getItem('mae_dashboard_active_work_device_count') || '').trim();
     if (desc || place || devCnt) {
-      sub.textContent = `WORK: ${desc || '—'} - PLACE: ${place || '—'} - DEVICES: ${devCnt || '—'}`;
+      sub.textContent = `${tr('works.workLabel', 'WORK')}: ${desc || '—'} - ${tr('works.placeLabel', 'PLACE')}: ${place || '—'} - ${tr('works.devicesLabel2', 'DEVICES')}: ${devCnt || '—'}`;
       return;
     }
   } catch (e) { /* ignore */ }
-  sub.textContent = 'WORK: — - PLACE: — - DEVICES: —';
+  sub.textContent = `${tr('works.workLabel', 'WORK')}: — - ${tr('works.placeLabel', 'PLACE')}: — - ${tr('works.devicesLabel2', 'DEVICES')}: —`;
 }
 
 function navigateToWorks(event) {

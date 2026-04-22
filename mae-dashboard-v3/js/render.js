@@ -278,6 +278,7 @@ function renderChart() {
   const meta = cfg.chartMeta[ch] || Object.values(cfg.chartMeta)[0];
   const data = [...filteredData].reverse();
   if (!data.length) {
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
     // Clear chart-specific areas so we don't keep the previous device/date range rendering.
     const title = document.getElementById('chartTitle');
     const badge = document.getElementById('chartBadge');
@@ -288,7 +289,7 @@ function renderChart() {
     const stats = document.getElementById('chartStats');
     if (title) title.textContent = '—';
     if (badge) badge.textContent = '';
-    if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+    if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">${tr('common.noData', 'No data')}</text>`;
     if (svgWrap) svgWrap.style.height = '48px';
     if (ylabs) ylabs.innerHTML = '';
     if (xlabs) xlabs.innerHTML = '';
@@ -430,6 +431,7 @@ function renderTable() {
   const cfg  = getDeviceConfig();
   const q    = document.getElementById('tableSearch').value.toLowerCase();
   const th   = getThresholds();
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   const rows = filteredData.filter(r =>
     !q || Object.values(r).some(v => String(v).toLowerCase().includes(q))
   );
@@ -438,7 +440,14 @@ function renderTable() {
   const tableHead = document.querySelector('.table-head');
   if (tableHead) {
     tableHead.style.gridTemplateColumns = cfg.tableColumns;
-    tableHead.innerHTML = cfg.tableHeaders.map(h => `<span class="th">${h}</span>`).join('');
+    const thLabel = (h) => {
+      const key = String(h || '').trim().toLowerCase();
+      if (key === 'date') return tr('table.date', h);
+      if (key === 'time') return tr('table.time', h);
+      if (key === 'status') return tr('table.status', h);
+      return h;
+    };
+    tableHead.innerHTML = cfg.tableHeaders.map(h => `<span class="th">${thLabel(h)}</span>`).join('');
   }
 
   document.getElementById('tableBody').innerHTML = rows.map((r, i) => {
@@ -446,16 +455,19 @@ function renderTable() {
       (c.val !== undefined && c.val !== null) ? getValueState(c.val, c.th) : 'ok'
     );
     const anyBad = states.find(s => s !== 'ok');
+    const okTxt = tr('status.ok', 'OK');
+    const warnTxt = tr('status.warn', 'WARN');
+    const alertTxt = tr('status.alert', 'ALERT');
     const badge  = anyBad === 'alert'
-      ? `<span style="color:var(--red);font-size:10px;">● ALERT</span>`
+      ? `<span style="color:var(--red);font-size:10px;">● ${alertTxt}</span>`
       : anyBad === 'warn'
-      ? `<span style="color:var(--orange);font-size:10px;">● WARN</span>`
-      : `<span style="color:var(--green);font-size:10px;">● OK</span>`;
+      ? `<span style="color:var(--orange);font-size:10px;">● ${warnTxt}</span>`
+      : `<span style="color:var(--green);font-size:10px;">● ${okTxt}</span>`;
     const cells = cfg.tableRow(r, states);
     cells.push(`<span class="td">${badge}</span>`);
     const cls = i===0 && liveMode ? 'table-row new-row' : 'table-row';
     return `<div class="${cls}" style="grid-template-columns:${cfg.tableColumns}">${cells.join('')}</div>`;
   }).join('');
 
-  document.getElementById('tableCount').textContent = `${rows.length} record${rows.length!==1?'s':''}`;
+  document.getElementById('tableCount').textContent = `${rows.length} ${tr('common.records', 'records')}`;
 }

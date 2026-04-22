@@ -328,8 +328,8 @@
         <input type="text" class="table-search" placeholder="Search..." id="tableSearch" oninput="renderTable()" data-i18n-placeholder="dashboard.search.placeholder">
       </div>
       <div class="table-head">
-        <span class="th">Date</span><span class="th">Time</span><span class="th">PT-50 mm</span>
-        <span class="th">ISBC X</span><span class="th">ISBC Y</span><span class="th">Status</span>
+        <span class="th" data-i18n="table.date">Date</span><span class="th" data-i18n="table.time">Time</span><span class="th">PT-50 mm</span>
+        <span class="th">ISBC X</span><span class="th">ISBC Y</span><span class="th" data-i18n="table.status">Status</span>
       </div>
       <div class="table-body" id="tableBody"></div>
       <div class="table-footer">
@@ -458,7 +458,7 @@
     <div class="map-body">
       <div class="map-sidebar">
         <div class="map-sidebar-section">
-          <div class="map-sidebar-label">All Devices</div>
+          <div class="map-sidebar-label" data-i18n="map.allDevices">All Devices</div>
           <div id="mapDeviceList"></div>
         </div>
         <div class="map-sidebar-section">
@@ -468,7 +468,7 @@
           <div class="map-info-row"><span class="map-info-key">Position</span><span class="map-info-val" id="mapInfoPos">—</span></div>
           <div class="map-info-row"><span class="map-info-key">Lat</span><span class="map-info-val" id="mapInfoLat">—</span></div>
           <div class="map-info-row"><span class="map-info-key">Lng</span><span class="map-info-val" id="mapInfoLng">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">Status</span><span class="map-info-val" id="mapInfoStatus">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.status">Status</span><span class="map-info-val" id="mapInfoStatus">—</span></div>
           <div class="map-info-row"><span class="map-info-key">Signal</span><span class="map-info-val" id="mapInfoSignal">—</span></div>
         </div>
         <div class="map-sidebar-section">
@@ -507,7 +507,7 @@
           <div class="mob-coord" id="mapBadgeCoord">—</div>
           <div class="mob-status">
             <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0;"></div>
-            <span id="mapBadgeStatus" style="color:var(--green);">Online</span>
+            <span id="mapBadgeStatus" style="color:var(--green);" data-i18n="map.online">Online</span>
           </div>
         </div>
         <div class="map-controls-strip">
@@ -678,7 +678,11 @@ function togglePages() {
   const titleEl = document.getElementById('pageTitle');
   const subEl = document.getElementById('pageSubtitle');
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
-  if (titleEl) titleEl.textContent = (page === 'works') ? tr('page.userPage', 'User Page') : tr('page.liveDashboard', 'Live Dashboard');
+  if (titleEl) {
+    // Keep i18n in sync with route, otherwise applyLanguage() would overwrite the title.
+    titleEl.setAttribute('data-i18n', page === 'works' ? 'page.userPage' : 'page.liveDashboard');
+    titleEl.textContent = (page === 'works') ? tr('page.userPage', 'User Page') : tr('page.liveDashboard', 'Live Dashboard');
+  }
   if (subEl) {
     if (page === 'works') {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');

@@ -33,6 +33,22 @@
       'works.inactiveWorks': 'Inactive works',
       'common.devices': 'Devices',
       'works.footerHint': 'Click a work to open measures',
+      'works.emptyTitle': 'No works found',
+      'works.emptyHint': 'Try changing the filter or search term.',
+      'works.place': 'Place',
+      'works.devicesLabel': 'Devices',
+      'works.active': 'Active',
+      'works.inactive': 'Inactive',
+      'works.noWorksYet': 'No works yet',
+      'works.summarySub': 'Active {active}/{total} · Devices {devices}',
+      'works.deviceCountsHint': 'Device counts available for {with}/{total} works · Totals based on these · Others missing',
+      'works.deviceCountsMissing': 'Device counts not provided',
+      'works.activeHint': '{pct}% active · Devices {devices}',
+      'works.inactiveHint': '{pct}% inactive · Devices {devices}',
+      'works.avgPerWork': 'Avg {avg}/work',
+      'works.workLabel': 'WORK',
+      'works.placeLabel': 'PLACE',
+      'works.devicesLabel2': 'DEVICES',
 
       'controls.period': 'Period',
       'controls.apply': 'Apply',
@@ -59,6 +75,16 @@
 
       'common.noData': 'No data',
       'common.records': 'records',
+      'common.loading': 'Loading…',
+      'table.date': 'Date',
+      'table.time': 'Time',
+      'table.status': 'Status',
+      'status.ok': 'OK',
+      'status.warn': 'WARN',
+      'status.alert': 'ALERT',
+      'map.allDevices': 'All Devices',
+      'map.status': 'Status',
+      'map.online': 'Online',
     },
     it: {
       'lang.english': 'Inglese',
@@ -87,6 +113,22 @@
       'works.inactiveWorks': 'Lavori inattivi',
       'common.devices': 'Dispositivi',
       'works.footerHint': 'Clicca un lavoro per aprire le misure',
+      'works.emptyTitle': 'Nessun lavoro trovato',
+      'works.emptyHint': 'Prova a cambiare filtro o termine di ricerca.',
+      'works.place': 'Sede',
+      'works.devicesLabel': 'Dispositivi',
+      'works.active': 'Attivo',
+      'works.inactive': 'Inattivo',
+      'works.noWorksYet': 'Nessun lavoro',
+      'works.summarySub': 'Attivi {active}/{total} · Dispositivi {devices}',
+      'works.deviceCountsHint': 'Conteggi disponibili per {with}/{total} lavori · Totali basati su questi · Altri mancanti',
+      'works.deviceCountsMissing': 'Conteggio dispositivi non fornito',
+      'works.activeHint': '{pct}% attivi · Dispositivi {devices}',
+      'works.inactiveHint': '{pct}% inattivi · Dispositivi {devices}',
+      'works.avgPerWork': 'Media {avg}/lavoro',
+      'works.workLabel': 'LAVORO',
+      'works.placeLabel': 'SEDE',
+      'works.devicesLabel2': 'DISPOSITIVI',
 
       'controls.period': 'Periodo',
       'controls.apply': 'Applica',
@@ -113,8 +155,22 @@
 
       'common.noData': 'Nessun dato',
       'common.records': 'record',
+      'common.loading': 'Caricamento…',
+      'table.date': 'Data',
+      'table.time': 'Ora',
+      'table.status': 'Stato',
+      'status.ok': 'OK',
+      'status.warn': 'AVVISO',
+      'status.alert': 'ALLARME',
+      'map.allDevices': 'Tutti i dispositivi',
+      'map.status': 'Stato',
+      'map.online': 'Online',
     },
   };
+
+  function format(template, vars) {
+    return String(template || '').replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k] !== undefined ? String(vars[k]) : `{${k}}`));
+  }
 
   function getLanguage() {
     try {
@@ -136,6 +192,10 @@
   function t(key) {
     const lang = getLanguage();
     return dict?.[lang]?.[key] ?? dict?.en?.[key] ?? key;
+  }
+
+  function tf(key, vars) {
+    return format(t(key), vars);
   }
 
   function applyLanguage(lang = getLanguage()) {
@@ -171,11 +231,28 @@
     const itBtn = document.getElementById('langBtnIt');
     if (enBtn) enBtn.classList.toggle('active', lang === 'en');
     if (itBtn) itBtn.classList.toggle('active', lang === 'it');
+
+    // Some UI is built via JS templates (works cards/overview). Re-render on Works route.
+    try {
+      if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'works') {
+        if (typeof window.renderOverview === 'function') window.renderOverview();
+        if (typeof window.renderWorks === 'function') window.renderWorks();
+      }
+    } catch (e) { /* ignore */ }
+
+    // Dashboard subtitle is generated (WORK/PLACE/DEVICES). Refresh it on language change.
+    try {
+      if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'dashboard') {
+        if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
+        if (typeof window.renderTable === 'function') window.renderTable();
+      }
+    } catch (e) { /* ignore */ }
   }
 
   // Expose API
   window.MAE_I18N = { getLanguage, setLanguage, t, applyLanguage };
   window.t = t;
+  window.tf = tf;
   window.setLanguage = setLanguage;
 
   document.addEventListener('DOMContentLoaded', () => applyLanguage(getLanguage()));
