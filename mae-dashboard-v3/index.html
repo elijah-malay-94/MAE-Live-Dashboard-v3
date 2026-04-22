@@ -103,7 +103,7 @@
   </div>
 
   <div class="nav-section" data-i18n="nav.navigation">Navigation</div>
-  <a class="nav-item active" href="index.html?page=dashboard" style="text-decoration:none;" id="navDashboard">
+  <a class="nav-item" href="index.html?page=dashboard" style="text-decoration:none;" id="navDashboard">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span data-i18n="nav.dashboard">Dashboard</span>
   </a>
@@ -111,16 +111,16 @@
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2"/></svg>
     <span data-i18n="nav.works">Works</span>
   </a>
-  <div class="nav-item" onclick="openThresholds()">
+  <div class="nav-item" id="navAlerts" onclick="openThresholds()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span data-i18n="nav.alerts">Alerts</span>
     <span id="alertCount" style="margin-left:auto;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
   </div>
-  <div class="nav-item" onclick="openExport()">
+  <div class="nav-item" id="navExport" onclick="openExport()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <span data-i18n="nav.export">Export</span>
   </div>
-  <div class="nav-item" onclick="openThresholds()">
+  <div class="nav-item" id="navSettings" onclick="openThresholds()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
     <span data-i18n="nav.settings">Settings</span>
   </div>
@@ -144,16 +144,15 @@
     </div>
     <div class="topbar-right">
       <div id="dashboardTopbarControls" style="display:flex;align-items:center;gap:10px;">
-      <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
-      <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
-        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        <span id="refreshCountdown">120s</span>
-      </div>  
       <button class="btn" id="themeToggleBtn" onclick="toggleTheme()" aria-pressed="false" title="Light mode">
         <svg data-theme-icon="sun" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg data-theme-icon="moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
         <span id="themeToggleLabel">Light</span>
       </button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')" style="padding:8px 10px;justify-content:center;">EN</button>
+        <button class="btn" type="button" id="langBtnIt" onclick="setLanguage('it')" style="padding:8px 10px;justify-content:center;">IT</button>
+      </div>
       <button class="btn" onclick="openThresholds()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span data-i18n="nav.alerts">Alerts</span>
@@ -254,8 +253,12 @@
       <option value="hour" data-i18n="controls.interval.hour">Last hour</option>
       <option value="day" data-i18n="controls.interval.day">Last 24h</option>
     </select>
-    <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-      <span class="controls-label" data-i18n="controls.autoRefresh">Auto-refresh</span>
+    <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+      <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
+      <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span id="refreshCountdown">120s</span>
+      </div>
       <span id="refreshCountdown2" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">120s</span>
     </div>
   </div>
@@ -301,7 +304,7 @@
       </div>
       <div class="card">
         <div class="card-label" style="margin-bottom:0; justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" style="background:var(--accent3)"></span><span data-i18n="dashboard.powerSupply">Power Supply</span></div>
+          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" id="powerStatusDot" style="background:var(--accent3)"></span><span data-i18n="dashboard.powerSupply">Power Supply</span></div>
         </div>
         <div class="power-chart-wrap"><svg id="powerSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg></div>
         <div class="power-legend">
@@ -358,7 +361,7 @@
   <div class="power-modal">
     <div class="power-modal-header">
       <div class="power-modal-htitle">
-        <div class="power-modal-icon">⚡</div>
+        <div class="power-modal-icon" id="powerModalIcon">⚡</div>
         <div>
           <h2>Power Supply — Live Monitor</h2>
           <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates with dashboard</p>
@@ -532,13 +535,6 @@
     <span class="panel-title">Alert Thresholds</span>
     <span class="panel-close" onclick="closeThresholds()">✕</span>
   </div>
-  <div class="threshold-group" style="margin-top:6px;">
-    <div class="threshold-group-title" data-i18n="settings.language">Language</div>
-    <div class="threshold-row" style="gap:8px;">
-      <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')" style="flex:1;justify-content:center;">EN</button>
-      <button class="btn" type="button" id="langBtnIt" onclick="setLanguage('it')" style="flex:1;justify-content:center;">IT</button>
-    </div>
-  </div>
   <div class="toggle-row">
     <span class="toggle-label">Enable Alerts</span>
     <label class="toggle"><input type="checkbox" id="alertsEnabled" onchange="checkAlerts()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
@@ -547,23 +543,7 @@
     <span class="toggle-label">Sound Notifications</span>
     <label class="toggle"><input type="checkbox" id="soundEnabled"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
   </div>
-  <div class="threshold-group">
-    <div class="threshold-group-title">PT-50 fs1 (mm)</div>
-    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_pt50_warnMin" value="36.120" step="0.001"><span class="threshold-unit">mm</span></div>
-    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_pt50_warnMax" value="36.150" step="0.001"><span class="threshold-unit">mm</span></div>
-    <div class="threshold-row"><span class="threshold-label">Min alert</span><input type="number" class="threshold-input" id="th_pt50_alertMin" value="36.100" step="0.001"><span class="threshold-unit">mm</span></div>
-    <div class="threshold-row"><span class="threshold-label">Max alert</span><input type="number" class="threshold-input" id="th_pt50_alertMax" value="36.200" step="0.001"><span class="threshold-unit">mm</span></div>
-  </div>
-  <div class="threshold-group">
-    <div class="threshold-group-title">ISBC-10 X (?)</div>
-    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_x_warnMin" value="-1.00" step="0.01"><span class="threshold-unit">?</span></div>
-    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_x_warnMax" value="0.50" step="0.01"><span class="threshold-unit">?</span></div>
-  </div>
-  <div class="threshold-group">
-    <div class="threshold-group-title">ISBC-10 Y (gr)</div>
-    <div class="threshold-row"><span class="threshold-label">Min warn</span><input type="number" class="threshold-input" id="th_y_warnMin" value="-2.00" step="0.01"><span class="threshold-unit">gr</span></div>
-    <div class="threshold-row"><span class="threshold-label">Max warn</span><input type="number" class="threshold-input" id="th_y_warnMax" value="0.00" step="0.01"><span class="threshold-unit">gr</span></div>
-  </div>
+  <div id="thresholdChannels"></div>
   <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();">Save & Apply</button>
 </div>
 
@@ -674,14 +654,69 @@ function togglePages() {
   if (works) works.style.display = (page === 'works') ? '' : 'none';
   setActiveNav(page);
 
+  // Sidebar rules:
+  // - Works route: show only Dashboard item (back to last viewed dashboard)
+  // - Dashboard route: show items in order WORKS, ALERTS, EXPORT, DASHBOARD
+  const navDash = document.getElementById('navDashboard');
+  const navWorks = document.getElementById('navWorks');
+  const navAlerts = document.getElementById('navAlerts');
+  const navExport = document.getElementById('navExport');
+  const navSettings = document.getElementById('navSettings');
+
+  const showEl = (el, show) => { if (el) el.style.display = show ? '' : 'none'; };
+
+  if (page === 'works') {
+    showEl(navWorks, false);
+    showEl(navAlerts, false);
+    showEl(navExport, false);
+    showEl(navSettings, false);
+    showEl(navDash, true);
+
+    // Dashboard link should take user back to the last dashboard they viewed.
+    try {
+      const last = localStorage.getItem('mae_last_dashboard_url') || '';
+      if (navDash && last && last.includes('page=dashboard')) navDash.href = last;
+      else if (navDash) navDash.href = 'index.html?page=dashboard';
+    } catch (e) { /* ignore */ }
+  } else {
+    showEl(navWorks, true);
+    showEl(navAlerts, true);
+    showEl(navExport, true);
+    // Requirements: dashboard sidebar should only show WORKS/ALERTS/EXPORT/DASHBOARD.
+    showEl(navSettings, false);
+    // On dashboard route, do not show "Dashboard" in sidebar list (requested list omits it).
+    showEl(navDash, false);
+
+    // Reorder: WORKS, ALERTS, EXPORT (after nav-section)
+    try {
+      const sidebar = document.querySelector('.sidebar');
+      const navSection = document.querySelector('.sidebar .nav-section');
+      if (sidebar && navSection) {
+        // Use `.after()` to preserve order (insertBefore(nextSibling) would reverse it).
+        let anchor = navSection;
+        [navWorks, navAlerts, navExport].forEach(el => {
+          if (el && anchor && typeof anchor.after === 'function') {
+            anchor.after(el);
+            anchor = el;
+          }
+        });
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  // Remember last dashboard route (works page uses this as "back").
+  if (page === 'dashboard') {
+    try { localStorage.setItem('mae_last_dashboard_url', window.location.href); } catch (e) { /* ignore */ }
+  }
+
   // Make it visually obvious which "page" you are on.
   const titleEl = document.getElementById('pageTitle');
   const subEl = document.getElementById('pageSubtitle');
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   if (titleEl) {
     // Keep i18n in sync with route, otherwise applyLanguage() would overwrite the title.
-    titleEl.setAttribute('data-i18n', page === 'works' ? 'page.userPage' : 'page.liveDashboard');
-    titleEl.textContent = (page === 'works') ? tr('page.userPage', 'User Page') : tr('page.liveDashboard', 'Live Dashboard');
+    titleEl.setAttribute('data-i18n', page === 'works' ? 'page.works' : 'page.liveDashboard');
+    titleEl.textContent = (page === 'works') ? tr('page.works', 'WORKS') : tr('page.liveDashboard', 'Live Dashboard');
   }
   if (subEl) {
     if (page === 'works') {

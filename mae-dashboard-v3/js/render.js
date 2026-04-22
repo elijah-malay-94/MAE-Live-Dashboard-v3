@@ -28,12 +28,18 @@ function renderDeviceList() {
     return 'var(--red)';                   // red
   };
 
+  const safe = (v) => {
+    const s = (v === undefined || v === null) ? '' : String(v).trim();
+    return s || '—';
+  };
+
   document.getElementById('deviceList').innerHTML = allDevices.map(d => `
     <div class="device-item ${d.id === activeDevice.id ? 'active' : ''}" onclick="switchDevice('${d.id}')">
       <div class="device-dot" style="background:${ledColorFromLastDiagnostic(d.last_diagnostic)}"></div>
       <div class="device-info">
-        <div class="device-name">${d.name}</div>
-        <div class="device-serial">${d.serial || d.id}</div>
+        <div class="device-name">${safe(d.type)}</div>
+        <div class="device-serial">${safe(d.position || d.devicePlace || d.position_name)}</div>
+        <div class="device-serial">${safe(d.serial || d.id)}</div>
       </div>
       <div class="device-status" style="color:${d.status==='online'?'var(--green)':'var(--muted)'}">
         ${d.status==='online'?'●':'○'}
@@ -112,6 +118,18 @@ async function switchDevice(id) {
 function renderDeviceInfo() {
   const d = activeDevice;
   if (!d) return;
+  const signalVal = Number(d.signal);
+  const signalColor =
+    signalVal === 0 ? 'var(--red)' :
+    signalVal === 1 ? '#f97316' :
+    'var(--green)';
+
+  const sdFreeVal = Number(d.sdFree);
+  const memColor =
+    !Number.isFinite(sdFreeVal) ? 'var(--muted)' :
+    sdFreeVal <= 100 ? 'var(--red)' :
+    sdFreeVal <= 1000 ? '#f97316' :
+    'var(--green)';
   const fmtIpPort = (ip, port) => {
     const a = (ip === undefined || ip === null) ? '' : String(ip).trim();
     const b = (port === undefined || port === null) ? '' : String(port).trim();
@@ -124,8 +142,8 @@ function renderDeviceInfo() {
     <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
     <div class="info-row"><span class="info-key">Typology</span><span class="info-val">${d.type}</span></div>
     <div class="info-row"><span class="info-key">Last connection</span><span class="info-val">${d.lastConnection || '—'}</span></div>
-    <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge badge-green">● ${d.signal} / 4</span></span></div>
-    <div class="info-row"><span class="info-key">Memory</span><span class="info-val">${d.memory || '—'}</span></div>
+    <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
+    <div class="info-row"><span class="info-key">Memory</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>
     <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
     <div class="info-row"><span class="info-key">Public IP</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
     <div class="info-row">
@@ -158,7 +176,11 @@ function renderKPIs() {
   const prev   = filteredData[1] || latest;
   const cfg    = getDeviceConfig();
 
-  const trendClass = (a, b) => a > b ? 'trend-up' : a < b ? 'trend-down' : 'trend-stable';
+  // Trend indicator rules:
+  // - latest > previous: orange up arrow
+  // - latest < previous: orange down arrow
+  // - latest = previous: green dot
+  const trendClass = (a, b) => (a === b ? 'trend-stable' : 'trend-change');
   const trendLabel = (a, b) => a > b ? '▲' : a < b ? '▼' : '●';
   const colors = { ok:'var(--accent)', warn:'var(--orange)', alert:'var(--red)' };
 
@@ -187,17 +209,84 @@ function renderKPIs() {
 }
 
 // ═══════════════════════ ALERTS ═══════════════════════
-function getThresholds() {
-  return {
-    pt50: {
-      warnMin:  +document.getElementById('th_pt50_warnMin').value,
-      warnMax:  +document.getElementById('th_pt50_warnMax').value,
-      alertMin: +document.getElementById('th_pt50_alertMin').value,
-      alertMax: +document.getElementById('th_pt50_alertMax').value,
-    },
-    x: { warnMin: +document.getElementById('th_x_warnMin').value, warnMax: +document.getElementById('th_x_warnMax').value },
-    y: { warnMin: +document.getElementById('th_y_warnMin').value, warnMax: +document.getElementById('th_y_warnMax').value },
+function renderThresholdChannels() {
+  const host = document.getElementById('thresholdChannels');
+  if (!host) return;
+  const cfg = getDeviceConfig();
+  const channels = Array.isArray(cfg?.channels) ? cfg.channels : [];
+
+  const storeKey = () => {
+    try {
+      const type = String(activeDevice?.type || '').trim() || 'default';
+      return `mae_thresholds_${type}`;
+    } catch (e) { return 'mae_thresholds_default'; }
   };
+
+  const loadStored = () => {
+    try { return JSON.parse(localStorage.getItem(storeKey()) || '{}') || {}; } catch (e) { return {}; }
+  };
+  const stored = loadStored();
+
+  const mkRow = (label, inputId, value, unit, step) => `
+    <div class="threshold-row">
+      <span class="threshold-label">${label}</span>
+      <input type="number" class="threshold-input" id="${inputId}" value="${value}" step="${step}">
+      <span class="threshold-unit">${unit || ''}</span>
+    </div>
+  `;
+
+  host.innerHTML = channels.map((ch) => {
+    const key = String(ch.key || '').trim();
+    const unit = ch.unit || '';
+    const cur = stored[key] || {};
+    const warnMin = cur.warnMin ?? '';
+    const warnMax = cur.warnMax ?? '';
+    const alertMin = cur.alertMin ?? '';
+    const alertMax = cur.alertMax ?? '';
+    const step = ['°C','V','Hz'].includes(unit) ? '0.1' : '0.001';
+    return `
+      <div class="threshold-group" data-th-channel="${key}">
+        <div class="threshold-group-title">${ch.label}${unit ? ` (${unit})` : ''}</div>
+        ${mkRow('Min warn',  `th_${key}_warnMin`,  warnMin,  unit, step)}
+        ${mkRow('Max warn',  `th_${key}_warnMax`,  warnMax,  unit, step)}
+        ${mkRow('Min alert', `th_${key}_alertMin`, alertMin, unit, step)}
+        ${mkRow('Max alert', `th_${key}_alertMax`, alertMax, unit, step)}
+      </div>
+    `;
+  }).join('');
+}
+
+function getThresholds() {
+  const out = {};
+  const cfg = getDeviceConfig();
+  const channels = Array.isArray(cfg?.channels) ? cfg.channels : [];
+
+  const storeKey = () => {
+    try {
+      const type = String(activeDevice?.type || '').trim() || 'default';
+      return `mae_thresholds_${type}`;
+    } catch (e) { return 'mae_thresholds_default'; }
+  };
+
+  channels.forEach((ch) => {
+    const key = String(ch.key || '').trim();
+    if (!key) return;
+    const read = (id) => {
+      const el = document.getElementById(id);
+      const v = el ? Number(el.value) : NaN;
+      return Number.isFinite(v) ? v : undefined;
+    };
+    out[key] = {
+      warnMin:  read(`th_${key}_warnMin`),
+      warnMax:  read(`th_${key}_warnMax`),
+      alertMin: read(`th_${key}_alertMin`),
+      alertMax: read(`th_${key}_alertMax`),
+    };
+  });
+
+  // Persist thresholds (best effort)
+  try { localStorage.setItem(storeKey(), JSON.stringify(out)); } catch (e) { /* ignore */ }
+  return out;
 }
 
 function getValueState(val, th) {
@@ -408,21 +497,30 @@ function renderChannelsCharts() {
 function renderPowerChart() {
   const d = activeDevice;
   if (!d) return;
-  document.getElementById('legBatt').textContent = `${d.battery||0}V`;
-  document.getElementById('legUsb').textContent  = `${d.usb||0}V`;
-  document.getElementById('legAux').textContent  = `${d.aux||0}V`;
-  const bY = 80 - ((d.battery||0) / 6) * 80;
-  const uY = 80 - ((d.usb||0)     / 6) * 80;
-  const aY = 80 - ((d.aux||0)     / 6) * 80;
-  function flatLine(y) {
-    return Array.from({length:10},(_,i)=>`${i*33},${y}`).join(' ');
-  }
+  const hist = Array.isArray(window.powerSupplySmallHistory) && window.powerSupplySmallHistory.length
+    ? window.powerSupplySmallHistory
+    : [{ batt: Number(d.battery || 0), usb: Number(d.usb || 0), aux: Number(d.aux || 0) }];
+
+  const latest = hist[hist.length - 1] || {};
+  document.getElementById('legBatt').textContent = `${Number(latest.batt ?? d.battery ?? 0).toFixed(2)}V`;
+  document.getElementById('legUsb').textContent  = `${Number(latest.usb ?? d.usb ?? 0).toFixed(2)}V`;
+  document.getElementById('legAux').textContent  = `${Number(latest.aux ?? d.aux ?? 0).toFixed(2)}V`;
+
+  const W = 300, H = 80;
+  const toX = (i) => (i / (hist.length - 1 || 1)) * W;
+  const allVals = hist.flatMap(p => [Number(p.batt||0), Number(p.usb||0), Number(p.aux||0)]);
+  const minV = Math.min(...allVals, 0);
+  const maxV = Math.max(...allVals, 6);
+  const pad = (maxV - minV) * 0.15 || 0.5;
+  const yMin = Math.max(0, minV - pad);
+  const yMax = Math.max(yMin + 1, maxV + pad);
+  const toY = (v) => H - ((v - yMin) / (yMax - yMin || 1)) * H;
+  const pts = (key) => hist.map((p, i) => `${toX(i)},${toY(Number(p[key]||0))}`).join(' ');
+
   document.getElementById('powerSvg').innerHTML = `
-    <text x="4" y="${uY-2}" fill="#64748b" font-size="7" font-family="monospace">${d.usb||0}V</text>
-    <text x="4" y="${bY-2}" fill="#64748b" font-size="7" font-family="monospace">${d.battery||0}V</text>
-    <polyline points="${flatLine(uY)}" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
-    <polyline points="${flatLine(bY)}" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(239,68,68,0.5))"/>
-    <polyline points="${flatLine(aY)}" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2,4" opacity="0.4"/>
+    <polyline points="${pts('usb')}" fill="none" stroke="#3b82f6" stroke-width="1.6" stroke-linecap="round" opacity="0.9"/>
+    <polyline points="${pts('batt')}" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" style="filter:drop-shadow(0 0 4px rgba(239,68,68,0.5))" opacity="0.95"/>
+    <polyline points="${pts('aux')}" fill="none" stroke="#10b981" stroke-width="1.6" stroke-linecap="round" opacity="0.85"/>
   `;
 }
 

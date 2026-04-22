@@ -41,9 +41,9 @@ const DEVICE_TYPE_CONFIG = {
       `<span class="td ${states[2]==='alert'?'alert-val':states[2]==='warn'?'warn-val':''}">${(r.isbcY??0).toFixed(2)}</span>`,
     ],
     alertChecks: (row, th) => [
-      { val: row.pt50,  label:'PT-50 fs1', unit:'mm', th: th.pt50 },
-      { val: row.isbcX, label:'ISBC-10 X', unit:'?',  th: th.x    },
-      { val: row.isbcY, label:'ISBC-10 Y', unit:'gr', th: th.y    },
+      { val: row.pt50,  label:'PT-50 fs1', unit:'mm', th: th.pt50  || {} },
+      { val: row.isbcX, label:'ISBC-10 X', unit:'?',  th: th.isbcX || {} },
+      { val: row.isbcY, label:'ISBC-10 Y', unit:'gr', th: th.isbcY || {} },
     ],
     mapRow: (item) => ({
       date:  formatApiDate(item.date),
@@ -84,9 +84,9 @@ const DEVICE_TYPE_CONFIG = {
       `<span class="td">${(r.voltage??0).toFixed(1)}</span>`,
     ],
     alertChecks: (row, th) => [
-      { val: row.displacement, label:'Displacement', unit:'mm', th: th.pt50 },
-      { val: row.frequency,    label:'Frequency',    unit:'Hz', th: th.x    },
-      { val: row.temperature,  label:'Temperature',  unit:'°C', th: th.y    },
+      { val: row.displacement, label:'Displacement', unit:'mm', th: th.displacement || {} },
+      { val: row.frequency,    label:'Frequency',    unit:'Hz', th: th.frequency    || {} },
+      { val: row.temperature,  label:'Temperature',  unit:'°C', th: th.temperature  || {} },
     ],
     mapRow: (item) => ({
       date:         formatApiDate(item.date),
@@ -124,9 +124,9 @@ const DEVICE_TYPE_CONFIG = {
       `<span class="td">${(r.ch3??0).toFixed(2)}</span>`,
     ],
     alertChecks: (row, th) => [
-      { val: row.ch1, label:'CH1', unit:'', th: th.pt50 },
-      { val: row.ch2, label:'CH2', unit:'', th: th.x    },
-      { val: row.ch3, label:'CH3', unit:'', th: th.y    },
+      { val: row.ch1, label:'CH1', unit:'', th: th.ch1 || {} },
+      { val: row.ch2, label:'CH2', unit:'', th: th.ch2 || {} },
+      { val: row.ch3, label:'CH3', unit:'', th: th.ch3 || {} },
     ],
     // ⚠️  Update field names here once Claudio confirms the Sismalog API response shape
     mapRow: (item) => ({
@@ -228,12 +228,11 @@ function buildConfigFromHeaders(header) {
   ];
 
   const alertChecks = (row, th) => {
-    const thKeys = ['pt50', 'x', 'y']; // reuse the existing threshold inputs
-    return entries.map((e, i) => ({
+    return entries.map((e) => ({
       val:   row[e.key],
       label: e.name,
       unit:  e.unit,
-      th:    th[thKeys[i]] || th.pt50,
+      th:    th[e.key] || {},
     }));
   };
 

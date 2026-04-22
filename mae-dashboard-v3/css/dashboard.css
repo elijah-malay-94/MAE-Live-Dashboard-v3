@@ -110,17 +110,13 @@
   padding:3px 7px; 
   border-radius:6px; 
 }
-.trend-up { 
-  background:rgba(239,68,68,0.1); 
-  color:var(--red); 
+.trend-change { 
+  background:rgba(234,88,12,0.12); 
+  color:var(--orange); 
 }
 .trend-stable { 
   background:rgba(16,185,129,0.1); 
   color:var(--green); }
-.trend-down { 
-  background:rgba(16,185,129,0.1); 
-  color:var(--green); 
-}
 
 /* ── MAIN GRID ── */
 .main-grid { 

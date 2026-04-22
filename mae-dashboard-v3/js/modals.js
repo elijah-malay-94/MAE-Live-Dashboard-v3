@@ -27,8 +27,10 @@ function startAutoRefresh() {
   clearInterval(refreshTimer);
   refreshTimer = setInterval(async () => {
     countdown--;
-    document.getElementById('refreshCountdown').textContent  = `${countdown}s`;
-    document.getElementById('refreshCountdown2').textContent = `${countdown}s`;
+    const cd1 = document.getElementById('refreshCountdown');
+    const cd2 = document.getElementById('refreshCountdown2');
+    if (cd1) cd1.textContent = `${countdown}s`;
+    if (cd2) cd2.textContent = `${countdown}s`;
     if (countdown <= 0) {
       countdown = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
         ? AUTO_REFRESH_SECONDS
@@ -39,23 +41,45 @@ function startAutoRefresh() {
   }, 1000);
 }
 
-function toggleAutoRefresh() {
-  liveMode = !liveMode;
+function setLiveMode(next, opts = {}) {
+  liveMode = Boolean(next);
   const btn   = document.getElementById('refreshBtn');
   const label = document.getElementById('statusLabel');
+  const cd1 = document.getElementById('refreshCountdown');
+  const cd2 = document.getElementById('refreshCountdown2');
+
+  const resetDatesToToday = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const fromEl = document.getElementById('dateFrom');
+    const toEl = document.getElementById('dateTo');
+    if (fromEl) fromEl.value = today;
+    if (toEl) toEl.value = today;
+  };
+
   if (liveMode) {
+    if (opts.resetDates) resetDatesToToday();
     startAutoRefresh();
-    btn.classList.remove('active');
-    label.textContent = 'LIVE';
+    if (btn) btn.classList.remove('active');
+    if (label) label.textContent = 'LIVE';
     if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
+    if (opts.reloadNow && typeof loadData === 'function') {
+      // Fire-and-forget; refresh loop will keep it updated.
+      try { loadData(); } catch (e) { /* ignore */ }
+    }
   } else {
     clearInterval(refreshTimer);
-    btn.classList.add('active');
-    label.textContent = 'PAUSED';
-    document.getElementById('refreshCountdown').textContent  = 'paused';
-    document.getElementById('refreshCountdown2').textContent = 'paused';
+    if (btn) btn.classList.add('active');
+    if (label) label.textContent = 'PAUSED';
+    if (cd1) cd1.textContent = 'paused';
+    if (cd2) cd2.textContent = 'paused';
     if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
   }
+}
+
+function toggleAutoRefresh() {
+  // Clicking "PAUSED" should return to Live mode and reset period to today.
+  if (liveMode) setLiveMode(false);
+  else setLiveMode(true, { resetDates: true, reloadNow: true });
 }
 
 // ═══════════════════════ EXPORT ═══════════════════════
@@ -678,7 +702,12 @@ function downloadFile(name, type, content) {
 }
 
 // ═══════════════════════ THRESHOLD PANEL ═══════════════════════
-function openThresholds()  { document.getElementById('thresholdPanel').classList.add('open'); }
+function openThresholds()  {
+  document.getElementById('thresholdPanel').classList.add('open');
+  if (typeof renderThresholdChannels === 'function') {
+    try { renderThresholdChannels(); } catch (e) { /* ignore */ }
+  }
+}
 function closeThresholds() { document.getElementById('thresholdPanel').classList.remove('open'); }
 
 document.addEventListener('click', e => {
@@ -833,6 +862,7 @@ const MAX_POWER_POINTS = 40;
 let powerHistory = [];
 let powerModalTimer = null;
 let powerLineVisibility = { batt:true, usb:true, aux:true };
+let powerSupplyLastChargeStatus = null; // 0/1 from latest diagnostic record
 
 function buildInitialPowerHistory(device) {
   const now = Date.now();
@@ -851,15 +881,84 @@ function buildInitialPowerHistory(device) {
   });
 }
 
+function setPowerChargeIndicator(chargeStatus) {
+  const v = Number(chargeStatus);
+  if (!(v === 0 || v === 1)) return;
+  powerSupplyLastChargeStatus = v;
+  const color = v === 1 ? 'var(--green)' : '#f97316';
+  const dot = document.getElementById('powerStatusDot');
+  if (dot) dot.style.background = color;
+  const icon = document.getElementById('powerModalIcon');
+  if (icon) icon.style.color = color;
+}
+
+function mapPowerSupplyRecords(records) {
+  const list = Array.isArray(records) ? records : [];
+  // We want oldest → newest for chart lines.
+  const ordered = [...list].reverse();
+  return ordered.map((r) => {
+    const tsRaw = r?.timestamp ?? r?.ts ?? r?.time ?? r?.date ?? '';
+    const dt = tsRaw ? new Date(String(tsRaw).replace(' ', 'T')) : new Date();
+    const batt = parseFloat(r?.['battery-voltage'] ?? r?.batteryVoltage ?? r?.battery ?? 0);
+    const usb = parseFloat(r?.['usb-voltage'] ?? r?.usbVoltage ?? r?.usb ?? 0);
+    const aux = parseFloat(r?.['aux-voltage'] ?? r?.auxVoltage ?? r?.aux ?? 0);
+    return {
+      ts: dt,
+      label: dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+      batt: Number.isFinite(batt) ? batt : 0,
+      usb: Number.isFinite(usb) ? usb : 0,
+      aux: Number.isFinite(aux) ? aux : 0,
+      chargeStatus: Number(r?.['charge-status'] ?? r?.chargeStatus),
+    };
+  });
+}
+
+async function updatePowerSupplyData() {
+  if (!activeDevice) return;
+  const modal = document.getElementById('powerModal');
+  const isOpen = Boolean(modal && modal.classList.contains('open'));
+  const limit = isOpen ? 100 : 10;
+  if (typeof fetchPowerSupplyHistory !== 'function') return;
+
+  const records = await fetchPowerSupplyHistory(activeDevice.id, limit);
+  const mapped = mapPowerSupplyRecords(records);
+  if (mapped.length) {
+    // Update charge indicator from newest record (last item after ordering).
+    const last = mapped[mapped.length - 1];
+    setPowerChargeIndicator(last.chargeStatus);
+  }
+
+  // Closed box uses these points for the small chart.
+  window.powerSupplySmallHistory = mapped.slice(-10);
+  if (typeof renderPowerChart === 'function') renderPowerChart();
+
+  if (isOpen) {
+    powerLineVisibility = { batt:true, usb:true, aux:true };
+    powerHistory = mapped.slice(-100);
+    renderPowerModal();
+  }
+}
+
 function openPowerModal() {
   const modal = document.getElementById('powerModal');
   if (modal) modal.classList.add('open');
-  initInlinePowerLive();
+  // Large view: graph last 100 diagnostics records.
+  updatePowerSupplyData();
+  clearInterval(powerModalTimer);
+  const periodMs = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
+    ? (AUTO_REFRESH_SECONDS * 1000)
+    : 120000;
+  powerModalTimer = setInterval(() => {
+    const idEl = document.getElementById('pmDeviceId');
+    if (idEl) idEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
+    updatePowerSupplyData();
+  }, periodMs);
 }
 
 function closePowerModal() {
   const modal = document.getElementById('powerModal');
   if (modal) modal.classList.remove('open');
+  clearInterval(powerModalTimer);
 }
 
 function tickPowerModal() {
@@ -883,17 +982,9 @@ function initInlinePowerLive() {
   deviceIdEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
   // Always start inline view with all traces visible for readability.
   powerLineVisibility = { batt:true, usb:true, aux:true };
+  // Kept for backward compatibility (now driven by updatePowerSupplyData()).
   powerHistory = buildInitialPowerHistory(activeDevice);
   renderPowerModal();
-  clearInterval(powerModalTimer);
-  const periodMs = (typeof AUTO_REFRESH_SECONDS === 'number' && AUTO_REFRESH_SECONDS > 0)
-    ? (AUTO_REFRESH_SECONDS * 1000)
-    : 120000;
-  powerModalTimer = setInterval(() => {
-    const idEl = document.getElementById('pmDeviceId');
-    if (idEl) idEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
-    tickPowerModal();
-  }, periodMs);
 }
 
 function renderPowerModal() {

@@ -20,7 +20,7 @@
       'nav.devices': 'Devices',
 
       'page.liveDashboard': 'Live Dashboard',
-      'page.userPage': 'User Page',
+      'page.works': 'WORKS',
       'works.subtitle': 'Select a work to view measures',
 
       'works.search.placeholder': 'Search works…',
@@ -100,7 +100,7 @@
       'nav.devices': 'Dispositivi',
 
       'page.liveDashboard': 'Cruscotto Live',
-      'page.userPage': 'Pagina Utente',
+      'page.works': 'Lavori',
       'works.subtitle': 'Seleziona un lavoro per vedere le misure',
 
       'works.search.placeholder': 'Cerca lavori…',

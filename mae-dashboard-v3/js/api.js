@@ -938,6 +938,8 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
     if (batt  > 0) activeDevice.battery = batt;
     if (usb   > 0) activeDevice.usb     = usb;
     if (aux   > 0) activeDevice.aux     = aux;
+    // Keep raw sd-free for UI coloring rules.
+    if (Number.isFinite(sdFree)) activeDevice.sdFree = sdFree;
     if (sdFree > 0) activeDevice.memory = `${(sdFree / 1024).toFixed(1)} Gb`;
     activeDevice.lastConnection = lastConn;
 
@@ -984,6 +986,69 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
   } catch (err) {
     console.warn('[fetchDevicesInfo]', err.message);
     return null;
+  }
+}
+
+// ═══════════════════════ API: POWER SUPPLY (diagnostics) ═══════════════════════
+// We need the latest diagnostic records to graph power supply history + charge-status.
+// Backend path naming can vary; we try a few common variants.
+function getMockPowerSupplyHistory(deviceId, limit = 10, workId = getActiveWorkId()) {
+  const wid = String(workId || '').trim();
+  const did = String(deviceId || '').trim();
+  const rng = _mulberry32(_seedFromStrings('power', wid, did, limit));
+  const now = Date.now();
+  const stepMs = 60 * 1000; // 1 min between diagnostic points
+  let batt = _clamp(3.4 + rng() * 0.8, 3.0, 4.2);
+  let usb = _clamp(4.7 + rng() * 0.6, 0, 5.5);
+  let aux = _clamp(rng() * 1.4, 0, 2.2);
+  const chargeStatus = rng() > 0.35 ? 1 : 0;
+
+  const points = Array.from({ length: Math.max(1, Number(limit) || 10) }, (_, i) => {
+    const ts = now - (Math.max(1, Number(limit) || 10) - 1 - i) * stepMs;
+    batt = _clamp(batt + (rng() - 0.5) * 0.05, 3.0, 4.2);
+    usb = _clamp(usb + (rng() - 0.5) * 0.08, 0, 5.5);
+    aux = _clamp(aux + (rng() - 0.5) * 0.06, 0, 2.2);
+    return {
+      timestamp: new Date(ts).toISOString(),
+      'battery-voltage': batt.toFixed(2),
+      'usb-voltage': usb.toFixed(2),
+      'aux-voltage': aux.toFixed(2),
+      'charge-status': chargeStatus,
+    };
+  });
+
+  // Return newest-first to match other API lists; UI can reverse if needed.
+  return points.reverse();
+}
+
+async function fetchPowerSupplyHistory(deviceId, limit = 10, workId = getActiveWorkId()) {
+  try {
+    if (isMockMode()) return getMockPowerSupplyHistory(deviceId, limit, workId);
+
+    const did = encodeURIComponent(deviceId);
+    const lim = Math.max(1, Math.min(200, Number(limit) || 10));
+    const candidates = [
+      `/api/v1/devices/${did}/diagnostic/limit/${lim}/offset/0`,
+      `/api/v1/devices/${did}/diagnostics/limit/${lim}/offset/0`,
+      `/api/v1/devices/${did}/diagnostic?limit=${lim}&offset=0`,
+      `/api/v1/devices/${did}/diagnostics?limit=${lim}&offset=0`,
+    ];
+
+    let lastErr = null;
+    for (const path of candidates) {
+      try {
+        const data = await apiFetch(path);
+        // Accept either {records:[...]} or direct array
+        const records = Array.isArray(data?.records) ? data.records : (Array.isArray(data) ? data : []);
+        if (records.length) return records;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error('No diagnostic endpoint available');
+  } catch (err) {
+    console.warn('[fetchPowerSupplyHistory]', err?.message || err);
+    return [];
   }
 }
 

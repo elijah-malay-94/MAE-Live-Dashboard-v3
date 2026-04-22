@@ -129,11 +129,9 @@ async function init() {
   }
 
   const today   = new Date();
-  const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(today.getDate() - 7);
   const dateFromEl = document.getElementById('dateFrom');
   const dateToEl = document.getElementById('dateTo');
-  if (dateFromEl) dateFromEl.value = sevenDaysAgo.toISOString().slice(0, 10);
+  if (dateFromEl) dateFromEl.value = today.toISOString().slice(0, 10);
   if (dateToEl) dateToEl.value   = today.toISOString().slice(0, 10);
 
   await ensureAuth();
@@ -209,7 +207,12 @@ async function loadData() {
   try {
     await fetchDevicesInfo(activeDevice.id);
     if (typeof renderDeviceInfo === 'function') renderDeviceInfo();
-    if (typeof renderPowerChart === 'function') renderPowerChart();
+    if (typeof updatePowerSupplyData === 'function') {
+      // Use diagnostics history limits: 10 points closed, 100 points open.
+      updatePowerSupplyData();
+    } else if (typeof renderPowerChart === 'function') {
+      renderPowerChart();
+    }
   } catch (e) { /* ignore power/info refresh failures */ }
   // Ensure we never show stale data while a new device/date range is loading.
   allData = [];
@@ -217,6 +220,14 @@ async function loadData() {
   activeAlerts = [];
   if (typeof clearDataViews === 'function') clearDataViews('Loading…');
 
+  // Live mode always references "today → today" and auto-refreshes the last readings.
+  if (liveMode) {
+    const today = new Date().toISOString().slice(0, 10);
+    const fromEl = document.getElementById('dateFrom');
+    const toEl = document.getElementById('dateTo');
+    if (fromEl) fromEl.value = today;
+    if (toEl) toEl.value = today;
+  }
   const from = document.getElementById('dateFrom').value;
   const to   = document.getElementById('dateTo').value;
   try {
@@ -225,11 +236,12 @@ async function loadData() {
     allData = [];
     showErrorMessage('Could not load data: ' + (err.message || 'Server error. Try a different date range.'));
   }
+  // Always operate on the last 50 readings (both Live and Previous data mode).
+  if (Array.isArray(allData)) allData = allData.slice(0, 50);
   applyFilters();
 }
 
-const MAX_DISPLAY_RECORDS = 500;   // cap for "all data" view
-const TRIM_FRACTION       = 0.05;  // trim 5% from each end before capping
+const MAX_DISPLAY_RECORDS = 50;   // always show last 50 readings
 
 function applyFilters() {
   const interval = document.getElementById('intervalSelect').value;
@@ -255,10 +267,7 @@ function applyFilters() {
       data = interval === 'hour' ? data.slice(0, 6) : data.slice(0, 10);
     }
   } else {
-    // Trim 5% from the oldest end, then cap newest end at MAX_DISPLAY_RECORDS
-    const trimEnd = Math.floor(data.length * TRIM_FRACTION);
-    if (trimEnd > 0) data = data.slice(0, data.length - trimEnd); // drop oldest 5%
-    data = data.slice(0, MAX_DISPLAY_RECORDS);                    // keep newest 500
+    data = data.slice(0, MAX_DISPLAY_RECORDS);
   }
 
   filteredData = data;
@@ -267,6 +276,8 @@ function applyFilters() {
 
 async function applyDateFilter() {
   try {
+    // Previous data mode: applying a period pauses Live mode.
+    if (typeof setLiveMode === 'function') setLiveMode(false);
     await loadData();
   } catch (err) {
     showErrorMessage(err?.message || 'Failed to load data.');
