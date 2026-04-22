@@ -149,7 +149,7 @@ body::before {
   font-family: 'DM Mono', monospace;
   font-size: 7px;
   line-height: 1.1;
-  color: var(--muted);
+  color: var(--accent3);
   text-align: center;
   letter-spacing: 0.4px;
   text-transform: initial;
@@ -174,15 +174,15 @@ body::before {
   grid-row: 2;
   margin-top: 0;
   width: 100%;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-size: 8px;
   line-height: 1.2;
-  color: rgba(37,99,235,0.70);  /* softer blue */
-  font-weight: 600;
+  color: rgb(180, 125, 6);  /* match MAE logo color */
+  font-weight: 800;
   text-shadow: none;
   text-transform: uppercase;
   text-align: left;
-  letter-spacing: 0.6px; /* moderate spacing so it still fits */
+  letter-spacing: 0.5px; /* moderate spacing so it still fits */
   word-spacing: 1px;     /* gentle gap between words */
   white-space: nowrap;   /* force single line */
   overflow: hidden;
@@ -310,6 +310,7 @@ body::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: uppercase;
 }
 
 .device-serial {
@@ -319,6 +320,7 @@ body::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-transform: uppercase;
 }
 
 .device-status {

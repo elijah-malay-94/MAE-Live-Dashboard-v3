@@ -37,8 +37,8 @@ function renderDeviceList() {
     <div class="device-item ${d.id === activeDevice.id ? 'active' : ''}" onclick="switchDevice('${d.id}')">
       <div class="device-dot" style="background:${ledColorFromLastDiagnostic(d.last_diagnostic)}"></div>
       <div class="device-info">
-        <div class="device-name">${safe(d.type)}</div>
-        <div class="device-serial">${safe(d.position || d.devicePlace || d.position_name)}</div>
+        <div class="device-serial">${safe(d.type)}</div>
+        <div class="device-name">${safe(d.position || d.devicePlace || d.position_name || d.serial)}</div>
         <div class="device-serial">${safe(d.serial || d.id)}</div>
       </div>
       <div class="device-status" style="color:${d.status==='online'?'var(--green)':'var(--muted)'}">

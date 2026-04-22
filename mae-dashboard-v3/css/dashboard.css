@@ -86,7 +86,8 @@
   width:5px; 
   height:5px; 
   border-radius:50%; 
-  flex-shrink:0; 
+  flex-shrink:0;
+  visibility: hidden; 
 }
 .kpi-value { 
   font-family:'Syne',sans-serif; 
