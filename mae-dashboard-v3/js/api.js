@@ -1046,21 +1046,10 @@ async function fetchPowerSupplyHistory(deviceId, limit = 10, workId = getActiveW
     const candidates = [
       // Work-scoped (common)
       ...(wid ? [
-        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/diagnostic/limit/${lim}/offset/0`,
-        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/diagnostics/limit/${lim}/offset/0`,
-        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/powersupply/limit/${lim}/offset/0`,
         `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/powersupply/limit/${lim}`,
+        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/powersupply/limit/${lim}/offset/0`,
       ] : []),
 
-      // Legacy (device-scoped)
-      `/api/v1/devices/${did}/diagnostic/limit/${lim}/offset/0`,
-      `/api/v1/devices/${did}/diagnostics/limit/${lim}/offset/0`,
-      `/api/v1/devices/${did}/powersupply/limit/${lim}/offset/0`,
-      `/api/v1/devices/${did}/powersupply/limit/${lim}`,
-
-      // Query-string variants
-      `/api/v1/devices/${did}/diagnostic?limit=${lim}&offset=0`,
-      `/api/v1/devices/${did}/diagnostics?limit=${lim}&offset=0`,
     ];
 
     let lastErr = null;

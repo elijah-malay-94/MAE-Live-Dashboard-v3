@@ -882,8 +882,8 @@ function buildInitialPowerHistory(device) {
 }
 
 function setPowerChargeIndicator(chargeStatus) {
-  const v = Number(chargeStatus);
-  if (!(v === 0 || v === 1)) return;
+  const v = Number(chargeStatus);  
+  if (!(v === 0 || v === 1)) return;  
   powerSupplyLastChargeStatus = v;
   const color = v === 1 ? 'var(--green)' : '#f97316';
   const dot = document.getElementById('powerStatusDot');
@@ -911,17 +911,17 @@ function mapPowerSupplyRecords(records) {
 
     const batt = parseFloat(
       raw['battery-voltage'] ?? raw.batteryVoltage ?? raw.battery ??
-      nested['battery-voltage'] ?? nested.batteryVoltage ?? nested.battery ??
+      nested[1] ?? nested.batteryVoltage ?? nested.battery ??
       0
     );
     const usb = parseFloat(
       raw['usb-voltage'] ?? raw.usbVoltage ?? raw.usb ??
-      nested['usb-voltage'] ?? nested.usbVoltage ?? nested.usb ??
+      nested[3] ?? nested.usbVoltage ?? nested.usb ??
       0
     );
     const aux = parseFloat(
       raw['aux-voltage'] ?? raw.auxVoltage ?? raw.aux ??
-      nested['aux-voltage'] ?? nested.auxVoltage ?? nested.aux ??
+      nested[2] ?? nested.auxVoltage ?? nested.aux ??
       0
     );
     return {
@@ -932,7 +932,7 @@ function mapPowerSupplyRecords(records) {
       aux: Number.isFinite(aux) ? aux : 0,
       chargeStatus: Number(
         raw['charge-status'] ?? raw.chargeStatus ??
-        nested['charge-status'] ?? nested.chargeStatus
+        nested[0] ?? nested.chargeStatus
       ),
     };
   });

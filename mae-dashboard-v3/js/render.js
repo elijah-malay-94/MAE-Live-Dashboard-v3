@@ -198,7 +198,7 @@ function renderKPIs() {
 
   document.getElementById('kpiGrid').innerHTML = cards.map(c => `
     <div class="kpi-card ${c.state==='alert'?'alert-state':c.state==='warn'?'warn-state':''}">
-      <div class="kpi-label"><span class="kpi-dot" style="background:${c.dot}"></span>${c.label}</div>
+      <div class="kpi-label"><!--span class="kpi-dot" style="background:${c.dot}"></span-->${c.label}</div>
       <div class="kpi-value" style="color:${colors[c.state]||'var(--accent)'}">
         ${c.value}<span style="font-size:14px;font-weight:400;color:var(--muted)">${c.unit}</span>
       </div>
