@@ -630,7 +630,22 @@ async function ensureAuth() {
     console.log('%c[auth] Using token from localStorage', 'color:#16a34a;font-weight:700');
     return existing;
   }
- return "";
+  // In mock mode, allow the dashboard to load without a manual login step.
+  if (isMockMode()) {
+    console.log('%c[auth] No token found — using mock login', 'color:#f59e0b;font-weight:700');
+    try {
+      return doMockLogin('demo');
+    } catch (e) {
+      // Fallback: create a minimal token so getUserId() works.
+      const fakeToken = `mock.${btoa(JSON.stringify({ user_id: '1', user: 'demo', iat: Date.now() }))}.sig`;
+      setAuthToken(fakeToken);
+      setUserName('demo');
+      setUserId('1');
+      return fakeToken;
+    }
+  }
+
+  return "";
 }
 
 function apiUrl(path) {
@@ -1025,19 +1040,39 @@ async function fetchPowerSupplyHistory(deviceId, limit = 10, workId = getActiveW
   try {
     if (isMockMode()) return getMockPowerSupplyHistory(deviceId, limit, workId);
 
+    const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
     const lim = Math.max(1, Math.min(200, Number(limit) || 10));
     const candidates = [
-      `/api/v1/works/${workId}/devices/${did}/powersupply/limit/${lim}`,
-      `/api/v1/works/${workId}/devices/${did}/powersupply/limit/${lim}/offset/0`
+      // Work-scoped (common)
+      ...(wid ? [
+        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/diagnostic/limit/${lim}/offset/0`,
+        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/diagnostics/limit/${lim}/offset/0`,
+        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/powersupply/limit/${lim}/offset/0`,
+        `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/powersupply/limit/${lim}`,
+      ] : []),
+
+      // Legacy (device-scoped)
+      `/api/v1/devices/${did}/diagnostic/limit/${lim}/offset/0`,
+      `/api/v1/devices/${did}/diagnostics/limit/${lim}/offset/0`,
+      `/api/v1/devices/${did}/powersupply/limit/${lim}/offset/0`,
+      `/api/v1/devices/${did}/powersupply/limit/${lim}`,
+
+      // Query-string variants
+      `/api/v1/devices/${did}/diagnostic?limit=${lim}&offset=0`,
+      `/api/v1/devices/${did}/diagnostics?limit=${lim}&offset=0`,
     ];
 
     let lastErr = null;
     for (const path of candidates) {
       try {
         const data = await apiFetch(path);
-        // Accept either {records:[...]} or direct array
-        const records = Array.isArray(data?.records) ? data.records : (Array.isArray(data) ? data : []);
+        // Accept {records:[...]}, {data:[...]}, or direct array
+        const records = Array.isArray(data?.records)
+          ? data.records
+          : Array.isArray(data?.data)
+            ? data.data
+            : (Array.isArray(data) ? data : []);
         if (records.length) return records;
       } catch (e) {
         lastErr = e;

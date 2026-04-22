@@ -897,18 +897,43 @@ function mapPowerSupplyRecords(records) {
   // We want oldest → newest for chart lines.
   const ordered = [...list].reverse();
   return ordered.map((r) => {
-    const tsRaw = r?.timestamp ?? r?.ts ?? r?.time ?? r?.date ?? '';
+    const raw = (r && typeof r === 'object') ? r : {};
+    const nested = (raw.data && typeof raw.data === 'object') ? raw.data : {};
+
+    const tsRaw =
+      raw.timestamp ??
+      raw.ts ??
+      raw.datetime ??
+      raw.time ??
+      (raw.date && raw.time ? `${raw.date} ${raw.time}` : raw.date) ??
+      '';
     const dt = tsRaw ? new Date(String(tsRaw).replace(' ', 'T')) : new Date();
-    const batt = parseFloat(r?.['battery-voltage'] ?? r?.batteryVoltage ?? r?.battery ?? 0);
-    const usb = parseFloat(r?.['usb-voltage'] ?? r?.usbVoltage ?? r?.usb ?? 0);
-    const aux = parseFloat(r?.['aux-voltage'] ?? r?.auxVoltage ?? r?.aux ?? 0);
+
+    const batt = parseFloat(
+      raw['battery-voltage'] ?? raw.batteryVoltage ?? raw.battery ??
+      nested['battery-voltage'] ?? nested.batteryVoltage ?? nested.battery ??
+      0
+    );
+    const usb = parseFloat(
+      raw['usb-voltage'] ?? raw.usbVoltage ?? raw.usb ??
+      nested['usb-voltage'] ?? nested.usbVoltage ?? nested.usb ??
+      0
+    );
+    const aux = parseFloat(
+      raw['aux-voltage'] ?? raw.auxVoltage ?? raw.aux ??
+      nested['aux-voltage'] ?? nested.auxVoltage ?? nested.aux ??
+      0
+    );
     return {
       ts: dt,
       label: dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
       batt: Number.isFinite(batt) ? batt : 0,
       usb: Number.isFinite(usb) ? usb : 0,
       aux: Number.isFinite(aux) ? aux : 0,
-      chargeStatus: Number(r?.['charge-status'] ?? r?.chargeStatus),
+      chargeStatus: Number(
+        raw['charge-status'] ?? raw.chargeStatus ??
+        nested['charge-status'] ?? nested.chargeStatus
+      ),
     };
   });
 }
