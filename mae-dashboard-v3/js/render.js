@@ -44,6 +44,8 @@ function renderDeviceList() {
 
 // Clears all data-driven UI so we never show stale data when switching devices or date ranges.
 function clearDataViews(message = 'No data') {
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const msg = message === 'No data' ? tr('common.noData', 'No data') : message;
   // KPIs
   const kpi = document.getElementById('kpiGrid');
   if (kpi) {
@@ -62,7 +64,7 @@ function clearDataViews(message = 'No data') {
   const stats = document.getElementById('chartStats');
   if (title) title.textContent = '—';
   if (badge) badge.textContent = '';
-  if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">No data</text>`;
+  if (svg)   svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">${msg}</text>`;
   if (svgWrap) svgWrap.style.height = '48px';
   if (ylabs) ylabs.innerHTML = '';
   if (xlabs) xlabs.innerHTML = '';
@@ -80,7 +82,7 @@ function clearDataViews(message = 'No data') {
   const body = document.getElementById('tableBody');
   if (body) body.innerHTML = '';
   const count = document.getElementById('tableCount');
-  if (count) count.textContent = '0 records';
+  if (count) count.textContent = `0 ${tr('common.records', 'records')}`;
 }
 
 async function switchDevice(id) {

@@ -65,12 +65,12 @@
     <div class="login-logo-wrap">
       <div class="logo-stack">
         <div class="logo-mark logo-mark--img"><img class="app-logo" src="images/mae-logo.png" alt="MAE" /></div>
-        <div class="logo-caption">ADVANCED GEOPHYSICS INSTRUMENTS</div>
       </div>
-      <div>
+      <div class="login-brand-wrap">
         <div class="login-brand">DataLogger</div>
         <div class="login-brand-sub">MONITOR v2</div>
       </div>
+      <div class="login-caption-full">ADVANCED GEOPHYSICS INSTRUMENTS</div>
     </div>
     <h2 class="login-title">Welcome back</h2>
     <p class="login-sub">Sign in to access the live dashboard</p>
@@ -102,31 +102,31 @@
     <div class="sidebar-logo-text">DataLogger<small>MONITOR v2</small></div>
   </div>
 
-  <div class="nav-section">Navigation</div>
+  <div class="nav-section" data-i18n="nav.navigation">Navigation</div>
   <a class="nav-item active" href="index.html?page=dashboard" style="text-decoration:none;" id="navDashboard">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    Dashboard
+    <span data-i18n="nav.dashboard">Dashboard</span>
   </a>
   <a class="nav-item" href="#" style="text-decoration:none;" id="navWorks" onclick="navigateToWorks(event)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2"/></svg>
-    Works
+    <span data-i18n="nav.works">Works</span>
   </a>
   <div class="nav-item" onclick="openThresholds()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    Alerts
+    <span data-i18n="nav.alerts">Alerts</span>
     <span id="alertCount" style="margin-left:auto;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
   </div>
   <div class="nav-item" onclick="openExport()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Export
+    <span data-i18n="nav.export">Export</span>
   </div>
   <div class="nav-item" onclick="openThresholds()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    Settings
+    <span data-i18n="nav.settings">Settings</span>
   </div>
 
   <div class="device-list" id="sidebarDevices">
-    <div class="device-section-label">Devices</div>
+    <div class="device-section-label" data-i18n="nav.devices">Devices</div>
     <div id="deviceList"></div>
   </div>
 
@@ -139,7 +139,7 @@
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="topbar-left">
-      <h1 id="pageTitle">Live Dashboard</h1>
+      <h1 id="pageTitle" data-i18n="page.liveDashboard">Live Dashboard</h1>
       <div class="subtitle" id="pageSubtitle">DEVICE: M22MOP0007 · DL8 · AUTO-REFRESH ON</div>
     </div>
     <div class="topbar-right">
@@ -149,13 +149,18 @@
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         <span id="refreshCountdown">120s</span>
       </div>  
+      <button class="btn" id="themeToggleBtn" onclick="toggleTheme()" aria-pressed="false" title="Light mode">
+        <svg data-theme-icon="sun" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg data-theme-icon="moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
+        <span id="themeToggleLabel">Light</span>
+      </button>
       <button class="btn" onclick="openThresholds()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Alerts
+        <span data-i18n="nav.alerts">Alerts</span>
       </button>
       <button class="btn btn-primary" onclick="openExport()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export
+        <span data-i18n="nav.export">Export</span>
       </button>
       </div>
       <div class="topbar-divider"></div>
@@ -166,7 +171,7 @@
         </div>
         <button class="btn logout-item" id="authBtn" title="Logout">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Logout
+          <span data-i18n="auth.logout">Logout</span>
         </button>
       </div>
     </div>
@@ -177,38 +182,38 @@
     <div class="api-hint" id="apiHintWorks" style="display:none;"></div>
 
     <div class="works-toolbar">
-      <input id="worksSearch" class="works-search" value="" placeholder="Search works…" />
+      <input id="worksSearch" class="works-search" value="" placeholder="Search works…" data-i18n-placeholder="works.search.placeholder" />
       <div class="chip-row">
-        <span class="chip active" data-work-filter="all">All</span>
-        <span class="chip" data-work-filter="active">Active</span>
-        <span class="chip" data-work-filter="inactive">Inactive</span>
+        <span class="chip active" data-work-filter="all" data-i18n="works.filter.all">All</span>
+        <span class="chip" data-work-filter="active" data-i18n="works.filter.active">Active</span>
+        <span class="chip" data-work-filter="inactive" data-i18n="works.filter.inactive">Inactive</span>
       </div>
     </div>
 
     <div class="summary-panel">
       <div class="summary-head">
-        <div class="summary-title">Summary</div>
+        <div class="summary-title" data-i18n="works.summary">Summary</div>
         <div class="summary-sub" id="summarySub">—</div>
       </div>
       <div class="summary-body">
         <div class="summary-stats">
           <div class="stat-tile">
-            <div class="stat-k"><span class="dot total"></span>Total works</div>
+            <div class="stat-k"><span class="dot total"></span><span data-i18n="works.totalWorks">Total works</span></div>
             <div class="stat-v" id="sumTotal">—</div>
             <div class="stat-hint" id="sumTotalHint">—</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-k"><span class="dot active"></span>Active works</div>
+            <div class="stat-k"><span class="dot active"></span><span data-i18n="works.activeWorks">Active works</span></div>
             <div class="stat-v" id="sumActive">—</div>
             <div class="stat-hint" id="sumActiveHint">—</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-k"><span class="dot inactive"></span>Inactive works</div>
+            <div class="stat-k"><span class="dot inactive"></span><span data-i18n="works.inactiveWorks">Inactive works</span></div>
             <div class="stat-v" id="sumInactive">—</div>
             <div class="stat-hint" id="sumInactiveHint">—</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-k"><span class="dot yellow"></span>Devices</div>
+            <div class="stat-k"><span class="dot yellow"></span><span data-i18n="common.devices">Devices</span></div>
             <div class="stat-v" id="sumDevices">—</div>
             <div class="stat-hint" id="sumDevicesHint">—</div>
           </div>
@@ -221,7 +226,7 @@
     <div class="footer" style="margin-top: 16px;">
       <div class="footer-left">DataLogger · User Page · Works</div>
       <div class="footer-chips">
-        <div class="footer-chip">Click a work to open measures</div>
+        <div class="footer-chip" data-i18n="works.footerHint">Click a work to open measures</div>
       </div>
     </div>
   </div>
@@ -229,28 +234,28 @@
   <!-- DASHBOARD PAGE (single-file navigation: ?page=dashboard) -->
   <div id="dashboardPage">
   <div class="controls">
-    <span class="controls-label">Period</span>
+    <span class="controls-label" data-i18n="controls.period">Period</span>
     <input type="date" class="date-input" id="dateFrom">
     <span style="color:var(--muted);font-size:12px">→</span>
     <input type="date" class="date-input" id="dateTo">
     <button class="btn" onclick="applyDateFilter()">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Apply
+      <span data-i18n="controls.apply">Apply</span>
     </button>
     <div class="controls-sep"></div>
-    <span class="controls-label">Channel</span>
+    <span class="controls-label" data-i18n="controls.channel">Channel</span>
     <select class="select-input" id="channelSelect" onchange="renderChart()">
       <!-- options populated dynamically by updateChannelSelect() in dashboard.js -->
     </select>
     <div class="controls-sep"></div>
-    <span class="controls-label">Interval</span>
+    <span class="controls-label" data-i18n="controls.interval">Interval</span>
     <select class="select-input" id="intervalSelect" onchange="applyFilters()">
-      <option value="all">All</option>
-      <option value="hour">Last hour</option>
-      <option value="day">Last 24h</option>
+      <option value="all" data-i18n="controls.interval.all">All</option>
+      <option value="hour" data-i18n="controls.interval.hour">Last hour</option>
+      <option value="day" data-i18n="controls.interval.day">Last 24h</option>
     </select>
     <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-      <span class="controls-label">Auto-refresh</span>
+      <span class="controls-label" data-i18n="controls.autoRefresh">Auto-refresh</span>
       <span id="refreshCountdown2" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">120s</span>
     </div>
   </div>
@@ -270,7 +275,7 @@
       <!-- CHART CARD -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title" id="chartTitle">Selected channel</span>
+          <span class="card-title" id="chartTitle" data-i18n="dashboard.selectedChannel">Selected channel</span>
           <span class="card-badge" id="chartBadge">Unit</span>
         </div>
         <div class="chart-wrap">
@@ -283,7 +288,7 @@
 
       <!-- SECONDARY CHANNELS CARD (moved from bottom section) -->
       <div class="card secondary-channels-card">
-        <div class="card-header"><span class="card-title" id="miniChartsTitle">All Channels</span></div>
+        <div class="card-header"><span class="card-title" id="miniChartsTitle" data-i18n="dashboard.allChannels">All Channels</span></div>
         <div id="channelsCharts"></div>
       </div>
     </div>
@@ -291,12 +296,12 @@
     <!-- SIDE PANEL -->
     <div style="display:flex;flex-direction:column;gap:14px;">
       <div class="card">
-        <div class="card-label" style="margin-bottom:12px;"><span class="kpi-dot" style="background:var(--accent2)"></span>Device Info</div>
+        <div class="card-label" style="margin-bottom:12px;"><span class="kpi-dot" style="background:var(--accent2)"></span><span data-i18n="dashboard.deviceInfo">Device Info</span></div>
         <div class="info-list" id="deviceInfoList"></div>
       </div>
       <div class="card">
         <div class="card-label" style="margin-bottom:0; justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" style="background:var(--accent3)"></span>Power Supply</div>
+          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" style="background:var(--accent3)"></span><span data-i18n="dashboard.powerSupply">Power Supply</span></div>
         </div>
         <div class="power-chart-wrap"><svg id="powerSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg></div>
         <div class="power-legend">
@@ -319,8 +324,8 @@
     <!-- DATA TABLE -->
     <div class="card table-card">
       <div class="table-controls">
-        <span class="table-controls-title">Measurement Log</span>
-        <input type="text" class="table-search" placeholder="Search..." id="tableSearch" oninput="renderTable()">
+        <span class="table-controls-title" data-i18n="dashboard.measurementLog">Measurement Log</span>
+        <input type="text" class="table-search" placeholder="Search..." id="tableSearch" oninput="renderTable()" data-i18n-placeholder="dashboard.search.placeholder">
       </div>
       <div class="table-head">
         <span class="th">Date</span><span class="th">Time</span><span class="th">PT-50 mm</span>
@@ -527,6 +532,13 @@
     <span class="panel-title">Alert Thresholds</span>
     <span class="panel-close" onclick="closeThresholds()">✕</span>
   </div>
+  <div class="threshold-group" style="margin-top:6px;">
+    <div class="threshold-group-title" data-i18n="settings.language">Language</div>
+    <div class="threshold-row" style="gap:8px;">
+      <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')" style="flex:1;justify-content:center;">EN</button>
+      <button class="btn" type="button" id="langBtnIt" onclick="setLanguage('it')" style="flex:1;justify-content:center;">IT</button>
+    </div>
+  </div>
   <div class="toggle-row">
     <span class="toggle-label">Enable Alerts</span>
     <label class="toggle"><input type="checkbox" id="alertsEnabled" onchange="checkAlerts()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
@@ -634,6 +646,8 @@
   </div>
 </div>
 
+<script src="js/i18n.js"></script>
+<script src="js/theme.js"></script>
 <script>
 function getCurrentPage() {
   try {
@@ -663,10 +677,11 @@ function togglePages() {
   // Make it visually obvious which "page" you are on.
   const titleEl = document.getElementById('pageTitle');
   const subEl = document.getElementById('pageSubtitle');
-  if (titleEl) titleEl.textContent = (page === 'works') ? 'User Page' : 'Live Dashboard';
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  if (titleEl) titleEl.textContent = (page === 'works') ? tr('page.userPage', 'User Page') : tr('page.liveDashboard', 'Live Dashboard');
   if (subEl) {
     if (page === 'works') {
-      subEl.textContent = 'Select a work to view measures';
+      subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
     } else {
       // Show selected work summary (preferred) instead of redundant DEVICE/AUTO-REFRESH text.
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
@@ -679,6 +694,16 @@ function togglePages() {
 
   const sidebarDevices = document.getElementById('sidebarDevices');
   if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard') ? '' : 'none';
+
+  // Apply translations after route-level text changes.
+  if (window.MAE_I18N?.applyLanguage) {
+    try { window.MAE_I18N.applyLanguage(window.MAE_I18N.getLanguage()); } catch (e) { /* ignore */ }
+  }
+
+  // Ensure theme is applied after route changes.
+  if (window.MAE_THEME?.applyTheme) {
+    try { window.MAE_THEME.applyTheme(window.MAE_THEME.getTheme()); } catch (e) { /* ignore */ }
+  }
 }
 
 window.MAE_USE_WORK_SCOPED_ENDPOINTS = true;

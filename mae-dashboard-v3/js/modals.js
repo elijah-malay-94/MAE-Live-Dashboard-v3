@@ -1045,13 +1045,14 @@ async function submitLogin() {
   const password = document.getElementById('loginPassword').value.trim();
   const errEl    = document.getElementById('loginError');
   const btn      = document.getElementById('loginBtn');
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
 
   if (!username || !password) {
-    errEl.textContent = 'Please enter username and password.';
+    errEl.textContent = tr('auth.missingCreds', 'Please enter username and password.');
     return;
   }
 
-  btn.textContent = 'Signing in…';
+  btn.textContent = tr('auth.signingIn', 'Signing in…');
   btn.disabled    = true;
   errEl.textContent = '';
 
@@ -1073,9 +1074,9 @@ async function submitLogin() {
     if (proxy) next.set('proxy', proxy);
     window.location.href = `index.html?${next.toString()}`;
   } catch (err) {
-    errEl.textContent = err.message || 'Login failed. Check your credentials.';
+    errEl.textContent = err.message || tr('auth.loginFailed', 'Login failed. Check your credentials.');
   } finally {
-    btn.textContent = 'Sign In';
+    btn.textContent = tr('auth.signIn', 'Sign In');
     btn.disabled    = false;
   }
 }

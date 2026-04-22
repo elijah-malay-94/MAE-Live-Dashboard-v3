@@ -80,13 +80,14 @@ function updateDashboardAuthButton() {
   const shouldShowLogout = loggedIn;
 
   // Update label + action
-  btn.title = shouldShowLogout ? 'Logout' : 'Login';
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  btn.title = shouldShowLogout ? tr('auth.logout', 'Logout') : tr('auth.login', 'Login');
   btn.onclick = shouldShowLogout
     ? doLogout
     : showLoginModal;
 
   // Swap text node while keeping the icon SVG
-  const label = shouldShowLogout ? 'Logout' : 'Login';
+  const label = shouldShowLogout ? tr('auth.logout', 'Logout') : tr('auth.login', 'Login');
   const svg = btn.querySelector('svg');
   btn.innerHTML = '';
   if (svg) btn.appendChild(svg);

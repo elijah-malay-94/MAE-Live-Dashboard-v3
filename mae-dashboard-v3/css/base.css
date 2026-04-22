@@ -19,6 +19,29 @@
   --text: #0f172a;
   --muted: #64748b;
   --muted2: #334155;
+  --hover: rgba(15,23,42,0.05);
+  --hover2: rgba(37,99,235,0.08);
+}
+
+html[data-theme="dark"] {
+  /* Dark theme */
+  --bg: #060b16;
+  --surface: #0b1222;
+  --surface2: #0f1b33;
+  --surface3: #0a1326;
+  --border: rgba(148,163,184,0.14);
+  --border2: rgba(148,163,184,0.22);
+  --accent: #38bdf8;
+  --accent2: #22c55e;
+  --accent3: #f59e0b;
+  --green: #22c55e;
+  --red: #f87171;
+  --orange: #fb923c;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --muted2: #cbd5e1;
+  --hover: rgba(255,255,255,0.06);
+  --hover2: rgba(56,189,248,0.14);
 }
 
 * {
@@ -59,7 +82,7 @@ body::before {
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: white;
+  background: var(--surface);
   border-right: 1px solid var(--border);
   padding: 24px 0;
   display: flex;
@@ -219,13 +242,13 @@ body::before {
 
 .nav-item:hover {
   color: var(--text);
-  background: rgba(255,255,255,0.06);
+  background: var(--hover);
 }
 
 .nav-item.active {
   color: var(--accent);
   border-left-color: var(--accent);
-  background: rgba(37,99,235,0.08);
+  background: var(--hover2);
 }
 
 .nav-item svg {
@@ -261,11 +284,11 @@ body::before {
 }
 
 .device-item:hover {
-  background: rgba(255,255,255,0.06);
+  background: var(--hover);
 }
 
 .device-item.active {
-  background: rgba(37,99,235,0.08);
+  background: var(--hover2);
   border-color: rgba(37,99,235,0.2);
 }
 

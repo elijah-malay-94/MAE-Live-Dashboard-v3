@@ -248,6 +248,22 @@ async function initWorksPage() {
   // Only initialize the Works UI when we're actually on the works route.
   if (getCurrentPage() !== 'works') return;
 
+  // Wire the shared top-right auth button on the Works page.
+  // (state.js only wires it during dashboard init, which is skipped on ?page=works)
+  const authBtn = $('authBtn');
+  const token = loadAuthTokenFromStorage?.();
+  const loggedIn = Boolean(token);
+  if (authBtn) {
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    authBtn.title = loggedIn ? tr('auth.logout', 'Logout') : tr('auth.login', 'Login');
+    authBtn.onclick = loggedIn ? doWorksLogout : showLoginOverlay;
+    // Keep the existing SVG icon (if any) and only swap the label text.
+    const svg = authBtn.querySelector('svg');
+    authBtn.innerHTML = '';
+    if (svg) authBtn.appendChild(svg);
+    authBtn.appendChild(document.createTextNode('\n          ' + (loggedIn ? tr('auth.logout', 'Logout') : tr('auth.login', 'Login')) + '\n        '));
+  }
+
   const name = getUserName();
   const topbarUser = $('topbarUsername');
   if (topbarUser) topbarUser.textContent = name || '';
@@ -261,8 +277,8 @@ async function initWorksPage() {
     chip.addEventListener('click', () => setWorksFilter(chip.getAttribute('data-work-filter')));
   });
 
-  const logoutBtn = $('logoutBtn');
-  if (logoutBtn) logoutBtn.addEventListener('click', doWorksLogout);
+  // (legacy) there is no dedicated logout button on the works page anymore;
+  // logout is done via the shared `#authBtn` in the top bar.
 
   // Login is handled by the shared dashboard modal flow (submitLogin in modals.js),
   // which redirects to `index.html?page=works` after success.
