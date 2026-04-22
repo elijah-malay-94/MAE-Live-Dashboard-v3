@@ -53,6 +53,11 @@ const DEVICE_TYPE_CONFIG = {
       isbcX: parseFloat(item.isbcX ?? item['isbc-x'] ?? item.isbc_x ?? item.ch2 ?? 0),
       isbcY: parseFloat(item.isbcY ?? item['isbc-y'] ?? item.isbc_y ?? item.ch3 ?? 0),
     }),
+    powerSupplyTresholds: {
+      usb:{ label:'USB Voltage', unit:'V', color:'#3b82f6',  min:4.8, max:5.0, warn:4.9 },
+      aux:{ label:'AUX Voltage', unit:'V',  color:'#10b981', min:12.0, max:15, warn:12.5 },
+      battery:{label:'Battery', unit:'V', color:'#da0649', min:3.8, max: 4.2, warn:3.9 },
+    }          
   },
 
   VMR: {
@@ -97,6 +102,11 @@ const DEVICE_TYPE_CONFIG = {
       temperature:  parseFloat(item.temperature  ?? item.temp  ?? item.ch3 ?? 0),
       voltage:      parseFloat(item.voltage      ?? item.volt  ?? item.ch4 ?? 0),
     }),
+    powerSupplyTresholds: {
+      usb:{ label:'USB Voltage', unit:'V', color:'#3b82f6',  min:4.8, max:5.0, warn:4.9 },
+      aux:{ label:'AUX Voltage', unit:'V',  color:'#10b981', min:12.0, max:15, warn:12.5 },
+      battery:{label:'Battery', unit:'V', color:'#da0649', min:10.0, max: 12.5, warn:10.5 },
+    }    
   },
 
   SISMALOG: {
@@ -137,6 +147,11 @@ const DEVICE_TYPE_CONFIG = {
       ch2:  parseFloat(item.ch2 ?? item.isbcX ?? item['isbc-x'] ?? 0),
       ch3:  parseFloat(item.ch3 ?? item.isbcY ?? item['isbc-y'] ?? 0),
     }),
+    powerSupplyTresholds: {
+      usb:{ label:'USB Voltage', unit:'V', color:'#3b82f6',  min:4.8, max:5.0, warn:4.9 },
+      aux:{ label:'AUX Voltage', unit:'V',  color:'#10b981', min:12.0, max:15, warn:12.5 },
+      battery:{label:'Battery', unit:'V', color:'#da0649', min:3.8, max: 4.2, warn:3.9 },
+    } 
   },
 };
 
@@ -253,5 +268,9 @@ function getDeviceConfig() {
     if (dynamic) return dynamic;
   }
   return DEVICE_TYPE_CONFIG[getTypeKey(activeDevice?.type)] || DEVICE_TYPE_CONFIG.DL;
+}
+
+function getPowerSupplyConfig() {
+  return DEVICE_TYPE_CONFIG[getTypeKey(activeDevice?.type)].powerSupplyTresholds || DEVICE_TYPE_CONFIG.DL.powerSupplyTresholds;
 }
 

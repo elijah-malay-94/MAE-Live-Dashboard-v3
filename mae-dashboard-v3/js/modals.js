@@ -1015,27 +1015,31 @@ function initInlinePowerLive() {
 function renderPowerModal() {
   if (!powerHistory.length) return;
   const latest = powerHistory[powerHistory.length - 1];
+  const cfg  = getPowerSupplyConfig();
+  const usbCfg = cfg.usb;
+  const auxCfg = cfg.aux;
+  const batCfg = cfg.battery;
 
-  document.getElementById('pm_battVal').textContent = latest.batt.toFixed(2) + 'V';
-  document.getElementById('pm_usbVal').textContent  = latest.usb.toFixed(2)  + 'V';
-  document.getElementById('pm_auxVal').textContent  = latest.aux.toFixed(2)  + 'V';
+  document.getElementById('pm_battVal').textContent = latest.batt.toFixed(2) + batCfg.unit;
+  document.getElementById('pm_usbVal').textContent  = latest.usb.toFixed(2)  + usbCfg.unit;
+  document.getElementById('pm_auxVal').textContent  = latest.aux.toFixed(2)  + auxCfg.unit;
 
-  document.getElementById('pm_battBar').style.width = Math.min(100,(latest.batt/4.2)*100) + '%';
-  document.getElementById('pm_usbBar').style.width  = Math.min(100,(latest.usb/5.5)*100)  + '%';
-  document.getElementById('pm_auxBar').style.width  = Math.min(100,(latest.aux/2.0)*100)  + '%';
+  document.getElementById('pm_battBar').style.width = Math.min(100,(latest.batt/batCfg.max)*100) + '%';
+  document.getElementById('pm_usbBar').style.width  = Math.min(100,(latest.usb/usbCfg.max)*100)  + '%';
+  document.getElementById('pm_auxBar').style.width  = Math.min(100,(latest.aux/auxCfg.max)*100)  + '%';
 
-  document.getElementById('pm_battSub').textContent = (latest.batt>=3.7?'● Good':latest.batt>=3.3?'⚠ Low':'🔴 Critical') + ' · Range 0–4.2V';
-  document.getElementById('pm_usbSub').textContent  = (latest.usb>=4.8?'● Stable':'⚠ Unstable') + ' · Nominal 5.0V';
-  document.getElementById('pm_auxSub').textContent  = (latest.aux>0?'● Active':'○ Inactive') + ' · External';
+  document.getElementById('pm_battSub').textContent = (latest.batt>=batCfg.warn?'● Good':latest.batt>=batCfg.min?'⚠ Low':'🔴 Critical') + ' · Range ' + batCfg.min + '–' + batCfg.max + '' + batCfg.unit;
+  document.getElementById('pm_usbSub').textContent  = (latest.usb>=usbCfg.warn?'● Stable':'⚠ Unstable') + ' · Nominal ' + usbCfg.max + '' + usbCfg.unit;
+  document.getElementById('pm_auxSub').textContent  = (latest.aux>auxCfg.min?'● Active':'○ Inactive') + ' · External';
 
-  document.getElementById('leg_batt_cur').textContent = latest.batt.toFixed(2) + 'V';
-  document.getElementById('leg_usb_cur').textContent  = latest.usb.toFixed(2)  + 'V';
-  document.getElementById('leg_aux_cur').textContent  = latest.aux.toFixed(2)  + 'V';
+  document.getElementById('leg_batt_cur').textContent = latest.batt.toFixed(2) + batCfg.unit;
+  document.getElementById('leg_usb_cur').textContent  = latest.usb.toFixed(2)  + usbCfg.unit;
+  document.getElementById('leg_aux_cur').textContent  = latest.aux.toFixed(2)  + auxCfg.unit;
   const lastTimeEl = document.getElementById('leg_last_time');
   if (lastTimeEl) lastTimeEl.textContent = latest.label;
-  document.getElementById('pm_ch_batt').textContent   = latest.batt.toFixed(2) + 'V';
-  document.getElementById('pm_ch_usb').textContent    = latest.usb.toFixed(2)  + 'V';
-  document.getElementById('pm_ch_aux').textContent    = latest.aux.toFixed(2)  + 'V';
+  document.getElementById('pm_ch_batt').textContent   = latest.batt.toFixed(2) + batCfg.unit;
+  document.getElementById('pm_ch_usb').textContent    = latest.usb.toFixed(2)  + usbCfg.unit;
+  document.getElementById('pm_ch_aux').textContent    = latest.aux.toFixed(2)  + auxCfg.unit;
 
   renderPowerCombinedChart();
   renderPowerSparklines();
