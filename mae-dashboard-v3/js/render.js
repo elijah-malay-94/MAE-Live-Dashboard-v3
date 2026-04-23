@@ -163,7 +163,7 @@ function renderDeviceInfo() {
   document.getElementById('deviceInfoList').innerHTML = `
     <div class="info-row"><span class="info-key">Name</span><span class="info-val">${d.name}</span></div>
     <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
-    <div class="info-row"><span class="info-key">Typology</span><span class="info-val">${d.type}</span></div>
+    <div class="info-row"><span class="info-key">Typology</span><span class="info-val info-val--upper">${d.type}</span></div>
     <div class="info-row"><span class="info-key">Last connection</span><span class="info-val">${d.lastConnection || '—'}</span></div>
     <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
     <div class="info-row"><span class="info-key">Memory</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.memory !== undefined ? `● ${d.memory}` : d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>

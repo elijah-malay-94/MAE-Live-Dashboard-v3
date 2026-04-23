@@ -137,6 +137,8 @@
 /* ── API HINT ── */
 .api-hint { margin:20px 0; padding:14px 16px; background:rgba(59,130,246,0.05); border:1px dashed rgba(59,130,246,0.2); border-radius:10px; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); line-height:1.8; }
 .api-hint strong { color:var(--accent); }
+.api-hint.api-hint--warning { background:rgba(249,115,22,0.08); border:1px dashed rgba(249,115,22,0.28); }
+.api-hint.api-hint--warning strong { color:var(--orange); }
 
 /* ── POWER MODAL ── */
 .power-modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,30,60,0.5); z-index:300; align-items:center; justify-content:center; backdrop-filter:blur(6px); }

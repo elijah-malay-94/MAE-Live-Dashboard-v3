@@ -302,6 +302,9 @@
   color:var(--text); 
   font-weight:500; 
 }
+.info-val--upper {
+  text-transform:uppercase;
+}
 .badge { 
   display:inline-flex; 
   align-items:center; 

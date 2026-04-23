@@ -772,6 +772,18 @@ function showSuccessMessage(msg) {
   hint.innerHTML = `<strong>${msg}</strong>`;
 }
 
+function setDeviceTimeWarning(show) {
+  const hint = document.getElementById('deviceTimeHint');
+  if (!hint) return;
+  if (!show) {
+    hint.style.display = 'none';
+    hint.innerHTML = '';
+    return;
+  }
+  hint.style.display = 'block';
+  hint.innerHTML = `<strong>⚠️ Warning! Device time is incorrect!</strong>`;
+}
+
 // ═══════════════════════ API: DEVICE LIST ═══════════════════════
 // NEW (work-scoped): /api/v1/customers/:customer_id/works/:work_id/devices
 // OLD (legacy):      /api/v1/customers/:customer_id/devices
@@ -989,6 +1001,7 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
     if(data.timestamp_server && activeDevice.last_diagnostic){
         activeDevice.datetime_ok = data.timestamp_server.slice(0, 10) == activeDevice.last_diagnostic.slice(0, 10);
     }
+    setDeviceTimeWarning(activeDevice.datetime_ok === false);
   
 
     // Work-scoped mapping (Client req): Location = work-place, Position = device-place
