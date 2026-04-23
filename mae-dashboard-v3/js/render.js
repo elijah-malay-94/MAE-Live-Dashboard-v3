@@ -18,9 +18,9 @@
 
 // ═══════════════════════ DEVICE LIST ═══════════════════════
 function renderDeviceList() {
-  const ledColorFromLastDiagnostic = (lastDiagnosticRaw) => {
-    if (!lastDiagnosticRaw) return 'var(--muted)'; // grey
-    const t = new Date(String(lastDiagnosticRaw).replace(' ', 'T')).getTime();
+  const ledColorFromLastConnection = (lastConnectionRaw) => {
+    if (!lastConnectionRaw) return 'var(--muted)'; // grey
+    const t = new Date(String(lastConnectionRaw).replace(' ', 'T')).getTime();
     if (!Number.isFinite(t)) return 'var(--muted)';
     const mins = (Date.now() - t) / 60000;
     if (mins <= 15) return 'var(--green)'; // green
@@ -35,7 +35,7 @@ function renderDeviceList() {
 
   document.getElementById('deviceList').innerHTML = allDevices.map(d => `
     <div class="device-item ${d.id === activeDevice.id ? 'active' : ''}" onclick="switchDevice('${d.id}')">
-      <div class="device-dot" style="background:${ledColorFromLastDiagnostic(d.last_diagnostic)}"></div>
+      <div class="device-dot" style="background:${ledColorFromLastConnection(d.last_connection)}"></div>
       <div class="device-info">
         <div class="device-serial">${safe(d.type)}</div>
         <div class="device-name">${safe(d.position || d.devicePlace || d.position_name || d.serial)}</div>
@@ -100,12 +100,38 @@ async function switchDevice(id) {
   activeAlerts = [];
   clearDataViews('Loading…');
 
+  renderDeviceList();
+
+  /*
+  VENGONO FATTI IN loadData() subito dopo
   await fetchDevicesInfo(activeDevice.id);
   renderDeviceList();
   renderDeviceInfo();
   renderPowerChart();
   if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
+*/
+
   document.getElementById('footerDevice').textContent = activeDevice.serial || activeDevice.id;
+
+  // Set the period to the last diagnostic date, in order to have some data to view
+  if(activeDevice.last_diagnostic){
+    const datetoset = activeDevice.last_diagnostic.slice(0, 10);
+    const fromEl = document.getElementById('dateFrom');
+    const toEl = document.getElementById('dateTo');
+    if (fromEl) fromEl.value = datetoset;
+    if (toEl) toEl.value = datetoset;
+  }  
+
+  //LIVE MODE OFF if the device is not sending data today
+  if(activeDevice.last_diagnostic){
+    const date1 = new Date().toISOString().slice(0, 10);
+    const date2 = activeDevice.last_diagnostic.slice(0, 10);
+
+   if(date1 != date2)
+    //liveMode = false;
+   setLiveMode(false);
+  }
+
   clearInterval(refreshTimer);
   await loadData();
   if (allData.length > 0) startAutoRefresh();
@@ -140,7 +166,7 @@ function renderDeviceInfo() {
     <div class="info-row"><span class="info-key">Typology</span><span class="info-val">${d.type}</span></div>
     <div class="info-row"><span class="info-key">Last connection</span><span class="info-val">${d.lastConnection || '—'}</span></div>
     <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
-    <div class="info-row"><span class="info-key">Memory</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>
+    <div class="info-row"><span class="info-key">Memory</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.memory !== undefined ? `● ${d.memory}` : d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>
     <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
     <div class="info-row"><span class="info-key">Public IP</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
     <div class="info-row">

@@ -173,11 +173,14 @@ async function initDashboard() {
   if (!Array.isArray(allDevices)) allDevices = [];
 
   if (allDevices.length > 0) {
+    /*
     const savedId = (() => {
       try { return localStorage.getItem('mae_dashboard_active_device'); } catch (e) { return null; }
     })();
 
     activeDevice = allDevices.find(d => d.id === savedId) || allDevices[0];
+    */
+    activeDevice = allDevices[0];
     await fetchDevicesInfo(activeDevice.id);
     if (typeof renderDeviceList === 'function') renderDeviceList();
     if (typeof renderDeviceInfo === 'function') renderDeviceInfo();

@@ -127,7 +127,7 @@ function getMockDevicesList(customerId, workId = getActiveWorkId()) {
       type: _pick(rng, types),
       status: online ? 'online' : 'offline',
       signal: online ? (1 + Math.floor(rng() * 4)) : 0,
-      memory: online ? `${(0.2 + rng() * 7.5).toFixed(1)} Gb` : '',
+      memory: online ? `${(0.2 + rng() * 7.5).toFixed(1)} GB` : '',
       battery: _clamp(3.25 + rng() * 0.95, 3.0, 4.2),
       usb: _clamp(4.6 + rng() * 0.8, 0, 5.5),
       aux: _clamp(rng() * 2.2, 0, 2.2),
@@ -811,8 +811,8 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
           lastUpdate = `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
         }
       }
-      if (item.last_diagnostic) {
-        const dt = new Date(String(item.last_diagnostic).replace(' ', 'T'));
+      if (item.timestamp_server) {
+        const dt = new Date(String(item.timestamp_server).replace(' ', 'T'));
         if (!isNaN(dt.getTime())) {
           const dd   = String(dt.getDate()).padStart(2, '0');
           const mm   = String(dt.getMonth() + 1).padStart(2, '0');
@@ -840,7 +840,8 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         lng:            parseFloat(coords[1]) || 0,
         lastConnection: lastConn,
         // Raw diagnostic timestamp used for LED logic (may be null).
-        last_diagnostic: item.last_diagnostic ?? null,
+        last_diagnostic: item.last_diagnostic ?? item.date + ' ' + item.time ?? null,
+        last_connection: item.timestamp_server ?? item.updated ?? null,        
         // Network info (if provided by /devices endpoint)
         ip:          item.ip         ?? '',
         port:        item.port       ?? '',
@@ -922,11 +923,24 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
       return '—';
     };
 
+    const formatLastDiagnostic = (datePart, timePart) => {
+      if(String(datePart).length == 10){
+          const dd = String(datePart).slice(0, 2);
+          const mm = String(datePart).slice(3, 5);
+          const yyyy = String(datePart).slice(6, 10);
+          //return dd + '-' + mm + '-' + yyyy;
+          return yyyy + '-' + mm + '-' + dd + ' ' + timePart;
+      }
+      
+      return '—';
+    };
+
     const batt   = parseFloat(data['battery-voltage'] ?? data.batteryVoltage ?? 0);
     const usb    = parseFloat(data['usb-voltage']     ?? data.usbVoltage     ?? 0);
     const aux    = parseFloat(data['aux-voltage']     ?? data.auxVoltage     ?? 0);
     const sdFree = parseFloat(data['sd-free']         ?? data.sdFree         ?? 0);
     const sdSize = parseFloat(data['sd-size']         ?? data.sdSize         ?? 0);
+    const signal = parseInt  (data['gsm-signal']      ?? data.gsmSignal      ?? 0);
     const gps    = data['gps-position'] ?? data.gpsPosition ?? '';
     const workPlace =
       data['work-place'] ??
@@ -944,10 +958,21 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
       data.device_position ??
       data.devicePosition ??
       '';
+      /*
     const lastConn = formatLastConnection(
       data.date ?? data['connection-date'] ?? data.last_date,
       data.time ?? data['connection-time'] ?? data.last_time,
       data.timestamp ?? data['last-connection'] ?? data.last_connection
+    );
+    */
+    const lastConn = formatLastConnection(
+      null,
+      null,
+      data.timestamp_server ?? data['last-connection'] ?? data.last_connection
+    );
+
+    const lastDiag = formatLastDiagnostic(
+      data.date, data.time
     );
 
     if (batt  > 0) activeDevice.battery = batt;
@@ -955,8 +980,16 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
     if (aux   > 0) activeDevice.aux     = aux;
     // Keep raw sd-free for UI coloring rules.
     if (Number.isFinite(sdFree)) activeDevice.sdFree = sdFree;
-    if (sdFree > 0) activeDevice.memory = `${(sdFree / 1024).toFixed(1)} Gb`;
-    activeDevice.lastConnection = lastConn;
+    if (sdFree > 0) activeDevice.memory = `${(sdFree / 1024).toFixed(1)} GB`;    
+    activeDevice.signal = signal;
+    activeDevice.lastConnection = lastConn;    
+    activeDevice.last_connection = data.timestamp_server ?? data['last-connection'] ?? data.last_connection ?? data.updated;
+    activeDevice.last_diagnostic = lastDiag;
+    activeDevice.datetime_ok = true;
+    if(data.timestamp_server && activeDevice.last_diagnostic){
+        activeDevice.datetime_ok = data.timestamp_server.slice(0, 10) == activeDevice.last_diagnostic.slice(0, 10);
+    }
+  
 
     // Work-scoped mapping (Client req): Location = work-place, Position = device-place
     if (workPlace !== undefined) activeDevice.location = String(workPlace || '').trim();
