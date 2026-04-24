@@ -186,9 +186,33 @@ async function initDashboard() {
     if (typeof renderDeviceInfo === 'function') renderDeviceInfo();
     if (typeof renderPowerChart === 'function') renderPowerChart();
     updateWorkSubtitle();
+
+    var isOnline = true;
+    // Set the period to the last diagnostic date, in order to have some data to view
+    if(activeDevice.last_diagnostic){
+      const datetoset = activeDevice.last_diagnostic.slice(0, 10);
+      const fromEl = document.getElementById('dateFrom');
+      const toEl = document.getElementById('dateTo');
+      if (fromEl) fromEl.value = datetoset;
+      if (toEl) toEl.value = datetoset;
+    }  
+
+    //Check if the device isOnline (and sending data today)
+    if(activeDevice.last_diagnostic){
+      const date1 = new Date().toISOString().slice(0, 10);
+      const date2 = activeDevice.last_diagnostic.slice(0, 10);
+
+    if(date1 != date2)
+      isOnline = false;
+    }
+
     await loadData();
 
-    if (allData.length > 0 && typeof startAutoRefresh === 'function') {
+    if(!isOnline){
+      //LIVE MODE OFF if the device is not online
+      setLiveMode(false);
+    }
+    else if (allData.length > 0 && typeof startAutoRefresh === 'function') {
       startAutoRefresh();
     } else if (!allData.length) {
       showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
@@ -223,6 +247,8 @@ async function loadData() {
   activeAlerts = [];
   if (typeof clearDataViews === 'function') clearDataViews('Loading…');
 
+  /*
+  Now the range is set based on last_connection
   // Live mode always references "today → today" and auto-refreshes the last readings.
   if (liveMode) {
     const today = new Date().toISOString().slice(0, 10);
@@ -231,6 +257,7 @@ async function loadData() {
     if (fromEl) fromEl.value = today;
     if (toEl) toEl.value = today;
   }
+  */
   const from = document.getElementById('dateFrom').value;
   const to   = document.getElementById('dateTo').value;
   try {

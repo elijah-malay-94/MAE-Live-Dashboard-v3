@@ -122,19 +122,26 @@ async function switchDevice(id) {
     if (toEl) toEl.value = datetoset;
   }  
 
-  //LIVE MODE OFF if the device is not sending data today
+  var isOnline = true;
+  //Check if the device isOnline (and sending data today)
   if(activeDevice.last_diagnostic){
     const date1 = new Date().toISOString().slice(0, 10);
     const date2 = activeDevice.last_diagnostic.slice(0, 10);
 
    if(date1 != date2)
-    //liveMode = false;
-   setLiveMode(false);
+    isOnline = false;
   }
 
   clearInterval(refreshTimer);
   await loadData();
-  if (allData.length > 0) startAutoRefresh();
+  if(!isOnline){
+    //LIVE MODE OFF if the device is not online
+   setLiveMode(false);
+  }
+  else if (allData.length > 0){
+    //startAutoRefresh();
+    setLiveMode(true);
+  }
   else showErrorMessage('No data for this device in the selected period — try a different date range.');
 }
 
