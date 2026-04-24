@@ -167,6 +167,16 @@ function renderDeviceInfo() {
     if (a && b) return `${a}:${b}`;
     return a || b || '—';
   };
+  const ledColorFromLastConnection = (lastConnectionRaw) => {
+    if (!lastConnectionRaw) return 'var(--muted)'; // grey
+    const t = new Date(String(lastConnectionRaw).replace(' ', 'T')).getTime();
+    if (!Number.isFinite(t)) return 'var(--muted)';
+    const mins = (Date.now() - t) / 60000;
+    if (mins <= 15) return 'var(--green)'; // green
+    if (mins <= 30) return '#f97316';      // orange
+    return 'var(--red)';                   // red
+  };
+  document.getElementById('deviceInfoStatus').style = `background:${ledColorFromLastConnection(d.last_connection)}`;
   document.getElementById('deviceInfoList').innerHTML = `
     <div class="info-row"><span class="info-key">Name</span><span class="info-val">${d.name}</span></div>
     <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
