@@ -746,12 +746,20 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
 function showLoadingState(show) {
   const hint = document.getElementById('apiHint');
   if (!hint) return;
+  if(show){
   hint.style.display     = 'block';
   hint.style.background  = '';
   hint.style.borderColor = '';
   hint.innerHTML = show
     ? '<strong>⏳ Loading data from API…</strong>'
     : `<strong>✅ API Connected</strong> — data from <code>${API_BASE}</code>`;
+  } else {
+      hint.style.display     = 'none';
+      hint.style.background  = '';
+      hint.style.borderColor = '';
+      hint.innerHTML = '';
+  }
+
 }
 
 function showErrorMessage(msg) {
