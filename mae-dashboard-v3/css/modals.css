@@ -80,7 +80,7 @@
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
 
 /* ── FILES & EVENTS MODAL ── */
-.files-modal { width:760px; max-width:95vw; max-height:88vh; display:flex; flex-direction:column; }
+.files-modal { width:760px; max-width:95vw; height:88vh; max-height:88vh; display:flex; flex-direction:column; }
 .files-filters,
 .files-summary,
 .files-pagination,
