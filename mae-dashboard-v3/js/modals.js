@@ -134,10 +134,6 @@ function renderFilesTable(records) {
         <div class="files-cell">${r.type || '—'}</div>
         <div class="files-cell">
           <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadDeviceFileByIndex(${idx})">Download</button>
-          ${String(r.type || '').toLowerCase() === 'evt'
-            ? `<button class="btn" style="padding:5px 10px;font-size:10px;margin-left:6px;" onclick="loadEventDetailsFromFileIndex(${idx})">Event</button>`
-            : ''
-          }
         </div>
       </div>
     `).join('')}
@@ -230,54 +226,6 @@ async function downloadDeviceFileByIndex(index) {
   } catch (err) {
     alert(`Download failed: ${err.message}`);
   }
-}
-
-async function loadEventDetails() {
-  const eventId = document.getElementById('eventIdInput')?.value?.trim();
-  const pre = document.getElementById('eventDetailsPre');
-  if (!pre) return;
-  if (!activeDevice?.id) {
-    pre.textContent = 'No active device selected.';
-    return;
-  }
-  if (!eventId) {
-    pre.textContent = 'Please insert an event ID.';
-    return;
-  }
-  pre.textContent = 'Loading event details...';
-  try {
-    const details = await fetchEventDetails(activeDevice.id, eventId);
-    pre.textContent = JSON.stringify(details, null, 2);
-  } catch (err) {
-    pre.textContent = `Error loading event details: ${err.message}`;
-  }
-}
-
-function extractEventIdFromFileName(fileName) {
-  const name = String(fileName || '').trim();
-  if (!name) return '';
-
-  // Common pattern: "..._<evt_id>.<ext>" => e.g. acquisition1_ch1_1234.dat
-  const trailing = name.match(/_(\d+)(?:\.[^.]+)?$/);
-  if (trailing?.[1]) return trailing[1];
-
-  // Fallback: last numeric token anywhere in the name
-  const allNumbers = name.match(/\d+/g);
-  if (allNumbers && allNumbers.length > 0) return allNumbers[allNumbers.length - 1];
-
-  return '';
-}
-
-async function loadEventDetailsFromFileIndex(index) {
-  const item = currentDeviceFiles[index];
-  const eventId = extractEventIdFromFileName(item?.name);
-  if (!eventId) {
-    alert('Could not extract event ID from filename.');
-    return;
-  }
-  const input = document.getElementById('eventIdInput');
-  if (input) input.value = eventId;
-  await loadEventDetails();
 }
 
 function doExport(fmt) {
