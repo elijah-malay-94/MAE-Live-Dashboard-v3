@@ -773,15 +773,21 @@ function showSuccessMessage(msg) {
 }
 
 function setDeviceTimeWarning(show) {
-  const hint = document.getElementById('deviceTimeHint');
-  if (!hint) return;
-  if (!show) {
-    hint.style.display = 'none';
-    hint.innerHTML = '';
-    return;
+  const hints = [
+    document.getElementById('deviceTimeHint'),
+    document.getElementById('deviceTimeHintWorks'),
+  ].filter(Boolean);
+  if (hints.length === 0) return;
+
+  for (const hint of hints) {
+    if (!show) {
+      hint.style.display = 'none';
+      hint.innerHTML = '';
+      continue;
+    }
+    hint.style.display = 'block';
+    hint.innerHTML = `<strong>Warning! Device time is incorrect!</strong>`;
   }
-  hint.style.display = 'block';
-  hint.innerHTML = `<strong>⚠️ Warning! Device time is incorrect!</strong>`;
 }
 
 // ═══════════════════════ API: DEVICE LIST ═══════════════════════

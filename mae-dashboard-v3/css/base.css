@@ -177,7 +177,8 @@ body::before {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-size: 7px;
   line-height: 1.2;
-  color: #f8d200;  /* match MAE logo color */
+  /* In light theme the yellow is not readable on white */
+  color: var(--muted2);
   font-weight: bold;
   text-shadow: none;
   text-transform: uppercase;
@@ -187,6 +188,11 @@ body::before {
   white-space: nowrap;   /* force single line */
   overflow: hidden;
   text-overflow: clip;
+}
+
+/* Keep the MAE-like yellow in dark theme */
+html[data-theme="dark"] .sidebar-caption {
+  color: #f8d200;
 }
 
 .caption-advanced { letter-spacing: inherit; }

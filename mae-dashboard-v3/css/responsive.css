@@ -47,7 +47,14 @@
   .logo-stack { width: 34px; }
   .logo-caption { width: 34px; font-size: 6px; margin-top: 2px; }
   .logo-caption--full { width: 100%; }
-  .sidebar-caption { font-size: 7px; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+  /* Make the payoff readable on small sidebars */
+  .sidebar-caption {
+    font-size: 8px;
+    line-height: 1.35;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+  }
   .nav-section { font-size: 9px; padding: 6px 10px 3px; letter-spacing: 1px; }
   .nav-item { font-size: 11px; padding: 8px 10px; gap: 7px; }
   .nav-item svg { width: 13px; height: 13px; }
