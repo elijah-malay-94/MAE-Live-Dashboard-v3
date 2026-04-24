@@ -1338,7 +1338,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
     const cfg    = getDeviceConfig();
     const mapped = rows.map(item => cfg.mapRow(item));
     console.log('[fetchData]', mapped.length, 'records | channels:', cfg.channels.map(c => c.label));
-    showSuccessMessage(`✅ ${mapped.length} records loaded${activeChannelHeaders ? ' (live channels)' : ''}`);
+    //showSuccessMessage(`✅ ${mapped.length} records loaded${activeChannelHeaders ? ' (live channels)' : ''}`);
     return mapped;
 
   } catch (err) {
