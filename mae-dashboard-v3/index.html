@@ -535,30 +535,30 @@
 <!-- ═══════════════════════ THRESHOLD PANEL ═══════════════════════ -->
 <div class="threshold-panel" id="thresholdPanel">
   <div class="panel-header">
-    <span class="panel-title">Alert Thresholds</span>
+    <span class="panel-title" data-i18n="alert.tresholds">Alert Thresholds</span>
     <span class="panel-close" onclick="closeThresholds()">✕</span>
   </div>
   <div class="toggle-row">
-    <span class="toggle-label">Enable Alerts</span>
+    <span class="toggle-label" data-i18n="alert.enable">Enable Alerts</span>
     <label class="toggle"><input type="checkbox" id="alertsEnabled" onchange="checkAlerts()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
   </div>
   <div class="toggle-row" style="margin-bottom:20px;">
-    <span class="toggle-label">Sound Notifications</span>
+    <span class="toggle-label" data-i18n="alert.soundnotifications">Sound Notifications</span>
     <label class="toggle"><input type="checkbox" id="soundEnabled"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
   </div>
   <div id="thresholdChannels"></div>
-  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();">Save & Apply</button>
+  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();" data-i18n="alert.saveandapply">Save & Apply</button>
 </div>
 
 <!-- ═══════════════════════ EXPORT MODAL ═══════════════════════ -->
 <div class="modal-overlay" id="exportModal">
   <div class="modal">
     <div class="modal-title">Export Data</div>
-    <div class="modal-sub">Choose format and range for the current filtered dataset.</div>
+    <div class="modal-sub">Choose format and range for the current filtered dataset</div>
     <div class="modal-options">
       <div class="export-option" onclick="openFilesModal()">
         <span class="export-icon">📁</span>
-        <div class="export-info"><div class="export-name">Download files.</div><div class="export-desc">Browse file list and download base64 files</div></div>
+        <div class="export-info"><div class="export-name">Download files</div><div class="export-desc">Browse file list and download files</div></div>
       </div>
       <div class="export-option" onclick="doPrintReport()">
         <span class="export-icon">🖨️</span>
@@ -582,7 +582,7 @@
 <!-- ═══════════════════════ FILES & EVENTS MODAL ═══════════════════════ -->
 <div class="modal-overlay" id="filesModal">
   <div class="modal files-modal">
-    <div class="modal-title">Download files.</div>
+    <div class="modal-title">Download files</div>
 
     <div class="files-filters">
       <div class="files-filter-item">
@@ -596,10 +596,10 @@
       <div class="files-filter-item">
         <label for="filesType">Type</label>
         <select id="filesType">
-          <option value="">All</option>
-          <option value="evt">Event</option>
-          <option value="cir">Circular</option>
-          <option value="day">Daily</option>
+          <option value="" data-i18n="filetype.all">All</option>
+          <option value="evt" data-i18n="filetype.evt">Event</option>
+          <option value="cir" data-i18n="filetype.cir">Circular</option>
+          <option value="day" data-i18n="filetype.day">Daily</option>
         </select>
       </div>
       <button class="btn btn-primary" onclick="loadDeviceFiles()">Load files</button>

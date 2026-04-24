@@ -85,6 +85,17 @@
       'map.allDevices': 'All Devices',
       'map.status': 'Status',
       'map.online': 'Online',
+
+      'filetype.all': 'All',
+      'filetype.cir': 'Circular',
+      'filetype.evt': 'Event',
+      'filetype.day': 'Daily',
+
+      'alert.tresholds': 'Alert Thresholds',
+      'alert.enable': 'Enable Alerts',
+      'alert.saveandapply': 'Save and apply',
+      'alert.soundnotifications': 'Sound Notifications',
+
     },
     it: {
       'lang.english': 'Inglese',
@@ -165,6 +176,16 @@
       'map.allDevices': 'Tutti i dispositivi',
       'map.status': 'Stato',
       'map.online': 'Online',
+
+      'filetype.all': 'Tutti',
+      'filetype.cir': 'Circolari',
+      'filetype.evt': 'Eventi',
+      'filetype.day': 'Giornalieri',
+
+      'alert.tresholds': 'Soglie di allarme',
+      'alert.enable': 'Abilita allarmi',
+      'alert.saveandapply': 'Salva e applica',
+      'alert.soundnotifications': 'Notifiche sonore',
     },
   };
 
