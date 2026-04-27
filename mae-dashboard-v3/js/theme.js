@@ -23,11 +23,12 @@
 
     const btn = document.getElementById('themeToggleBtn');
     const label = document.getElementById('themeToggleLabel');
-    if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    if (label) label.textContent = theme === 'dark' ? tr('theme.dark', 'Dark') : tr('theme.light', 'Light');
 
     if (btn) {
       btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
-      btn.title = theme === 'dark' ? 'Dark mode' : 'Light mode';
+      btn.title = theme === 'dark' ? tr('theme.darkMode', 'Dark mode') : tr('theme.lightMode', 'Light mode');
       const sun = btn.querySelector('[data-theme-icon="sun"]');
       const moon = btn.querySelector('[data-theme-icon="moon"]');
       if (sun) sun.style.display = theme === 'dark' ? 'none' : '';

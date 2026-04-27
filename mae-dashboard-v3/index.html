@@ -72,20 +72,20 @@
       </div>
       <div class="login-caption-full">ADVANCED GEOPHYSICS INSTRUMENTS</div>
     </div>
-    <h2 class="login-title">Welcome back</h2>
-    <p class="login-sub">Sign in to access the live dashboard</p>
+    <h2 class="login-title" data-i18n="auth.welcomeBack">Welcome back</h2>
+    <p class="login-sub" data-i18n="auth.signInToAccess">Sign in to access the live dashboard</p>
     <div class="login-field">
-      <label for="loginUsername">Username</label>
-      <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+      <label for="loginUsername" data-i18n="auth.username">Username</label>
+      <input type="text" id="loginUsername" placeholder="Enter username" data-i18n-placeholder="auth.enterUsername" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
     </div>
     <div class="login-field">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLogin()">
+      <label for="loginPassword" data-i18n="auth.password">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" data-i18n-placeholder="auth.enterPassword" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLogin()">
     </div>
     <div id="loginError" class="login-error"></div>
     <button class="btn btn-primary login-btn" id="loginBtn" onclick="submitLogin()">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-      Sign In
+      <span id="loginBtnLabel" data-i18n="auth.signIn">Sign In</span>
     </button>
   </div>
 </div>
@@ -147,7 +147,7 @@
       <button class="btn" id="themeToggleBtn" onclick="toggleTheme()" aria-pressed="false" title="Light mode">
         <svg data-theme-icon="sun" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg data-theme-icon="moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
-        <span id="themeToggleLabel">Light</span>
+        <span id="themeToggleLabel" data-i18n="theme.light">Light</span>
       </button>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')" style="padding:8px 10px;justify-content:center;">EN</button>
@@ -170,7 +170,7 @@
           <div class="topbar-user-dot"></div>
           <span id="topbarUsername"></span>
         </div>
-        <button class="btn logout-item" id="authBtn" title="Logout">
+          <button class="btn logout-item" id="authBtn" title="Logout">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           <span data-i18n="auth.logout">Logout</span>
         </button>
@@ -318,7 +318,7 @@
         <div style="margin-top:10px;display:flex;justify-content:flex-end;">
           <button class="btn" onclick="openPowerModal()">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
-            Power Supply — Live Monitor
+            <span data-i18n="dashboard.powerSupplyLiveMonitor">Power Supply — Live Monitor</span>
           </button>
         </div>
       </div>
@@ -340,14 +340,14 @@
       <div class="table-body" id="tableBody"></div>
       <div class="table-footer">
         <span class="table-count" id="tableCount">15 records</span>
-        <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()">Export CSV</button>
+        <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()" data-i18n="export.exportCsv">Export CSV</button>
       </div>
     </div>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-left">Datalogger Live Dashboard · <span id="footerDevice">M22MOP0007</span> · <span id="footerDate"></span></div>
+    <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="footerDevice">M22MOP0007</span> · <span id="footerDate"></span></div>
     <div class="footer-chips">
       <div class="footer-chip" id="footerPlatform">DL8 Platform</div>
       <div class="footer-chip" id="footerSignal">Signal 4/4</div>
@@ -366,8 +366,8 @@
       <div class="power-modal-htitle">
         <div class="power-modal-icon" id="powerModalIcon">⚡</div>
         <div>
-          <h2>Power Supply — Live Monitor</h2>
-          <p>DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates with dashboard</p>
+          <h2 data-i18n="power.title">Power Supply — Live Monitor</h2>
+          <p id="pmDeviceLine">DEVICE: <span id="pmDeviceId">M22MOP0007</span> · Battery · USB · AUX · Updates with dashboard</p>
         </div>
       </div>
       <div class="power-modal-actions">
@@ -377,25 +377,25 @@
     <div class="power-modal-body">
       <div class="power-kpi-strip">
         <div class="power-kpi batt">
-          <div class="power-kpi-label">Battery</div>
+          <div class="power-kpi-label" data-i18n="power.kpi.battery">Battery</div>
           <div class="power-kpi-val" id="pm_battVal">—</div>
-          <div class="power-kpi-sub" id="pm_battSub">Nominal: 3.7V – 4.2V</div>
+          <div class="power-kpi-sub" id="pm_battSub" data-i18n="power.nominal.battery">Nominal: 3.7V – 4.2V</div>
           <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar" style="width:0%"></div></div>
         </div>
         <div class="power-kpi usb">
-          <div class="power-kpi-label">USB Voltage</div>
+          <div class="power-kpi-label" data-i18n="power.kpi.usbVoltage">USB Voltage</div>
           <div class="power-kpi-val" id="pm_usbVal">—</div>
-          <div class="power-kpi-sub" id="pm_usbSub">Nominal: 5.0V</div>
+          <div class="power-kpi-sub" id="pm_usbSub" data-i18n="power.nominal.usb">Nominal: 5.0V</div>
           <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar" style="width:0%"></div></div>
         </div>
         <div class="power-kpi aux">
-          <div class="power-kpi-label">AUX Voltage</div>
+          <div class="power-kpi-label" data-i18n="power.kpi.auxVoltage">AUX Voltage</div>
           <div class="power-kpi-val" id="pm_auxVal">—</div>
-          <div class="power-kpi-sub" id="pm_auxSub">External supply</div>
+          <div class="power-kpi-sub" id="pm_auxSub" data-i18n="power.externalSupply">External supply</div>
           <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
         </div>
       </div>
-      <div class="pm-section-label">Combined View — All Channels</div>
+      <div class="pm-section-label" data-i18n="power.combinedView">Combined View — All Channels</div>
       <div class="power-full-chart">
         <div class="pm-tooltip" id="pmTooltip">
           <div class="pm-tooltip-time" id="pmTTTime"></div>
@@ -421,12 +421,12 @@
             <span class="pm-legend-cur" style="color:#10b981" id="leg_aux_cur">—</span>
           </div>
           <div class="pm-legend-item" style="margin-left:auto; cursor:default;">
-            <span class="pm-legend-text">Updated</span>
+            <span class="pm-legend-text" data-i18n="common.updated">Updated</span>
             <span class="pm-legend-cur" id="leg_last_time">—</span>
           </div>
         </div>
       </div>
-      <div class="pm-section-label" style="margin-top:4px;">Individual Channel History</div>
+      <div class="pm-section-label" style="margin-top:4px;" data-i18n="power.individualHistory">Individual Channel History</div>
       <div class="pm-channel-grid">
         <div class="pm-channel-card">
           <div class="pm-channel-title">Battery <span class="pm-cur-val" id="pm_ch_batt" style="color:#ef4444">—</span></div>
@@ -452,7 +452,7 @@
       <div class="map-modal-htitle">
         <div class="map-modal-icon">🗺️</div>
         <div>
-          <h2>Live Device Location</h2>
+          <h2 data-i18n="map.liveDeviceLocation">Live Device Location</h2>
           <p id="mapModalSub">DEVICE: M22MOP0007 · Milano · 45.4654°, 9.1859°</p>
         </div>
       </div>
@@ -468,36 +468,36 @@
           <div id="mapDeviceList"></div>
         </div>
         <div class="map-sidebar-section">
-          <div class="map-sidebar-label">Active Device</div>
+          <div class="map-sidebar-label" data-i18n="map.activeDevice">Active Device</div>
           <div class="map-info-row"><span class="map-info-key">ID</span><span class="map-info-val" id="mapInfoId">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">City</span><span class="map-info-val" id="mapInfoCity">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">Position</span><span class="map-info-val" id="mapInfoPos">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">Lat</span><span class="map-info-val" id="mapInfoLat">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">Lng</span><span class="map-info-val" id="mapInfoLng">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.city">City</span><span class="map-info-val" id="mapInfoCity">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.position">Position</span><span class="map-info-val" id="mapInfoPos">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.lat">Lat</span><span class="map-info-val" id="mapInfoLat">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.lng">Lng</span><span class="map-info-val" id="mapInfoLng">—</span></div>
           <div class="map-info-row"><span class="map-info-key" data-i18n="map.status">Status</span><span class="map-info-val" id="mapInfoStatus">—</span></div>
-          <div class="map-info-row"><span class="map-info-key">Signal</span><span class="map-info-val" id="mapInfoSignal">—</span></div>
+          <div class="map-info-row"><span class="map-info-key" data-i18n="map.signal">Signal</span><span class="map-info-val" id="mapInfoSignal">—</span></div>
         </div>
         <div class="map-sidebar-section">
-          <div class="map-sidebar-label">Map Style</div>
+          <div class="map-sidebar-label" data-i18n="map.mapStyle">Map Style</div>
           <div style="display:flex;flex-direction:column;gap:6px;">
             <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('streets')">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Streets
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span data-i18n="map.streets">Streets</span>
             </div>
             <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('satellite')">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>Satellite
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg><span data-i18n="map.satellite">Satellite</span>
             </div>
             <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('topo')">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Terrain
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span data-i18n="map.terrain">Terrain</span>
             </div>
           </div>
         </div>
         <div class="map-sidebar-section" style="border-bottom:none;">
-          <div class="map-sidebar-label">Quick Jump</div>
+          <div class="map-sidebar-label" data-i18n="map.quickJump">Quick Jump</div>
           <div style="display:flex;flex-direction:column;gap:6px;">
-            <input id="mapSearchInput" type="text" placeholder="Search city or address…" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 10px;border-radius:8px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')jumpToCity()">
+            <input id="mapSearchInput" type="text" placeholder="Search city or address…" data-i18n-placeholder="map.searchCityPlaceholder" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 10px;border-radius:8px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')jumpToCity()">
             <div class="map-ctrl-btn" style="position:static;background:var(--accent);color:white;border-color:var(--accent);justify-content:center;" onclick="jumpToCity()">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Go
+              <span data-i18n="common.go">Go</span>
             </div>
           </div>
         </div>
@@ -505,7 +505,7 @@
       <div class="map-container">
         <div class="map-loading" id="mapLoading">
           <div class="map-spinner"></div>
-          <div class="map-loading-text">Loading map…</div>
+          <div class="map-loading-text" data-i18n="map.loading">Loading map…</div>
         </div>
         <iframe id="mapIframe" title="Device Location Map"></iframe>
         <div class="map-overlay-badge" id="mapBadge">
@@ -518,13 +518,13 @@
         </div>
         <div class="map-controls-strip">
           <div class="map-ctrl-btn" onclick="zoomMapIn()">
-            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Zoom In
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-i18n="map.zoomIn">Zoom In</span>
           </div>
           <div class="map-ctrl-btn" onclick="zoomMapOut()">
-            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>Zoom Out
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg><span data-i18n="map.zoomOut">Zoom Out</span>
           </div>
           <div class="map-ctrl-btn" onclick="centerOnDevice()">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Re-center
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span data-i18n="map.recenter">Re-center</span>
           </div>
         </div>
       </div>
@@ -553,28 +553,28 @@
 <!-- ═══════════════════════ EXPORT MODAL ═══════════════════════ -->
 <div class="modal-overlay" id="exportModal">
   <div class="modal">
-    <div class="modal-title">Export Data</div>
-    <div class="modal-sub">Choose format and range for the current filtered dataset</div>
+    <div class="modal-title" data-i18n="export.title">Export Data</div>
+    <div class="modal-sub" data-i18n="export.subtitle">Choose format and range for the current filtered dataset</div>
     <div class="modal-options">
       <div class="export-option" onclick="openFilesModal()">
         <span class="export-icon">📁</span>
-        <div class="export-info"><div class="export-name">Download files</div><div class="export-desc">Browse file list and download files</div></div>
+        <div class="export-info"><div class="export-name" data-i18n="export.downloadFiles">Download files</div><div class="export-desc" data-i18n="export.downloadFilesDesc">Browse file list and download files</div></div>
       </div>
       <div class="export-option" onclick="doPrintReport()">
         <span class="export-icon">🖨️</span>
-        <div class="export-info"><div class="export-name">Print / PDF — Current view</div><div class="export-desc">Print or save as PDF using the current filtered dataset</div></div>
+        <div class="export-info"><div class="export-name" data-i18n="export.printPdf">Print / PDF — Current view</div><div class="export-desc" data-i18n="export.printPdfDesc">Print or save as PDF using the current filtered dataset</div></div>
       </div>
       <div class="export-option" onclick="doExport('csv')">
         <span class="export-icon">📄</span>
-        <div class="export-info"><div class="export-name">CSV — Comma Separated</div><div class="export-desc">Compatible with Excel, Google Sheets, MATLAB</div></div>
+        <div class="export-info"><div class="export-name" data-i18n="export.csv">CSV — Comma Separated</div><div class="export-desc" data-i18n="export.csvDesc">Compatible with Excel, Google Sheets, MATLAB</div></div>
       </div>
       <div class="export-option" onclick="doExport('json')">
         <span class="export-icon">{ }</span>
-        <div class="export-info"><div class="export-name">JSON — Raw data</div><div class="export-desc">For API integration & backend import</div></div>
+        <div class="export-info"><div class="export-name" data-i18n="export.json">JSON — Raw data</div><div class="export-desc" data-i18n="export.jsonDesc">For API integration & backend import</div></div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeExport()">Cancel</button>
+      <button class="btn" onclick="closeExport()" data-i18n="common.cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -582,19 +582,19 @@
 <!-- ═══════════════════════ FILES & EVENTS MODAL ═══════════════════════ -->
 <div class="modal-overlay" id="filesModal">
   <div class="modal files-modal">
-    <div class="modal-title">Download files</div>
+    <div class="modal-title" data-i18n="files.title">Download files</div>
 
     <div class="files-filters">
       <div class="files-filter-item">
-        <label for="filesFrom">From</label>
+        <label for="filesFrom" data-i18n="files.from">From</label>
         <input type="date" id="filesFrom">
       </div>
       <div class="files-filter-item">
-        <label for="filesTo">To</label>
+        <label for="filesTo" data-i18n="files.to">To</label>
         <input type="date" id="filesTo">
       </div>
       <div class="files-filter-item">
-        <label for="filesType">Type</label>
+        <label for="filesType" data-i18n="files.type">Type</label>
         <select id="filesType">
           <option value="" data-i18n="filetype.all">All</option>
           <option value="evt" data-i18n="filetype.evt">Event</option>
@@ -602,20 +602,20 @@
           <option value="day" data-i18n="filetype.day">Daily</option>
         </select>
       </div>
-      <button class="btn btn-primary" onclick="loadDeviceFiles()">Load files</button>
+      <button class="btn btn-primary" onclick="loadDeviceFiles()" data-i18n="files.loadFiles">Load files</button>
     </div>
 
-    <div class="files-summary" id="filesSummary">No file query yet.</div>
+    <div class="files-summary" id="filesSummary" data-i18n="files.noQueryYet">No file query yet.</div>
 
     <div class="files-list" id="filesList"></div>
     <div class="files-pagination">
-      <button class="btn" id="filesPrevBtn" onclick="loadDeviceFilesPage('prev')">Prev</button>
+      <button class="btn" id="filesPrevBtn" onclick="loadDeviceFilesPage('prev')" data-i18n="files.prev">Prev</button>
       <span id="filesPageInfo">Page 0 / 0</span>
-      <button class="btn" id="filesNextBtn" onclick="loadDeviceFilesPage('next')">Next</button>
+      <button class="btn" id="filesNextBtn" onclick="loadDeviceFilesPage('next')" data-i18n="files.next">Next</button>
     </div>
 
     <div class="modal-actions">
-      <button class="btn" onclick="closeFilesModal()">Close</button>
+      <button class="btn" onclick="closeFilesModal()" data-i18n="common.close">Close</button>
     </div>
   </div>
 </div>

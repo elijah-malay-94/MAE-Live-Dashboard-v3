@@ -102,6 +102,22 @@ function renderWorks() {
   if (!grid) return;
 
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const localizeWorkDesc = (raw, id) => {
+    const s = String(raw || '').trim();
+    const word = tr('works.workWord', 'Work');
+    // If API already provides a description, only normalize the leading "Work/Lavoro <N>" prefix.
+    if (s) {
+      const m = s.match(/^(work|lavoro)\s+(\d+)\b/i);
+      if (m) {
+        const num = m[2];
+        return s.replace(m[0], `${word} ${num}`);
+      }
+      return s;
+    }
+    // Fallback if API description missing.
+    const wid = String(id || '').trim();
+    return wid ? `${word} ${wid}` : word;
+  };
 
   const list = getFilteredWorks();
   if (list.length === 0) {
@@ -118,7 +134,7 @@ function renderWorks() {
     const ledClass = w.active ? 'active' : 'inactive';
     const ledTitle = w.active ? tr('works.active', 'Active') : tr('works.inactive', 'Inactive');
     const loc = w.location || '—';
-    const desc = w.description || `Work ${w.id || ''}`.trim() || '—';
+    const desc = localizeWorkDesc(w.description, w.id) || '—';
     const wid = w.id || '';
     const devCountRaw = Number(w.deviceCount);
     const devCount = (Number.isFinite(devCountRaw) && devCountRaw > 0) ? devCountRaw : null;

@@ -47,6 +47,7 @@ function setLiveMode(next, opts = {}) {
   const label = document.getElementById('statusLabel');
   const cd1 = document.getElementById('refreshCountdown');
   const cd2 = document.getElementById('refreshCountdown2');
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
 
   const resetDatesToToday = () => {
     const today = new Date().toISOString().slice(0, 10);
@@ -60,7 +61,7 @@ function setLiveMode(next, opts = {}) {
     if (opts.resetDates) resetDatesToToday();
     startAutoRefresh();
     if (btn) btn.classList.remove('active');
-    if (label) label.textContent = 'LIVE';
+    if (label) label.textContent = tr('live.live', 'LIVE');
     if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
     if (opts.reloadNow && typeof loadData === 'function') {
       // Fire-and-forget; refresh loop will keep it updated.
@@ -69,9 +70,9 @@ function setLiveMode(next, opts = {}) {
   } else {
     clearInterval(refreshTimer);
     if (btn) btn.classList.add('active');
-    if (label) label.textContent = 'PAUSED';
-    if (cd1) cd1.textContent = 'paused';
-    if (cd2) cd2.textContent = 'paused';
+    if (label) label.textContent = tr('live.paused', 'PAUSED');
+    if (cd1) cd1.textContent = tr('live.pausedLower', 'paused');
+    if (cd2) cd2.textContent = tr('live.pausedLower', 'paused');
     if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
   }
 }
@@ -115,17 +116,18 @@ function closeFilesModal() {
 function renderFilesTable(records) {
   const list = document.getElementById('filesList');
   if (!list) return;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   if (!records || records.length === 0) {
-    list.innerHTML = '<div class="files-row"><div class="files-cell">No files found for current filters.</div></div>';
+    list.innerHTML = `<div class="files-row"><div class="files-cell">${tr('files.noFilesFound','No files found for current filters.')}</div></div>`;
     return;
   }
 
   list.innerHTML = `
     <div class="files-row files-head">
-      <div class="files-cell"><strong>Name</strong></div>
-      <div class="files-cell"><strong>Timestamp</strong></div>
-      <div class="files-cell"><strong>Type</strong></div>
-      <div class="files-cell"><strong>Action</strong></div>
+      <div class="files-cell"><strong>${tr('files.col.name','Name')}</strong></div>
+      <div class="files-cell"><strong>${tr('files.col.timestamp','Timestamp')}</strong></div>
+      <div class="files-cell"><strong>${tr('files.col.type','Type')}</strong></div>
+      <div class="files-cell"><strong>${tr('files.col.action','Action')}</strong></div>
     </div>
     ${records.map((r, idx) => `
       <div class="files-row">
@@ -133,7 +135,7 @@ function renderFilesTable(records) {
         <div class="files-cell">${r.timestamp || '—'}</div>
         <div class="files-cell">${r.type || '—'}</div>
         <div class="files-cell">
-          <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadDeviceFileByIndex(${idx})">Download</button>
+          <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadDeviceFileByIndex(${idx})">${tr('files.download','Download')}</button>
         </div>
       </div>
     `).join('')}
@@ -146,7 +148,8 @@ function updateFilesPaginationUI() {
   const pageInfo = document.getElementById('filesPageInfo');
   const page = Math.floor(filesPagination.offset / filesPagination.limit) + 1;
   const pages = Math.max(1, Math.ceil((filesPagination.total || 0) / filesPagination.limit));
-  if (pageInfo) pageInfo.textContent = `Page ${page} / ${pages}`;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  if (pageInfo) pageInfo.textContent = `${tr('files.page','Page')} ${page} / ${pages}`;
   if (prev) prev.disabled = filesPagination.offset <= 0;
   if (next) next.disabled = !filesPagination.hasMore;
 }
@@ -172,7 +175,8 @@ async function loadDeviceFilesPage(direction = 'current') {
   const next = document.getElementById('filesNextBtn');
   if (prev) prev.disabled = true;
   if (next) next.disabled = true;
-  if (summaryEl) summaryEl.textContent = 'Loading files...';
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  if (summaryEl) summaryEl.textContent = tr('files.loading', 'Loading files...');
 
   try {
     const res = await fetchDeviceFiles(activeDevice.id, {
@@ -189,14 +193,22 @@ async function loadDeviceFilesPage(direction = 'current') {
     filesPagination.hasMore = Boolean(res.has_more);
     renderFilesTable(currentDeviceFiles);
     if (summaryEl) {
-      summaryEl.textContent = `Loaded ${res.count} / ${res.total} files (offset ${res.offset}, limit ${res.limit})${res.has_more ? ' — more available' : ''}.`;
+      const more = res.has_more ? tr('files.moreAvailable',' — more available') : '';
+      if (typeof window.tf === 'function') {
+        summaryEl.textContent = window.tf('files.loadedSummary', { count: res.count, total: res.total, offset: res.offset, limit: res.limit, more });
+      } else {
+        summaryEl.textContent = `Loaded ${res.count} / ${res.total} files (offset ${res.offset}, limit ${res.limit})${more}.`;
+      }
     }
     updateFilesPaginationUI();
   } catch (err) {
     currentDeviceFiles = [];
     filesPagination.hasMore = false;
     renderFilesTable([]);
-    if (summaryEl) summaryEl.textContent = `Error loading files: ${err.message}`;
+    if (summaryEl) {
+      if (typeof window.tf === 'function') summaryEl.textContent = window.tf('files.errorLoading', { message: err.message });
+      else summaryEl.textContent = `Error loading files: ${err.message}`;
+    }
     updateFilesPaginationUI();
   }
 }
@@ -224,7 +236,10 @@ async function downloadDeviceFileByIndex(index) {
     a.click();
     document.body.removeChild(a);
   } catch (err) {
-    alert(`Download failed: ${err.message}`);
+    const msg = (typeof window.tf === 'function')
+      ? window.tf('files.downloadFailed', { message: err.message })
+      : `Download failed: ${err.message}`;
+    alert(msg);
   }
 }
 
@@ -716,7 +731,8 @@ function loadMapForDevice(device) {
   document.getElementById('mapBadgeCoord').textContent = `${(device.lat||0).toFixed(4)}°N, ${(device.lng||0).toFixed(4)}°E`;
   const online   = device.status === 'online';
   const statusEl = document.getElementById('mapBadgeStatus');
-  statusEl.textContent = online ? 'Online' : 'Offline';
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  statusEl.textContent = online ? tr('map.online','Online') : tr('map.offline','Offline');
   statusEl.style.color = online ? 'var(--green)' : 'var(--muted)';
   statusEl.previousElementSibling.style.background = online ? 'var(--green)' : 'var(--muted)';
 
@@ -726,7 +742,7 @@ function loadMapForDevice(device) {
   document.getElementById('mapInfoPos').textContent   = device.position || '—';
   document.getElementById('mapInfoLat').textContent   = (device.lat||0).toFixed(6) + '°';
   document.getElementById('mapInfoLng').textContent   = (device.lng||0).toFixed(6) + '°';
-  document.getElementById('mapInfoStatus').innerHTML  = `<span style="color:${online?'var(--green)':'var(--muted)'}">${online?'● Online':'○ Offline'}</span>`;
+  document.getElementById('mapInfoStatus').innerHTML  = `<span style="color:${online?'var(--green)':'var(--muted)'}">${online ? '● ' + tr('map.online','Online') : '○ ' + tr('map.offline','Offline')}</span>`;
   document.getElementById('mapInfoSignal').textContent = `${device.signal||0} / 4`;
 }
 
@@ -772,7 +788,8 @@ async function jumpToCity() {
       document.getElementById('mapBadgeName').textContent  = data[0].display_name.split(',')[0];
       document.getElementById('mapBadgeCoord').textContent = `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
     } else {
-      alert('Location not found.');
+      const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+      alert(tr('map.locationNotFound','Location not found.'));
       document.getElementById('mapLoading').classList.add('hidden');
     }
   } catch(e) { document.getElementById('mapLoading').classList.add('hidden'); }
@@ -793,7 +810,7 @@ function renderMiniMapPreview() {
     <div class="mini-map-preview-overlay">
       <div class="mini-map-preview-btn">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Open Full Map
+        ${(typeof window.t === 'function') ? window.t('map.openFullMap') : 'Open Full Map'}
       </div>
     </div>
   `;
@@ -915,6 +932,17 @@ async function updatePowerSupplyData() {
 function openPowerModal() {
   const modal = document.getElementById('powerModal');
   if (modal) modal.classList.add('open');
+  try {
+    const line = document.getElementById('pmDeviceLine');
+    const id = activeDevice?.serial || activeDevice?.id || '—';
+    if (line) {
+      const txt = (typeof window.tf === 'function')
+        ? window.tf('power.deviceLine', { id })
+        : `DEVICE: ${id} · Battery · USB · AUX · Updates with dashboard`;
+      // Preserve inner span with id for other code paths.
+      line.innerHTML = txt.replace(String(id), `<span id="pmDeviceId">${id}</span>`);
+    }
+  } catch (e) { /* ignore */ }
   // Large view: graph last 100 diagnostics records.
   updatePowerSupplyData();
   clearInterval(powerModalTimer);
@@ -953,6 +981,16 @@ function initInlinePowerLive() {
   const deviceIdEl = document.getElementById('pmDeviceId');
   if (!deviceIdEl || !activeDevice) return;
   deviceIdEl.textContent = activeDevice?.serial || activeDevice?.id || '—';
+  try {
+    const line = document.getElementById('pmDeviceLine');
+    const id = activeDevice?.serial || activeDevice?.id || '—';
+    if (line) {
+      const txt = (typeof window.tf === 'function')
+        ? window.tf('power.deviceLine', { id })
+        : `DEVICE: ${id} · Battery · USB · AUX · Updates with dashboard`;
+      line.innerHTML = txt.replace(String(id), `<span id="pmDeviceId">${id}</span>`);
+    }
+  } catch (e) { /* ignore */ }
   // Always start inline view with all traces visible for readability.
   powerLineVisibility = { batt:true, usb:true, aux:true };
   // Kept for backward compatibility (now driven by updatePowerSupplyData()).
@@ -1113,6 +1151,7 @@ async function submitLogin() {
   const password = document.getElementById('loginPassword').value.trim();
   const errEl    = document.getElementById('loginError');
   const btn      = document.getElementById('loginBtn');
+  const btnLabel = document.getElementById('loginBtnLabel');
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
 
   if (!username || !password) {
@@ -1120,7 +1159,7 @@ async function submitLogin() {
     return;
   }
 
-  btn.textContent = tr('auth.signingIn', 'Signing in…');
+  if (btnLabel) btnLabel.textContent = tr('auth.signingIn', 'Signing in…');
   btn.disabled    = true;
   errEl.textContent = '';
 
@@ -1144,7 +1183,7 @@ async function submitLogin() {
   } catch (err) {
     errEl.textContent = err.message || tr('auth.loginFailed', 'Login failed. Check your credentials.');
   } finally {
-    btn.textContent = tr('auth.signIn', 'Sign In');
+    if (btnLabel) btnLabel.textContent = tr('auth.signIn', 'Sign In');
     btn.disabled    = false;
   }
 }

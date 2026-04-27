@@ -142,12 +142,17 @@ async function switchDevice(id) {
     //startAutoRefresh();
     setLiveMode(true);
   }
-  else showErrorMessage('No data for this device in the selected period — try a different date range.');
+  else {
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    showErrorMessage(tr('error.noDataDevicePeriod', 'No data for this device in the selected period — try a different date range.'));
+  }
 }
 
 function renderDeviceInfo() {
   const d = activeDevice;
   if (!d) return;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const tf = (k, vars) => (typeof window.tf === 'function') ? window.tf(k, vars) : tr(k, k);
   const signalVal = Number(d.signal);
   const signalColor =
     signalVal === 0 ? 'var(--red)' :
@@ -178,25 +183,25 @@ function renderDeviceInfo() {
   };
   document.getElementById('deviceInfoStatus').style = `background:${ledColorFromLastConnection(d.last_connection)}`;
   document.getElementById('deviceInfoList').innerHTML = `
-    <div class="info-row"><span class="info-key">Name</span><span class="info-val">${d.name}</span></div>
-    <div class="info-row"><span class="info-key">Serial No.</span><span class="info-val">${d.serial || d.id}</span></div>
-    <div class="info-row"><span class="info-key">Typology</span><span class="info-val info-val--upper">${d.type}</span></div>
-    <div class="info-row"><span class="info-key">Last connection</span><span class="info-val">${d.lastConnection || '—'}</span></div>
-    <div class="info-row"><span class="info-key">Signal</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
-    <div class="info-row"><span class="info-key">Memory</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.memory !== undefined ? `● ${d.memory}` : d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>
-    <div class="info-row"><span class="info-key">IP</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
-    <div class="info-row"><span class="info-key">Public IP</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.name','Name')}</span><span class="info-val">${d.name}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.serialNo','Serial No.')}</span><span class="info-val">${d.serial || d.id}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.typology','Typology')}</span><span class="info-val info-val--upper">${d.type}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.lastConnection','Last connection')}</span><span class="info-val">${d.lastConnection || '—'}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.signal','Signal')}</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.memory','Memory')}</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${memColor} 16%, transparent); border:1px solid color-mix(in srgb, ${memColor} 38%, transparent); color:${memColor};">${d.memory !== undefined ? `● ${d.memory}` : d.sdFree !== undefined ? `● ${sdFreeVal} MB` : (d.memory || '—')}</span></span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.ip','IP')}</span><span class="info-val">${fmtIpPort(d.ip, d.port)}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.publicIp','Public IP')}</span><span class="info-val">${fmtIpPort(d.ip_public, d.port_public)}</span></div>
     <div class="info-row">
-      <span class="info-key">Location</span>
+      <span class="info-key">${tr('deviceInfo.location','Location')}</span>
       <span class="info-val">${d.location || d.city || '—'}</span>
     </div>
-    <div class="info-row"><span class="info-key">Position</span><span class="info-val">${d.position || '—'}</span></div>
-    <div class="info-row"><span class="info-key">Coordinates</span><span class="info-val" style="font-size:10px;color:var(--muted2);">${(d.lat||0).toFixed(4)}°, ${(d.lng||0).toFixed(4)}°</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.position','Position')}</span><span class="info-val">${d.position || '—'}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.coordinates','Coordinates')}</span><span class="info-val" style="font-size:10px;color:var(--muted2);">${(d.lat||0).toFixed(4)}°, ${(d.lng||0).toFixed(4)}°</span></div>
   `;
   renderMiniMapPreview();
-  document.getElementById('footerSignal').textContent   = `Signal ${d.signal}/4`;
-  document.getElementById('footerMemory').textContent   = `Memory ${d.memory || '—'}`;
-  document.getElementById('footerPlatform').textContent = `${d.type} Platform`;
+  document.getElementById('footerSignal').textContent   = (typeof window.tf === 'function') ? window.tf('footer.signalFmt', { signal: d.signal }) : `Signal ${d.signal}/4`;
+  document.getElementById('footerMemory').textContent   = (typeof window.tf === 'function') ? window.tf('footer.memoryFmt', { memory: d.memory || '—' }) : `Memory ${d.memory || '—'}`;
+  document.getElementById('footerPlatform').textContent = (typeof window.tf === 'function') ? window.tf('footer.platformFmt', { type: d.type }) : `${d.type} Platform`;
 }
 
 // ═══════════════════════ KPI CARDS ═══════════════════════
@@ -254,6 +259,7 @@ function renderThresholdChannels() {
   if (!host) return;
   const cfg = getDeviceConfig();
   const channels = Array.isArray(cfg?.channels) ? cfg.channels : [];
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
 
   const storeKey = () => {
     try {
@@ -287,10 +293,10 @@ function renderThresholdChannels() {
     return `
       <div class="threshold-group" data-th-channel="${key}">
         <div class="threshold-group-title">${ch.label}${unit ? ` (${unit})` : ''}</div>
-        ${mkRow('Min warn',  `th_${key}_warnMin`,  warnMin,  unit, step)}
-        ${mkRow('Max warn',  `th_${key}_warnMax`,  warnMax,  unit, step)}
-        ${mkRow('Min alert', `th_${key}_alertMin`, alertMin, unit, step)}
-        ${mkRow('Max alert', `th_${key}_alertMax`, alertMax, unit, step)}
+        ${mkRow(tr('threshold.minWarn','Min warn'),  `th_${key}_warnMin`,  warnMin,  unit, step)}
+        ${mkRow(tr('threshold.maxWarn','Max warn'),  `th_${key}_warnMax`,  warnMax,  unit, step)}
+        ${mkRow(tr('threshold.minAlert','Min alert'), `th_${key}_alertMin`, alertMin, unit, step)}
+        ${mkRow(tr('threshold.maxAlert','Max alert'), `th_${key}_alertMax`, alertMax, unit, step)}
       </div>
     `;
   }).join('');
@@ -343,13 +349,14 @@ function checkAlerts() {
   const th  = getThresholds();
   const cfg = getDeviceConfig();
   activeAlerts = [];
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
 
   cfg.alertChecks(latest, th).forEach(c => {
     if (c.val === undefined || c.val === null) return;
     const state = getValueState(c.val, c.th);
     if (state !== 'ok') activeAlerts.push({
       ...c, state,
-      msg: `${c.label} = ${c.val} ${c.unit} — ${state === 'alert' ? 'CRITICAL' : 'Warning'} threshold exceeded`,
+      msg: `${c.label} = ${c.val} ${c.unit} — ${state === 'alert' ? tr('alert.criticalExceeded','CRITICAL threshold exceeded') : tr('alert.warningExceeded','Warning threshold exceeded')}`,
     });
   });
 
@@ -359,7 +366,7 @@ function checkAlerts() {
     banner.innerHTML = activeAlerts.map(a => `
       <div class="alert-item ${a.state==='warn'?'warn':''}">
         <span class="alert-icon">${a.state==='alert'?'🚨':'⚠️'}</span>
-        <span class="alert-text"><strong>${a.msg}</strong> — recorded at ${filteredData[0].time}</span>
+        <span class="alert-text"><strong>${a.msg}</strong> — ${tr('alert.recordedAt','recorded at')} ${filteredData[0].time}</span>
         <span class="alert-close" onclick="this.parentElement.remove()">✕</span>
       </div>
     `).join('');
@@ -493,11 +500,11 @@ function renderChart() {
 
   const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3);
   document.getElementById('chartStats').innerHTML = `
-    <div class="chart-stat-item"><div class="chart-stat-label">MIN</div><div class="chart-stat-value">${minV.toFixed(3)} ${meta.unit}</div></div>
-    <div class="chart-stat-item"><div class="chart-stat-label">MAX</div><div class="chart-stat-value" style="color:${meta.color}">${maxV.toFixed(3)} ${meta.unit}</div></div>
-    <div class="chart-stat-item"><div class="chart-stat-label">AVG</div><div class="chart-stat-value">${avg} ${meta.unit}</div></div>
-    <div class="chart-stat-item"><div class="chart-stat-label">RANGE</div><div class="chart-stat-value">${range.toFixed(3)} ${meta.unit}</div></div>
-    <div class="chart-stat-item"><div class="chart-stat-label">SAMPLES</div><div class="chart-stat-value">${data.length}</div></div>
+    <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.min'):'MIN'}</div><div class="chart-stat-value">${minV.toFixed(3)} ${meta.unit}</div></div>
+    <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.max'):'MAX'}</div><div class="chart-stat-value" style="color:${meta.color}">${maxV.toFixed(3)} ${meta.unit}</div></div>
+    <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.avg'):'AVG'}</div><div class="chart-stat-value">${avg} ${meta.unit}</div></div>
+    <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.range'):'RANGE'}</div><div class="chart-stat-value">${range.toFixed(3)} ${meta.unit}</div></div>
+    <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.samples'):'SAMPLES'}</div><div class="chart-stat-value">${data.length}</div></div>
   `;
 }
 

@@ -31,12 +31,23 @@ function updateWorkSubtitle() {
   const sub = document.getElementById('pageSubtitle');
   if (!sub) return;
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const localizeWorkDesc = (raw) => {
+    const s = String(raw || '').trim();
+    if (!s) return '';
+    const word = tr('works.workWord', 'Work');
+    // Normalize the leading "Work/Lavoro <N>" portion to the current language.
+    // Keeps the rest of the description intact (e.g. "— Demo Site A").
+    const m = s.match(/^(work|lavoro)\s+(\d+)\b/i);
+    if (!m) return s;
+    const num = m[2];
+    return s.replace(m[0], `${word} ${num}`);
+  };
   try {
     const desc = (localStorage.getItem('mae_dashboard_active_work_desc') || '').trim();
     const place = (localStorage.getItem('mae_dashboard_active_work_place') || '').trim();
     const devCnt = (localStorage.getItem('mae_dashboard_active_work_device_count') || '').trim();
     if (desc || place || devCnt) {
-      sub.textContent = `${tr('works.workLabel', 'WORK')}: ${desc || '—'} - ${tr('works.placeLabel', 'PLACE')}: ${place || '—'} - ${tr('works.devicesLabel2', 'DEVICES')}: ${devCnt || '—'}`;
+      sub.textContent = `${tr('works.workLabel', 'WORK')}: ${localizeWorkDesc(desc) || '—'} - ${tr('works.placeLabel', 'PLACE')}: ${place || '—'} - ${tr('works.devicesLabel2', 'DEVICES')}: ${devCnt || '—'}`;
       return;
     }
   } catch (e) { /* ignore */ }
@@ -215,19 +226,28 @@ async function initDashboard() {
     else if (allData.length > 0 && typeof startAutoRefresh === 'function') {
       startAutoRefresh();
     } else if (!allData.length) {
-      showErrorMessage('No data for this device in the selected period — try a different date range or select another device.');
+      const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+      showErrorMessage(tr('error.noDataDevicePeriodOrDevice', 'No data for this device in the selected period — try a different date range or select another device.'));
     }
   } else {
-    showErrorMessage('No devices found. Check customer ID and API connection.');
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    showErrorMessage(tr('error.noDevicesFound', 'No devices found. Check customer ID and API connection.'));
   }
 
   const footerDate = document.getElementById('footerDate');
-  if (footerDate) footerDate.textContent = new Date().toLocaleDateString('en-GB');
+  if (footerDate) {
+    const lang = (window.MAE_I18N?.getLanguage && typeof window.MAE_I18N.getLanguage === 'function')
+      ? window.MAE_I18N.getLanguage()
+      : 'en';
+    const locale = (lang === 'it') ? 'it-IT' : 'en-GB';
+    footerDate.textContent = new Date().toLocaleDateString(locale);
+  }
 }
 
 async function loadData() {
   if (!activeDevice) {
-    showErrorMessage('No active device selected yet. Please wait for devices to load.');
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    showErrorMessage(tr('error.noActiveDeviceYet', 'No active device selected yet. Please wait for devices to load.'));
     return;
   }
   // Keep device info + power supply in sync with dashboard refresh cadence.
@@ -264,7 +284,10 @@ async function loadData() {
     allData = await fetchData(activeDevice.id, from, to);
   } catch (err) {
     allData = [];
-    showErrorMessage('Could not load data: ' + (err.message || 'Server error. Try a different date range.'));
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    const tf = (k, vars) => (typeof window.tf === 'function') ? window.tf(k, vars) : tr(k, k);
+    const detail = err?.message || tr('error.serverErrorTryDifferentRange', 'Server error. Try a different date range.');
+    showErrorMessage(tf('error.couldNotLoadData', { detail }));
   }
   // Always operate on the last 50 readings (both Live and Previous data mode).
   if (Array.isArray(allData)) allData = allData.slice(0, 50);
@@ -310,7 +333,8 @@ async function applyDateFilter() {
     if (typeof setLiveMode === 'function') setLiveMode(false);
     await loadData();
   } catch (err) {
-    showErrorMessage(err?.message || 'Failed to load data.');
+    const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+    showErrorMessage(err?.message || tr('error.failedToLoadData', 'Failed to load data.'));
   }
 }
 
@@ -321,6 +345,7 @@ function renderAll() {
   renderChart();
   renderChannelsCharts();
   renderTable();
-  document.getElementById('footerRecords').textContent = `${filteredData.length} records`;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  document.getElementById('footerRecords').textContent = `${filteredData.length} ${tr('common.records', 'records')}`;
 }
 
