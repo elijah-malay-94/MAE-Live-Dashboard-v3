@@ -117,6 +117,14 @@ function renderFilesTable(records) {
   const list = document.getElementById('filesList');
   if (!list) return;
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const typeLabel = (raw) => {
+    const key = String(raw || '').trim().toLowerCase();
+    if (key === 'cir') return tr('filetype.cir', 'Circular');
+    if (key === 'evt') return tr('filetype.evt', 'Event');
+    if (key === 'day') return tr('filetype.day', 'Daily');
+    if (!key) return '—';
+    return raw; // unknown type code, show as-is
+  };
   if (!records || records.length === 0) {
     list.innerHTML = `<div class="files-row"><div class="files-cell">${tr('files.noFilesFound','No files found for current filters.')}</div></div>`;
     return;
@@ -133,7 +141,7 @@ function renderFilesTable(records) {
       <div class="files-row">
         <div class="files-cell">${r.name || '—'}</div>
         <div class="files-cell">${r.timestamp || '—'}</div>
-        <div class="files-cell">${r.type || '—'}</div>
+        <div class="files-cell">${typeLabel(r.type)}</div>
         <div class="files-cell">
           <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadDeviceFileByIndex(${idx})">${tr('files.download','Download')}</button>
         </div>
