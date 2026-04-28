@@ -1278,6 +1278,9 @@ function renderAlarmsList() {
   const formatTs = (raw) => {
     if (!raw) return '—';
     try {
+      //tolgo la Z altrimenti prende il fuso orario errato, gestire con UTC
+      //const dt = new Date(String(raw).replace(' ', 'T').replace('Z', ''));
+      //fatto su API, in attesa di gestire bene le date UTC
       const dt = new Date(String(raw).replace(' ', 'T'));
       if (!isNaN(dt.getTime())) return dt.toLocaleString();
     } catch (e) { /* ignore */ }
@@ -1298,13 +1301,18 @@ function renderAlarmsList() {
       const safeName = (evt.name || '').replace(/'/g, "\\'");
       const safeId = (evt.name || '').replace(/[^a-zA-Z0-9]/g, '_');
       const detail = (typeof activeEventDetails !== 'undefined') ? activeEventDetails[evt.name] : null;
-      const valueHtml = detail && detail.Peak != null
-        ? `${detail.Peak}${detail.Unit ? ` <em>${detail.Unit}</em>` : ''}`
+      /*
+      Nel metodo di listing dei file non abbiamo il valore e l'unità di misura, per esporre in lista questo dato va creato un metodo apposito
+      const valueHtml = detail && detail.value != null
+        ? `${detail.value}${detail.unit ? ` <em>${detail.unit}</em>` : ''}`
         : `<span style="color:var(--muted);font-size:12px;font-weight:400">—</span>`;
+      */
+
+      const valueHtml = formatTs(evt.timestamp);
 
       return `
         <div class="alarm-item">
-          <div class="alarm-ts">${formatTs(evt.timestamp)}</div>
+          <!--div class="alarm-ts">${formatTs(evt.timestamp)}</div-->
           <div class="alarm-value" id="alarm-val-${safeId}">${valueHtml}</div>
           <div class="alarm-actions">
             <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="openEventModal('${safeName}')">${tr('alarms.details','Details')}</button>
@@ -1339,9 +1347,9 @@ async function openEventModal(fileName) {
       activeEventDetails[fileName] = data;
       const safeId = fileName.replace(/[^a-zA-Z0-9]/g, '_');
       const el = document.getElementById(`alarm-val-${safeId}`);
-      if (el && data.Peak != null) {
-        const unit = data.Unit || '';
-        el.innerHTML = `${data.Peak}${unit ? ` <em>${unit}</em>` : ''}`;
+      if (el && data.value != null) {
+        const unit = data.unit || '';
+        el.innerHTML = `${data.value}${unit ? ` <em>${unit}</em>` : ''}`;
       }
     }
     content.innerHTML = renderEventDetail(data, fileName);
@@ -1356,36 +1364,51 @@ function closeEventModal() {
 
 function renderEventDetail(data, fileName) {
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const channels = Array.isArray(data.channels) ? data.channels : [];
+  const main_channel = channels.find((item) => item.alert == true);
 
-  const file      = data.File      || fileName  || '—';
-  const timestamp = data.Timestamp              || '—';
-  const channel   = data.Channel               || '—';
-  const peak      = data.Peak      != null ? data.Peak      : '—';
-  const threshold = data.Threshold != null ? data.Threshold : '—';
-  const unit      = data.Unit                  || '';
-  const hasFq     = data.Frequency != null;
-  const sat       = data.Saturation ? tr('common.yes','yes') : tr('common.no','no');
+  const formatTs = (raw) => {
+    if (!raw) return '—';
+    try {
+      //tolgo la Z altrimenti prende il fuso orario errato, gestire con UTC
+      //const dt = new Date(String(raw).replace(' ', 'T').replace('Z', ''));
+      //fatto su API, in attesa di gestire bene le date UTC
+      const dt = new Date(String(raw).replace(' ', 'T'));
+      if (!isNaN(dt.getTime())) return dt.toLocaleString();
+    } catch (e) { /* ignore */ }
+    return raw;
+  };
+
+  const file      = data.filename      || fileName  || '—';
+  const timestamp = formatTs(data.timestamp)              || '—';
+  const channel   = main_channel ? main_channel.name.replace('ch', '') || '—' : '—';
+  const peak      = main_channel && main_channel.value      != null ? main_channel.value      : '—';
+  const max_threshold = main_channel && main_channel.max_threshold != null ? main_channel.max_threshold : '—';
+  const min_threshold = main_channel && main_channel.min_threshold != null ? main_channel.min_threshold : '—';
+  const unit      = main_channel ? main_channel.unit                  || '' : '';
+  const hasFq     = main_channel  ? main_channel.frequency != null : false;
+  const sat       = main_channel && main_channel.saturation ? tr('common.yes','yes') : tr('common.no','no');
 
   const infoRows = [
     `<div class="event-info-row"><span>${tr('alarms.file','File')}:</span><strong>${file}</strong></div>`,
     `<div class="event-info-row"><span>${tr('alarms.datetime','Date and time')}:</span><strong>${timestamp}</strong></div>`,
     `<div class="event-info-row"><span>${tr('alarms.channel','Channel')}:</span><strong>${channel}</strong></div>`,
-    `<div class="event-info-row"><span>${tr('alarms.peakValue','Peak value')}:</span><strong>${peak} <em>${unit}</em></strong></div>`,
-    `<div class="event-info-row"><span>${tr('alarms.threshold','Threshold')}:</span><strong>${threshold} <em>${unit}</em></strong></div>`,
-    hasFq ? `<div class="event-info-row"><span>${tr('alarms.frequency','Frequency')}:</span><strong>${data.Frequency} Hz</strong></div>` : '',
+    `<div class="event-info-row"><span>${tr('alarms.peak','Peak')}:</span><strong>${peak} <em>${unit}</em></strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.max_threshold','Max Threshold')}:</span><strong>${max_threshold} <em>${unit}</em></strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.min_threshold','Min Threshold')}:</span><strong>${min_threshold} <em>${unit}</em></strong></div>`,
+    hasFq ? `<div class="event-info-row"><span>${tr('alarms.frequency','Frequency')}:</span><strong>${main_channel.frequency} <em>Hz</em></strong></div>` : '',
     `<div class="event-info-row"><span>${tr('alarms.saturation','Saturation')}:</span><strong>${sat}</strong></div>`,
   ].join('');
 
-  const channels = Array.isArray(data.Channels) ? data.Channels : [];
   const tableRows = channels.map(ch => {
-    const isTrigger = ch.channel === (data.Channel || '');
-    const chFq  = ch.Frequency != null ? ch.Frequency : '—';
-    const chSat = ch.Saturation ? tr('common.yes','yes') : tr('common.no','no');
+    const isTrigger = ch.alert;
+    const chFq  = ch.frequency != null ? ch.frequency : '—';
+    const chSat = ch.saturation ? tr('common.yes','yes') : tr('common.no','no');
     return `<tr class="${isTrigger ? 'evt-trigger-row' : ''}">
-      <td>${ch.channel}</td>
-      <td>${ch.Peak} <em>${ch.Unit || ''}</em></td>
-      <td>${chFq}</td>
-      <td>${chSat}</td>
+      <td style="text-align:center;">${ch.name.replace('ch', '')}</td>
+      <td style="text-align:right;">${ch.value} <em>${ch.unit || ''}</em></td>
+      <td style="text-align:right;">${chFq}</td>
+      <td style="text-align:center;">${chSat}</td>
     </tr>`;
   }).join('');
 
@@ -1394,10 +1417,10 @@ function renderEventDetail(data, fileName) {
       <div class="event-channels-label">${tr('alarms.channelsOverview','Channels overview')}</div>
       <table class="event-channels-table">
         <thead><tr>
-          <th>${tr('alarms.channel','Channel')}</th>
-          <th>${tr('alarms.peak','Peak')}</th>
-          <th>${tr('alarms.frequency','Frequency')} Hz</th>
-          <th>${tr('alarms.saturation','Saturation')}</th>
+          <th style="text-align:center;">${tr('alarms.channel','Channel')}</th>
+          <th style="text-align:right;">${tr('alarms.value','Value')}</th>
+          <th style="text-align:right;">${tr('alarms.frequency','Frequency')} Hz</th>
+          <th style="text-align:center;">${tr('alarms.saturation','Saturation')}</th>
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table>

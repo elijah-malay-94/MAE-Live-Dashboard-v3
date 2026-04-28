@@ -257,10 +257,12 @@
       'alarms.file': 'File',
       'alarms.datetime': 'Date and time',
       'alarms.peakValue': 'Peak value',
-      'alarms.threshold': 'Threshold',
+      'alarms.max_threshold': 'Max Threshold',
+      'alarms.min_threshold': 'Min Threshold',
       'alarms.frequency': 'Frequency',
       'alarms.saturation': 'Saturation',
       'alarms.peak': 'Peak',
+      'alarms.value': 'Value',
       'alarms.channelsOverview': 'Channels overview',
     },
     it: {

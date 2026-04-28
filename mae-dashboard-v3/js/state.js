@@ -314,7 +314,7 @@ async function loadEvents() {
   const to   = document.getElementById('dateTo').value;
 
   try {
-    const result = await fetchDeviceFiles(activeDevice.id, { from, to, type: 'evt', limit: 100, offset: 0 });
+    const result = await fetchDeviceFiles(activeDevice.id, { from, to, type: 'evt', limit: 150, offset: 0 });
     activeEvents = Array.isArray(result.records) ? result.records : [];
 
     // Map chN_ prefix → cfg.channels[N-1].key  (position-based, works for all device types)
