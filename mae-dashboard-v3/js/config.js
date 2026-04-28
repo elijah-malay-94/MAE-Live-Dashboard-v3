@@ -17,7 +17,7 @@
 // One entry per device family. Add new types here — everything else adapts automatically.
 const DEVICE_TYPE_CONFIG = {
   DL: {
-    supportsEvents: true,
+    supportsEvents: false,
     channels: [
       { key:'pt50',  label:'PT-50 fs1', unit:'mm', color:'var(--accent)',  sub:'Channel 1 · Displacement' },
       { key:'isbcX', label:'ISBC-10 X', unit:'?',  color:'var(--accent2)', sub:'Channel 2 · Tilt X'       },

@@ -1444,8 +1444,8 @@ async function fetchDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId
   const wid = String(workId || '').trim();
   const did = encodeURIComponent(deviceId);
   const path = (wid && useWorkScopedEndpoints())
-    ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`
-    : `/api/v1/devices/${did}/files/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}${typeSegment}/limit/${limit}/offset/${offset}`;
+    ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/files${typeSegment}/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}/limit/${limit}/offset/${offset}`
+    : `/api/v1/devices/${did}/files${typeSegment}/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}/limit/${limit}/offset/${offset}`;
   const data = await apiFetch(path);
   return normalizeDeviceFilesResponse(data);
 }
