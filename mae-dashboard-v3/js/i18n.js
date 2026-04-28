@@ -186,6 +186,7 @@
       'chart.avg': 'AVG',
       'chart.range': 'RANGE',
       'chart.samples': 'SAMPLES',
+      'chart.overlay': 'Overlay',
 
       'threshold.minWarn': 'Min warn',
       'threshold.maxWarn': 'Max warn',
@@ -445,6 +446,7 @@
       'chart.avg': 'MEDIA',
       'chart.range': 'RANGE',
       'chart.samples': 'CAMPIONI',
+      'chart.overlay': 'Sovrapposto',
 
       'threshold.minWarn': 'Min avviso',
       'threshold.maxWarn': 'Max avviso',
@@ -555,6 +557,9 @@
   }
 
   function applyLanguage(lang = getLanguage()) {
+    // Keep the html[lang] attribute in sync so browsers don't auto-translate.
+    document.documentElement.lang = lang;
+
     // Update text nodes
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
@@ -596,6 +601,8 @@
     // Some UI is built via JS templates (works cards/overview). Re-render on Works route.
     try {
       if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'works') {
+        const subEl = document.getElementById('pageSubtitle');
+        if (subEl) subEl.textContent = dict?.[lang]?.['works.subtitle'] ?? dict?.en?.['works.subtitle'] ?? '';
         if (typeof window.renderOverview === 'function') window.renderOverview();
         if (typeof window.renderWorks === 'function') window.renderWorks();
       }

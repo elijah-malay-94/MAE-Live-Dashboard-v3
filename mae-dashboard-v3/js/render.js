@@ -374,6 +374,14 @@ function checkAlerts() {
 }
 
 // ═══════════════════════ MAIN CHART ═══════════════════════
+let _yZoomFactor      = 1.0;
+let _lastChartChannel = null;
+let _chartWheelReady  = false;
+
+function resetYZoom() {
+  _yZoomFactor = 1.0;
+}
+
 function updateChannelSelect() {
   const cfg  = getDeviceConfig();
   const sel  = document.getElementById('channelSelect');
@@ -394,7 +402,13 @@ function updateChannelSelect() {
     `<option value="${ch.key}">${ch.label}${ch.unit ? ' (' + ch.unit + ')' : ''}</option>`
   ).join('');
 
+  if (activeChannels.length >= 2) {
+    const tr = (k, fb) => (typeof window.t === 'function') ? window.t(k) : fb;
+    sel.innerHTML += `<option value="__all__">${tr('dashboard.allChannels', 'All channels')}</option>`;
+  }
+
   if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  resetYZoom();
 }
 
 function renderChart() {
@@ -404,6 +418,17 @@ function renderChart() {
     clearDataViews('No data');
     return;
   }
+
+  if (ch !== _lastChartChannel) {
+    resetYZoom();
+    _lastChartChannel = ch;
+  }
+
+  if (ch === '__all__') {
+    renderChartAll();
+    return;
+  }
+
   const meta = cfg.chartMeta[ch] || Object.values(cfg.chartMeta)[0];
   const data = [...filteredData].reverse();
   if (!data.length) {
@@ -443,8 +468,12 @@ function renderChart() {
   const vals = data.map(d => d[meta.key] ?? 0);
   const minV = Math.min(...vals), maxV = Math.max(...vals);
   const range = maxV - minV || 0.02;
-  const pad   = range * 0.3;
-  const yMin  = minV - pad, yMax = maxV + pad;
+  const pad      = range * 0.3;
+  const baseYMin = minV - pad, baseYMax = maxV + pad;
+  const center   = (baseYMin + baseYMax) / 2;
+  const half     = (baseYMax - baseYMin) / 2;
+  const yMin     = center - half * _yZoomFactor;
+  const yMax     = center + half * _yZoomFactor;
   const W = 700, H = 160;
   const toY = v => H - ((v - yMin) / (yMax - yMin)) * H;
   const toX = i => (i / (data.length - 1 || 1)) * W;
@@ -471,6 +500,10 @@ function renderChart() {
     `<line x1="0" y1="${H*f}" x2="${W}" y2="${H*f}" stroke="rgba(100,116,139,0.12)" stroke-width="1"/>`
   ).join('');
 
+  const zoomHint = _yZoomFactor !== 1.0
+    ? `<text x="${W-2}" y="10" fill="rgba(100,116,139,0.55)" font-size="8.5" text-anchor="end" font-family="monospace">⟳ dblclick to reset</text>`
+    : `<text x="${W-2}" y="10" fill="rgba(100,116,139,0.22)" font-size="8.5" text-anchor="end" font-family="monospace">scroll to zoom</text>`;
+
   document.getElementById('mainChartSvg').innerHTML = `
     <defs>
       <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
@@ -480,13 +513,29 @@ function renderChart() {
       </linearGradient>
     </defs>
     ${gridLines}
+    ${zoomHint}
     <path d="${areaPath}" fill="url(#${gradId})"/>
     <path d="${linePath}" fill="none" stroke="${meta.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
     <circle cx="${points[points.length-1][0]}" cy="${points[points.length-1][1]}" r="3.5" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/>
   `;
 
-  const steps = [yMin, (yMin+yMax)/2, yMax];
-  document.getElementById('chartYLabels').innerHTML = [...steps].reverse().map(v=>`<span>${v.toFixed(3)}</span>`).join('');
+  if (!_chartWheelReady) {
+    const svgEl = document.getElementById('mainChartSvg');
+    svgEl.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (document.getElementById('channelSelect').value === '__all__') return;
+      _yZoomFactor = Math.max(0.05, Math.min(10, _yZoomFactor * (e.deltaY > 0 ? 1.25 : 0.8)));
+      renderChart();
+    }, { passive: false });
+    svgEl.addEventListener('dblclick', () => {
+      resetYZoom();
+      renderChart();
+    });
+    _chartWheelReady = true;
+  }
+
+  const steps = [yMin, (yMin + yMax) / 2, yMax];
+  document.getElementById('chartYLabels').innerHTML = [...steps].reverse().map(v => `<span>${v.toFixed(3)}</span>`).join('');
 
   const step = Math.max(1, Math.ceil(data.length / 8));
   document.getElementById('chartXLabels').innerHTML = data.filter((_,i)=>i%step===0).map(d=>`<span>${d.time.slice(0,5)}</span>`).join('');
@@ -499,6 +548,97 @@ function renderChart() {
     <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.range'):'RANGE'}</div><div class="chart-stat-value">${range.toFixed(3)} ${meta.unit}</div></div>
     <div class="chart-stat-item"><div class="chart-stat-label">${(typeof window.t==='function')?window.t('chart.samples'):'SAMPLES'}</div><div class="chart-stat-value">${data.length}</div></div>
   `;
+}
+
+function renderChartAll() {
+  const cfg = getDeviceConfig();
+  const data = [...filteredData].reverse();
+  const tr  = (k, fb) => (typeof window.t === 'function') ? window.t(k) : fb;
+
+  document.getElementById('chartTitle').textContent = tr('dashboard.allChannels', 'All Channels');
+  document.getElementById('chartBadge').textContent = tr('chart.overlay', 'Overlay');
+
+  if (!data.length) {
+    const svg     = document.getElementById('mainChartSvg');
+    const svgWrap = document.querySelector('.chart-svg-area');
+    const ylabs   = document.getElementById('chartYLabels');
+    const xlabs   = document.getElementById('chartXLabels');
+    const stats   = document.getElementById('chartStats');
+    if (svg)     svg.innerHTML = `<text x="12" y="24" fill="rgba(100,116,139,0.7)" font-size="12">${tr('common.noData', 'No data')}</text>`;
+    if (svgWrap) svgWrap.style.height = '48px';
+    if (ylabs)   ylabs.innerHTML = '';
+    if (xlabs)   xlabs.innerHTML = '';
+    if (stats)   stats.innerHTML = '';
+    document.getElementById('chartXLabels').style.display = 'none';
+    document.getElementById('chartYLabels').style.display = 'none';
+    return;
+  }
+
+  document.querySelector('.chart-svg-area').style.height = '160px';
+  document.getElementById('chartXLabels').style.display = 'flex';
+  document.getElementById('chartYLabels').style.display = 'flex';
+
+  const activeChannels = cfg.channels.filter(ch =>
+    data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
+  );
+
+  const W = 700, H = 160;
+  const toX = i => (i / (data.length - 1 || 1)) * W;
+
+  function smoothPath(pts) {
+    if (pts.length < 2) return pts.map(p => `${p[0]},${p[1]}`).join(' ');
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1], curr = pts[i];
+      const cpx = (prev[0] + curr[0]) / 2;
+      d += ` C${cpx},${prev[1]} ${cpx},${curr[1]} ${curr[0]},${curr[1]}`;
+    }
+    return d;
+  }
+
+  const channelData = activeChannels.map(ch => {
+    const meta = cfg.chartMeta[ch.key];
+    if (!meta) return null;
+    const vals = data.map(d => d[ch.key] ?? 0);
+    const minV = Math.min(...vals), maxV = Math.max(...vals);
+    const range = maxV - minV || 0.02;
+    return { ch, meta, vals, minV, maxV, range };
+  }).filter(Boolean);
+
+  const gridLines = [0.2, 0.4, 0.6, 0.8].map(f =>
+    `<line x1="0" y1="${H * f}" x2="${W}" y2="${H * f}" stroke="rgba(100,116,139,0.12)" stroke-width="1"/>`
+  ).join('');
+
+  const lines = channelData.map(({ meta, vals, minV, range }) => {
+    const points = vals.map((v, i) => {
+      const norm = (v - minV) / range;
+      return [toX(i), H - norm * H * 0.9 - H * 0.05];
+    });
+    const path = smoothPath(points);
+    const last  = points[points.length - 1];
+    return `<path d="${path}" fill="none" stroke="${meta.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/>`;
+  }).join('');
+
+  document.getElementById('mainChartSvg').innerHTML = gridLines + lines;
+
+  document.getElementById('chartYLabels').innerHTML = ['100%', '50%', '0%'].map(v => `<span>${v}</span>`).join('');
+
+  const step = Math.max(1, Math.ceil(data.length / 8));
+  document.getElementById('chartXLabels').innerHTML = data
+    .filter((_, i) => i % step === 0)
+    .map(d => `<span>${d.time.slice(0, 5)}</span>`)
+    .join('');
+
+  document.getElementById('chartStats').innerHTML = channelData.map(({ ch, meta, minV, maxV }) =>
+    `<div class="chart-stat-item">
+      <div class="chart-stat-label" style="display:flex;align-items:center;gap:4px;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${meta.color};flex-shrink:0"></span>
+        ${ch.label}
+      </div>
+      <div class="chart-stat-value" style="color:${meta.color}">${minV.toFixed(3)}–${maxV.toFixed(3)}${ch.unit ? ' ' + ch.unit : ''}</div>
+    </div>`
+  ).join('');
 }
 
 // ═══════════════════════ MINI CHARTS ═══════════════════════
