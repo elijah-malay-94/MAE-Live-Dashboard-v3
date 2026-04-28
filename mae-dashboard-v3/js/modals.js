@@ -324,8 +324,12 @@ function doPrintReport() {
 }
 
 function _buildAndOpenReport(cfg, data, dev, from, to) {
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const lang = (typeof window.MAE_I18N?.getLanguage === 'function') ? window.MAE_I18N.getLanguage() : 'en';
+  const locale = lang === 'it' ? 'it-IT' : 'en-GB';
+
   const serial = dev.serial || dev.id || '—';
-  const now    = new Date().toLocaleString('en-GB');
+  const now    = new Date().toLocaleString(locale);
 
   // Build channel headers using dynamic names if available, fallback to config
   const channelKeys = cfg.channels.map(c => c.key);
@@ -333,11 +337,11 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
     const unit = ch.unit ? ` (${ch.unit})` : '';
     return `${ch.label}${unit}`;
   });
-  const headers = ['Date', 'Time', ...channelHeaders];
+  const headers = [tr('table.date', 'Date'), tr('table.time', 'Time'), ...channelHeaders];
 
   const rows = data.map(r =>
     `<tr><td>${r.date ?? '—'}</td><td>${r.time ?? '—'}</td>${channelKeys.map(k =>
-      `<td>${r[k] !== undefined && r[k] !== null ? r[k] : '—'}</td>`).join('')}</tr>`
+      `<td>${r[k] !== undefined && r[k] !== null ? Number(r[k]).toFixed(3) : '—'}</td>`).join('')}</tr>`
   ).join('');
 
   const ip       = [dev.ip, dev.port].filter(Boolean).join(':')             || '—';
@@ -347,8 +351,10 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
   const battery  = dev.battery  ? `${dev.battery} V`  : '—';
   const status   = dev.status   || '—';
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Device Report — ${serial}</title>
+  const noDataTxt   = tr('report.noData', 'No data');
+
+  const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8">
+  <title>${tr('report.title','Device Export Report')} — ${serial}</title>
   <style>
     body { font-family: Arial, sans-serif; font-size: 12px; color: #0f172a; margin: 0; }
     .report-header { background: linear-gradient(120deg, #0f172a 0%, #1e3a5f 50%, #0e7490 100%); padding: 28px 36px 24px; margin-bottom: 28px; position: relative; overflow: hidden; }
@@ -381,33 +387,34 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
     @media print { body { margin: 0; } .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .overview-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style></head><body>
   <div class="report-header">
-    <h1>Device Export Report</h1>
-    <div class="sub">Generated: ${now}</div>
+    <h1>${tr('report.title','Device Export Report')}</h1>
+    <div class="sub">${tr('report.generated','Generated')}: ${now}</div>
     <div class="badge">&#9679;&nbsp; ${serial} &nbsp;·&nbsp; ${dev.type || 'MAE DataLogger'} &nbsp;·&nbsp; ${from} → ${to}</div>
   </div>
   <div class="page-body">
 
-  <h2>Device Information</h2>
+  <h2>${tr('report.deviceInfo','Device Information')}</h2>
   <div class="info-grid">
-    <div class="info-box"><div class="info-label">Device Name</div><div class="info-val">${dev.name || '—'}</div></div>
-    <div class="info-box"><div class="info-label">Serial No.</div><div class="info-val">${serial}</div></div>
-    <div class="info-box"><div class="info-label">Type</div><div class="info-val">${dev.type || '—'}</div></div>
-    <div class="info-box"><div class="info-label">Status</div><div class="info-val">${status}</div></div>
-    <div class="info-box"><div class="info-label">Last Connection</div><div class="info-val">${lastConn}</div></div>
-    <div class="info-box"><div class="info-label">Memory Free</div><div class="info-val">${memory}</div></div>
-    <div class="info-box"><div class="info-label">Battery</div><div class="info-val">${battery}</div></div>
-    <div class="info-box"><div class="info-label">IP Address</div><div class="info-val">${ip}</div></div>
-    <div class="info-box"><div class="info-label">Public IP</div><div class="info-val">${pubIp}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.deviceName','Device Name')}</div><div class="info-val">${dev.name || '—'}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.serialNo','Serial No.')}</div><div class="info-val">${serial}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.type','Type')}</div><div class="info-val">${dev.type || '—'}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.status','Status')}</div><div class="info-val">${status}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.lastConnection','Last Connection')}</div><div class="info-val">${lastConn}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.memoryFree','Memory Free')}</div><div class="info-val">${memory}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.battery','Battery')}</div><div class="info-val">${battery}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.ipAddress','IP Address')}</div><div class="info-val">${ip}</div></div>
+    <div class="info-box"><div class="info-label">${tr('report.publicIp','Public IP')}</div><div class="info-val">${pubIp}</div></div>
   </div>
 
-  <h2>Data Records — ${from} → ${to} &nbsp;·&nbsp; ${data.length} records</h2>
+  <h2>${tr('report.dataRecords','Data Records')} — ${from} → ${to} &nbsp;·&nbsp; ${data.length} ${tr('common.records','records')}</h2>
   <table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-  <tbody>${rows || '<tr><td colspan="' + headers.length + '" style="text-align:center;color:#94a3b8;padding:16px;">No data available for this period</td></tr>'}</tbody>
+  <tbody>${rows || '<tr><td colspan="' + headers.length + '" style="text-align:center;color:#94a3b8;padding:16px;">' + tr('report.noDataForPeriod','No data available for this period') + '</td></tr>'}</tbody>
   </table>
-  <h2>Data Visualization</h2>
+  <h2>${tr('report.dataVisualization','Data Visualization')}</h2>
   <div class="charts-grid" id="chartsGrid"></div>
   <script>
   (function(){
+    var NO_DATA_TXT = ${JSON.stringify(noDataTxt)};
     var raw    = ${JSON.stringify(data.map(r => { const o = {date: r.date, time: r.time}; channelKeys.forEach(k => { o[k] = r[k]; }); return o; }))};
     var keys   = ${JSON.stringify(channelKeys)};
     var labels = ${JSON.stringify(cfg.channels.map(ch => ch.label + (ch.unit ? ' (' + ch.unit + ')' : '')))};
@@ -431,7 +438,7 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
           ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
         }
         ctx.fillStyle = '#cbd5e1'; ctx.font = '9px Arial'; ctx.textAlign = 'center';
-        ctx.fillText('No data', W / 2, H / 2 + 3);
+        ctx.fillText(NO_DATA_TXT, W / 2, H / 2 + 3);
         return { min: 0, max: 0 };
       }
 
@@ -513,19 +520,20 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
 
       var result = drawMiniChart(canvas, vals, color);
       if (vals.length >= 2) {
-        rangeSpan.textContent = result.min.toFixed(2) + ' → ' + result.max.toFixed(2);
+        rangeSpan.textContent = result.min.toFixed(3) + ' → ' + result.max.toFixed(3);
       }
     });
   })();
   </script>
 
-  <h2>Combined Overview</h2>
+  <h2>${tr('report.combinedOverview','Combined Overview')}</h2>
   <div class="overview-card">
     <canvas id="overviewCanvas" height="130" style="display:block;width:100%;border-radius:4px;"></canvas>
     <div class="overview-legend" id="overviewLegend"></div>
   </div>
   <script>
   (function(){
+    var NO_DATA_TXT = ${JSON.stringify(noDataTxt)};
     var raw    = ${JSON.stringify(data.map(r => { const o = {date: r.date, time: r.time}; channelKeys.forEach(k => { o[k] = r[k]; }); return o; }))};
     var keys   = ${JSON.stringify(channelKeys)};
     var labels = ${JSON.stringify(cfg.channels.map(ch => ch.label + (ch.unit ? ' (' + ch.unit + ')' : '')))};
@@ -557,7 +565,7 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
     var n = raw.length;
     if (n < 2) {
       ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
-      ctx.fillText('No data', W / 2, H / 2 + 4);
+      ctx.fillText(NO_DATA_TXT, W / 2, H / 2 + 4);
       return;
     }
 
@@ -654,7 +662,7 @@ function _buildAndOpenReport(cfg, data, dev, from, to) {
   })();
   </script>
 
-  <div class="footer">MAE DataLogger Dashboard &nbsp;·&nbsp; ${serial} &nbsp;·&nbsp; ${from} → ${to} &nbsp;·&nbsp; Generated ${now}</div>
+  <div class="footer">${tr('report.footer','MAE DataLogger Dashboard')} &nbsp;·&nbsp; ${serial} &nbsp;·&nbsp; ${from} → ${to} &nbsp;·&nbsp; ${tr('report.generated','Generated')} ${now}</div>
   </div>
   </body></html>`;
 
