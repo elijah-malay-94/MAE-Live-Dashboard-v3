@@ -211,17 +211,21 @@ function getMockDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId()) 
   const has_more = (offset + count) < total;
   const types = validType ? [validType] : ['evt', 'cir', 'day'];
 
+  const pad2 = n => String(n).padStart(2, '0');
   const records = Array.from({ length: count }, (_, i) => {
     const idx = offset + i + 1;
     const t = _pick(rng, types);
     const ts = new Date(Date.now() - Math.floor(rng() * 14) * 24 * 3600 * 1000 - Math.floor(rng() * 86400) * 1000);
     const iso = ts.toISOString().replace('T', ' ').slice(0, 19);
-    const evtId = 1000 + Math.floor(rng() * 9000);
-    const ext = t === 'day' ? 'csv' : 'dat';
-    const name =
-      t === 'evt'
-        ? `acquisition_${wid}_${did}_${evtId}.${ext}`
-        : `log_${wid}_${did}_${idx}.${ext}`;
+    let name;
+    if (t === 'evt') {
+      const chNum = 1 + Math.floor(rng() * 6);
+      const DD = pad2(ts.getDate()), MM = pad2(ts.getMonth() + 1), YY = String(ts.getFullYear()).slice(2);
+      const HH = pad2(ts.getHours()), mm = pad2(ts.getMinutes()), SS = pad2(ts.getSeconds());
+      name = `ch${chNum}_${DD}${MM}${YY}_${HH}${mm}${SS}.dat`;
+    } else {
+      name = t === 'day' ? `log_${wid}_${did}_${idx}.csv` : `log_${wid}_${did}_${idx}.dat`;
+    }
     return { timestamp: iso, name, type: t };
   });
 
@@ -241,21 +245,51 @@ function getMockEventDetails(deviceId, eventId, workId = getActiveWorkId()) {
   const wid = String(workId || '101');
   const eid = String(eventId || '').trim() || '0';
   const rng = _mulberry32(_seedFromStrings('event', wid, did, eid));
-  const ts = new Date(Date.now() - Math.floor(rng() * 10) * 3600 * 1000).toISOString();
+
+  // Parse trigger channel from filename (chN_DDMMYY_HHmmSS.dat)
+  const chMatch = eid.match(/^ch(\d+)_/i);
+  const triggerChNum = chMatch ? parseInt(chMatch[1]) : 1;
+  const triggerChannel = `ch${triggerChNum}`;
+
+  // Parse timestamp from filename
+  const tsMatch = eid.match(/ch\d+_(\d{6})_(\d{6})/i);
+  let timestamp = new Date(Date.now() - Math.floor(rng() * 86400 * 1000)).toISOString().replace('T', ' ').slice(0, 19);
+  if (tsMatch) {
+    const d = tsMatch[1], t = tsMatch[2];
+    const DD = d.slice(0, 2), MM = d.slice(2, 4), YY = '20' + d.slice(4, 6);
+    const HH = t.slice(0, 2), mm = t.slice(2, 4), SS = t.slice(4, 6);
+    timestamp = `${DD}/${MM}/${YY} ${HH}:${mm}:${SS}`;
+  }
+
+  const unit = 'mm/s';
+  const threshold = _clamp(4.0 + rng() * 3, 1, 10);
+  const peak = _clamp(threshold + 0.05 + rng() * 0.8, threshold + 0.01, threshold + 3);
+  const frequency = _clamp(30 + rng() * 80, 5, 150);
+  const saturation = rng() < 0.05;
+
+  // Generate data for N channels (matching typical seismic logger: 4-8 channels)
+  const numChannels = 4 + Math.floor(rng() * 3);
+  const channels = Array.from({ length: numChannels }, (_, i) => {
+    const isTrigger = (i + 1) === triggerChNum;
+    return {
+      channel: `ch${i + 1}`,
+      Peak: isTrigger ? parseFloat(peak.toFixed(2)) : parseFloat(_clamp(rng() * threshold * 0.12, 0.01, threshold * 0.15).toFixed(2)),
+      Unit: unit,
+      Frequency: parseFloat(_clamp(isTrigger ? frequency : (20 + rng() * 100), 5, 150).toFixed(2)),
+      Saturation: isTrigger ? saturation : (rng() < 0.01),
+    };
+  });
+
   return {
-    id: eid,
-    device_id: did,
-    work_id: wid,
-    timestamp: ts,
-    type: _pick(rng, ['threshold', 'power', 'gps', 'system']),
-    severity: _pick(rng, ['info', 'warning', 'critical']),
-    message: _pick(rng, [
-      'Threshold exceeded on channel 2',
-      'Power input unstable (USB)',
-      'GPS signal recovered',
-      'Device rebooted after update',
-    ]),
-    raw: { mock: true },
+    File: eid,
+    Timestamp: timestamp,
+    Channel: triggerChannel,
+    Peak: parseFloat(peak.toFixed(2)),
+    Threshold: parseFloat(threshold.toFixed(2)),
+    Frequency: parseFloat(frequency.toFixed(2)),
+    Saturation: saturation,
+    Unit: unit,
+    Channels: channels,
   };
 }
 

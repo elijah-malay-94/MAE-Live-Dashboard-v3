@@ -688,11 +688,20 @@ document.addEventListener('click', e => {
     && !e.target.closest('[onclick*="openThresholds"]')
     && !e.target.closest('[onclick*="Alerts"]')) closeThresholds();
 
+  const alarmsPanel = document.getElementById('alarmsPanel');
+  if (alarmsPanel && alarmsPanel.classList.contains('open')
+    && !alarmsPanel.contains(e.target)
+    && !e.target.closest('#navAlerts')
+    && !e.target.closest('#topbarAlertsBtn')) closeAlarmsPanel();
+
   const modal = document.getElementById('exportModal');
   if (modal.classList.contains('open') && e.target === modal) closeExport();
 
   const filesModal = document.getElementById('filesModal');
   if (filesModal.classList.contains('open') && e.target === filesModal) closeFilesModal();
+
+  const eventModal = document.getElementById('eventDetailModal');
+  if (eventModal && eventModal.classList.contains('open') && e.target === eventModal) closeEventModal();
 });
 
 // ═══════════════════════ MAP MODAL ═══════════════════════
@@ -1226,6 +1235,177 @@ function doLogout() {
   if (mock) next.set('mock', mock);
   if (proxy) next.set('proxy', proxy);
   window.location.href = `index.html?${next.toString()}`;
+}
+
+// ═══════════════════════ ALARMS PANEL ═══════════════════════
+function openAlarmsPanel() {
+  document.getElementById('alarmsPanel').classList.add('open');
+  renderAlarmsList();
+}
+
+function closeAlarmsPanel() {
+  document.getElementById('alarmsPanel').classList.remove('open');
+}
+
+function renderAlarmsList() {
+  const host = document.getElementById('alarmsPanelContent');
+  if (!host) return;
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+
+  if (!Array.isArray(activeEvents) || activeEvents.length === 0) {
+    host.innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">${tr('alarms.noEvents','No events found for this period.')}</p>`;
+    return;
+  }
+
+  // Group events by channel (chN extracted from file name prefix)
+  const byChannel = {};
+  activeEvents.forEach(evt => {
+    const m = (evt.name || '').match(/^ch(\d+)_/i);
+    const ch = m ? `ch${m[1]}` : '—';
+    if (!byChannel[ch]) byChannel[ch] = [];
+    byChannel[ch].push(evt);
+  });
+
+  const formatTs = (raw) => {
+    if (!raw) return '—';
+    try {
+      const dt = new Date(String(raw).replace(' ', 'T'));
+      if (!isNaN(dt.getTime())) return dt.toLocaleString();
+    } catch (e) { /* ignore */ }
+    return raw;
+  };
+
+  host.innerHTML = Object.entries(byChannel)
+    .sort((a, b) => {
+      const na = parseInt(a[0].match(/\d+/)?.[0] ?? '0');
+      const nb = parseInt(b[0].match(/\d+/)?.[0] ?? '0');
+      return na - nb;
+    })
+    .map(([channel, events]) => {
+    const evtCount = events.length;
+    const evtWord = evtCount === 1 ? tr('alarms.event', 'event') : tr('alarms.events', 'events');
+
+    const evtRows = events.map(evt => {
+      const safeName = (evt.name || '').replace(/'/g, "\\'");
+      const safeId = (evt.name || '').replace(/[^a-zA-Z0-9]/g, '_');
+      const detail = (typeof activeEventDetails !== 'undefined') ? activeEventDetails[evt.name] : null;
+      const valueHtml = detail && detail.Peak != null
+        ? `${detail.Peak}${detail.Unit ? ` <em>${detail.Unit}</em>` : ''}`
+        : `<span style="color:var(--muted);font-size:12px;font-weight:400">—</span>`;
+
+      return `
+        <div class="alarm-item">
+          <div class="alarm-ts">${formatTs(evt.timestamp)}</div>
+          <div class="alarm-value" id="alarm-val-${safeId}">${valueHtml}</div>
+          <div class="alarm-actions">
+            <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="openEventModal('${safeName}')">${tr('alarms.details','Details')}</button>
+            <button class="btn" style="padding:5px 10px;font-size:10px;" onclick="downloadEventFile('${safeName}')">${tr('files.download','Download')}</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="alarm-channel-group">
+        <div class="alarm-channel-header">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          ${tr('alarms.channel','Channel')} ${channel} — ${evtCount} ${evtWord}
+        </div>
+        ${evtRows}
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════ EVENT DETAIL MODAL ═══════════════════════
+async function openEventModal(fileName) {
+  const overlay = document.getElementById('eventDetailModal');
+  const content = document.getElementById('eventDetailContent');
+  overlay.classList.add('open');
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  content.innerHTML = `<p style="color:var(--muted);font-size:13px;">${tr('common.loading','Loading…')}</p>`;
+
+  try {
+    const cached = (typeof activeEventDetails !== 'undefined') ? activeEventDetails[fileName] : null;
+    const data = cached || await fetchEventDetails(activeDevice.id, fileName);
+    if (!cached && data) activeEventDetails[fileName] = data;
+    content.innerHTML = renderEventDetail(data, fileName);
+  } catch (err) {
+    content.innerHTML = `<p style="color:var(--red);font-size:13px;">${err.message || 'Error loading event details.'}</p>`;
+  }
+}
+
+function closeEventModal() {
+  document.getElementById('eventDetailModal').classList.remove('open');
+}
+
+function renderEventDetail(data, fileName) {
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+
+  const file      = data.File      || fileName  || '—';
+  const timestamp = data.Timestamp              || '—';
+  const channel   = data.Channel               || '—';
+  const peak      = data.Peak      != null ? data.Peak      : '—';
+  const threshold = data.Threshold != null ? data.Threshold : '—';
+  const unit      = data.Unit                  || '';
+  const hasFq     = data.Frequency != null;
+  const sat       = data.Saturation ? tr('common.yes','yes') : tr('common.no','no');
+
+  const infoRows = [
+    `<div class="event-info-row"><span>${tr('alarms.file','File')}:</span><strong>${file}</strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.datetime','Date and time')}:</span><strong>${timestamp}</strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.channel','Channel')}:</span><strong>${channel}</strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.peakValue','Peak value')}:</span><strong>${peak} <em>${unit}</em></strong></div>`,
+    `<div class="event-info-row"><span>${tr('alarms.threshold','Threshold')}:</span><strong>${threshold} <em>${unit}</em></strong></div>`,
+    hasFq ? `<div class="event-info-row"><span>${tr('alarms.frequency','Frequency')}:</span><strong>${data.Frequency} Hz</strong></div>` : '',
+    `<div class="event-info-row"><span>${tr('alarms.saturation','Saturation')}:</span><strong>${sat}</strong></div>`,
+  ].join('');
+
+  const channels = Array.isArray(data.Channels) ? data.Channels : [];
+  const tableRows = channels.map(ch => {
+    const isTrigger = ch.channel === (data.Channel || '');
+    const chFq  = ch.Frequency != null ? ch.Frequency : '—';
+    const chSat = ch.Saturation ? tr('common.yes','yes') : tr('common.no','no');
+    return `<tr class="${isTrigger ? 'evt-trigger-row' : ''}">
+      <td>${ch.channel}</td>
+      <td>${ch.Peak} <em>${ch.Unit || ''}</em></td>
+      <td>${chFq}</td>
+      <td>${chSat}</td>
+    </tr>`;
+  }).join('');
+
+  const tableHtml = channels.length ? `
+    <div class="event-channels-section">
+      <div class="event-channels-label">${tr('alarms.channelsOverview','Channels overview')}</div>
+      <table class="event-channels-table">
+        <thead><tr>
+          <th>${tr('alarms.channel','Channel')}</th>
+          <th>${tr('alarms.peak','Peak')}</th>
+          <th>${tr('alarms.frequency','Frequency')} Hz</th>
+          <th>${tr('alarms.saturation','Saturation')}</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>` : '';
+
+  return `<div class="event-info-grid">${infoRows}</div>${tableHtml}`;
+}
+
+async function downloadEventFile(fileName) {
+  if (!activeDevice?.id || !fileName) return;
+  try {
+    const res = await fetchDeviceFile(activeDevice.id, fileName);
+    if (!res.base64) throw new Error('Missing base64 payload in API response.');
+    const bytes = decodeBase64ToUint8Array(res.base64);
+    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob), download: fileName,
+    });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch (err) {
+    const msg = (typeof window.tf === 'function')
+      ? window.tf('files.downloadFailed', { message: err.message })
+      : `Download failed: ${err.message}`;
+    alert(msg);
+  }
 }
 
 // ═══════════════════════ START ═══════════════════════

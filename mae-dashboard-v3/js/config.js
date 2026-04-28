@@ -17,6 +17,7 @@
 // One entry per device family. Add new types here — everything else adapts automatically.
 const DEVICE_TYPE_CONFIG = {
   DL: {
+    supportsEvents: true,
     channels: [
       { key:'pt50',  label:'PT-50 fs1', unit:'mm', color:'var(--accent)',  sub:'Channel 1 · Displacement' },
       { key:'isbcX', label:'ISBC-10 X', unit:'?',  color:'var(--accent2)', sub:'Channel 2 · Tilt X'       },
@@ -36,9 +37,9 @@ const DEVICE_TYPE_CONFIG = {
     tableRow: (r, states) => [
       `<span class="td" style="font-size:10px;color:var(--muted)">${r.date}</span>`,
       `<span class="td" style="color:var(--text)">${r.time}</span>`,
-      `<span class="td ${states[0]==='alert'?'alert-val':states[0]==='warn'?'warn-val':'hi'}">${(r.pt50??0).toFixed(2)}</span>`,
-      `<span class="td ${states[1]==='alert'?'alert-val':states[1]==='warn'?'warn-val':''}">${(r.isbcX??0).toFixed(2)}</span>`,
-      `<span class="td ${states[2]==='alert'?'alert-val':states[2]==='warn'?'warn-val':''}">${(r.isbcY??0).toFixed(2)}</span>`,
+      `<span class="td ${states[0]==='alert'?'alert-val':states[0]==='warn'?'warn-val':'hi'}">${(r.pt50??0).toFixed(3)}</span>`,
+      `<span class="td ${states[1]==='alert'?'alert-val':states[1]==='warn'?'warn-val':''}">${(r.isbcX??0).toFixed(3)}</span>`,
+      `<span class="td ${states[2]==='alert'?'alert-val':states[2]==='warn'?'warn-val':''}">${(r.isbcY??0).toFixed(3)}</span>`,
     ],
     alertChecks: (row, th) => [
       { val: row.pt50,  label:'PT-50 fs1', unit:'mm', th: th.pt50  || {} },
@@ -61,6 +62,7 @@ const DEVICE_TYPE_CONFIG = {
   },
 
   VMR: {
+    supportsEvents: true,
     channels: [
       { key:'displacement', label:'Displacement', unit:'mm', color:'var(--accent)',  sub:'Channel 1 · Vibration'   },
       { key:'frequency',    label:'Frequency',    unit:'Hz', color:'var(--accent2)', sub:'Channel 2 · Frequency'   },
@@ -83,8 +85,8 @@ const DEVICE_TYPE_CONFIG = {
     tableRow: (r, states) => [
       `<span class="td" style="font-size:10px;color:var(--muted)">${r.date}</span>`,
       `<span class="td" style="color:var(--text)">${r.time}</span>`,
-      `<span class="td hi">${(r.displacement??0).toFixed(2)}</span>`,
-      `<span class="td">${(r.frequency??0).toFixed(2)}</span>`,
+      `<span class="td hi">${(r.displacement??0).toFixed(3)}</span>`,
+      `<span class="td">${(r.frequency??0).toFixed(3)}</span>`,
       `<span class="td">${(r.temperature??0).toFixed(1)}</span>`,
       `<span class="td">${(r.voltage??0).toFixed(1)}</span>`,
     ],
@@ -110,6 +112,7 @@ const DEVICE_TYPE_CONFIG = {
   },
 
   SISMALOG: {
+    supportsEvents: true,
     channels: [
       { key:'ch1', label:'CH1', unit:'', color:'var(--accent)',  sub:'Channel 1' },
       { key:'ch2', label:'CH2', unit:'', color:'var(--accent2)', sub:'Channel 2' },
@@ -129,9 +132,9 @@ const DEVICE_TYPE_CONFIG = {
     tableRow: (r, states) => [
       `<span class="td" style="font-size:10px;color:var(--muted)">${r.date}</span>`,
       `<span class="td" style="color:var(--text)">${r.time}</span>`,
-      `<span class="td hi">${(r.ch1??0).toFixed(2)}</span>`,
-      `<span class="td">${(r.ch2??0).toFixed(2)}</span>`,
-      `<span class="td">${(r.ch3??0).toFixed(2)}</span>`,
+      `<span class="td hi">${(r.ch1??0).toFixed(3)}</span>`,
+      `<span class="td">${(r.ch2??0).toFixed(3)}</span>`,
+      `<span class="td">${(r.ch3??0).toFixed(3)}</span>`,
     ],
     alertChecks: (row, th) => [
       { val: row.ch1, label:'CH1', unit:'', th: th.ch1 || {} },
@@ -238,7 +241,7 @@ function buildConfigFromHeaders(header) {
     ...entries.map((e, i) => {
       const val = r[e.key] ?? 0;
       const cls = states[i] === 'alert' ? 'alert-val' : states[i] === 'warn' ? 'warn-val' : (i === 0 ? 'hi' : '');
-      return `<span class="td ${cls}">${val.toFixed(2)}</span>`;
+      return `<span class="td ${cls}">${val.toFixed(3)}</span>`;
     }),
   ];
 
@@ -257,7 +260,7 @@ function buildConfigFromHeaders(header) {
     return out;
   };
 
-  return { channels, chartMeta, miniCharts, tableHeaders, tableColumns, tableRow, alertChecks, mapRow };
+  return { supportsEvents: true, channels, chartMeta, miniCharts, tableHeaders, tableColumns, tableRow, alertChecks, mapRow };
 }
 
 // Returns the active device config.

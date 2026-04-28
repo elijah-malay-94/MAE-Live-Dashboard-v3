@@ -25,6 +25,9 @@ let refreshTimer        = null;
 const AUTO_REFRESH_SECONDS = 120;
 let countdown           = AUTO_REFRESH_SECONDS;
 let activeAlerts        = [];
+let activeEvents        = []; // event files loaded from API (type=evt)
+let alarmedChannels     = []; // channel keys currently in alarm (derived from event file names)
+let activeEventDetails  = {}; // cached event detail data keyed by file name
 let activeChannelHeaders = null; // populated from data.header on each fetchData() call
 
 function updateWorkSubtitle() {
@@ -265,6 +268,10 @@ async function loadData() {
   allData = [];
   filteredData = [];
   activeAlerts = [];
+  activeEvents = [];
+  alarmedChannels = [];
+  activeEventDetails = {};
+  if (typeof updateEventsBadge === 'function') updateEventsBadge(0);
   if (typeof clearDataViews === 'function') clearDataViews('Loading…');
 
   /*
@@ -292,6 +299,73 @@ async function loadData() {
   // Always operate on the last 50 readings (both Live and Previous data mode).
   if (Array.isArray(allData)) allData = allData.slice(0, 50);
   applyFilters();
+  loadEvents().catch(() => {});
+}
+
+async function loadEvents() {
+  if (!activeDevice) return;
+  const cfg = getDeviceConfig();
+  if (!cfg.supportsEvents) {
+    if (typeof setAlertsButtonsEnabled === 'function') setAlertsButtonsEnabled(false);
+    if (typeof updateEventsBadge === 'function') updateEventsBadge(0);
+    return;
+  }
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+
+  try {
+    const result = await fetchDeviceFiles(activeDevice.id, { from, to, type: 'evt', limit: 100, offset: 0 });
+    activeEvents = Array.isArray(result.records) ? result.records : [];
+
+    // Map chN_ prefix → cfg.channels[N-1].key  (position-based, works for all device types)
+    const alarmedSet = new Set();
+    const channels = cfg.channels || [];
+    activeEvents.forEach(evt => {
+      const m = (evt.name || '').match(/^ch(\d+)_/i);
+      if (m) {
+        const idx = parseInt(m[1]) - 1;
+        if (idx >= 0 && idx < channels.length) alarmedSet.add(channels[idx].key);
+      }
+    });
+    alarmedChannels = [...alarmedSet];
+
+    const total = Number(result.total) || activeEvents.length;
+    if (typeof setAlertsButtonsEnabled === 'function') setAlertsButtonsEnabled(activeEvents.length > 0);
+    if (typeof updateEventsBadge === 'function') updateEventsBadge(activeEvents.length > 0 ? total : 0);
+    if (typeof renderKPIs === 'function') renderKPIs();
+    // Pre-fetch event details in the background so measured values appear in the alarms panel.
+    loadAllEventDetails().catch(() => {});
+  } catch (err) {
+    console.warn('[loadEvents] error:', err.message);
+    activeEvents = [];
+    alarmedChannels = [];
+    if (typeof setAlertsButtonsEnabled === 'function') setAlertsButtonsEnabled(false);
+    if (typeof updateEventsBadge === 'function') updateEventsBadge(0);
+  }
+}
+
+async function loadAllEventDetails() {
+  if (!activeDevice || !Array.isArray(activeEvents) || !activeEvents.length) return;
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < activeEvents.length; i += BATCH_SIZE) {
+    const batch = activeEvents.slice(i, i + BATCH_SIZE);
+    await Promise.allSettled(batch.map(async (evt) => {
+      if (!evt.name || activeEventDetails[evt.name]) return;
+      try {
+        const detail = await fetchEventDetails(activeDevice.id, evt.name);
+        if (detail) {
+          activeEventDetails[evt.name] = detail;
+          // Update the already-rendered alarm panel row if the panel is open
+          const safeId = evt.name.replace(/[^a-zA-Z0-9]/g, '_');
+          const el = document.getElementById(`alarm-val-${safeId}`);
+          if (el && detail.Peak != null) {
+            const unit = detail.Unit || '';
+            el.innerHTML = `${detail.Peak}${unit ? ` <em>${unit}</em>` : ''}`;
+          }
+        }
+      } catch (e) { /* ignore per-event failures */ }
+    }));
+  }
 }
 
 const MAX_DISPLAY_RECORDS = 50;   // always show last 50 readings

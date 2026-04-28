@@ -111,7 +111,6 @@ async function switchDevice(id) {
   if (typeof updateWorkSubtitle === 'function') updateWorkSubtitle();
 */
 
-  document.getElementById('footerDevice').textContent = activeDevice.serial || activeDevice.id;
 
   // Set the period to the last diagnostic date, in order to have some data to view
   if(activeDevice.last_diagnostic){
@@ -199,9 +198,6 @@ function renderDeviceInfo() {
     <div class="info-row"><span class="info-key">${tr('deviceInfo.coordinates','Coordinates')}</span><span class="info-val" style="font-size:10px;color:var(--muted2);">${(d.lat||0).toFixed(4)}°, ${(d.lng||0).toFixed(4)}°</span></div>
   `;
   renderMiniMapPreview();
-  document.getElementById('footerSignal').textContent   = (typeof window.tf === 'function') ? window.tf('footer.signalFmt', { signal: d.signal }) : `Signal ${d.signal}/4`;
-  document.getElementById('footerMemory').textContent   = (typeof window.tf === 'function') ? window.tf('footer.memoryFmt', { memory: d.memory || '—' }) : `Memory ${d.memory || '—'}`;
-  document.getElementById('footerPlatform').textContent = (typeof window.tf === 'function') ? window.tf('footer.platformFmt', { type: d.type }) : `${d.type} Platform`;
 }
 
 // ═══════════════════════ KPI CARDS ═══════════════════════
@@ -233,10 +229,11 @@ function renderKPIs() {
     const val  = latest[ch.key] ?? 0;
     const pval = prev[ch.key]   ?? val;
     const dec  = ['°C','V','Hz'].includes(ch.unit) ? 1 : 3;
+    const inAlarm = Array.isArray(alarmedChannels) && alarmedChannels.includes(ch.key);
     return {
       label: ch.label, dot: ch.color,
       value: val.toFixed(dec), unit: ' ' + ch.unit,
-      sub: ch.sub, state: 'ok',
+      sub: ch.sub, state: inAlarm ? 'alert' : 'ok',
       trend: trendClass(val, pval), trendVal: trendLabel(val, pval),
     };
   });
@@ -361,7 +358,6 @@ function checkAlerts() {
   });
 
   const banner = document.getElementById('alertBanner');
-  const badge  = document.getElementById('alertCount');
   if (activeAlerts.length && document.getElementById('alertsEnabled').checked) {
     banner.innerHTML = activeAlerts.map(a => `
       <div class="alert-item ${a.state==='warn'?'warn':''}">
@@ -371,12 +367,9 @@ function checkAlerts() {
       </div>
     `).join('');
     banner.style.marginBottom = '16px';
-    badge.textContent   = activeAlerts.length;
-    badge.style.display = 'inline';
   } else {
     banner.innerHTML          = '';
     banner.style.marginBottom = '0';
-    badge.style.display       = 'none';
   }
 }
 
@@ -615,4 +608,23 @@ function renderTable() {
   }).join('');
 
   document.getElementById('tableCount').textContent = `${rows.length} ${tr('common.records', 'records')}`;
+}
+
+// ═══════════════════════ EVENTS / ALARMS UI HELPERS ═══════════════════════
+function setAlertsButtonsEnabled(enabled) {
+  ['navAlerts', 'topbarAlertsBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.opacity = enabled ? '' : '0.35';
+    el.style.pointerEvents = enabled ? '' : 'none';
+  });
+}
+
+function updateEventsBadge(count) {
+  ['alertCount', 'alertCountTopbar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = count;
+    el.style.display = count > 0 ? 'inline' : 'none';
+  });
 }

@@ -111,7 +111,7 @@
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2"/></svg>
     <span data-i18n="nav.works">Works</span>
   </a>
-  <div class="nav-item" id="navAlerts" onclick="openThresholds()">
+  <div class="nav-item" id="navAlerts" onclick="openAlarmsPanel()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span data-i18n="nav.alerts">Alerts</span>
     <span id="alertCount" style="margin-left:auto;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
@@ -155,9 +155,10 @@
       </div>
       </div>
       <div id="dashboardTopbarControls" style="display:flex;align-items:center;gap:10px;">
-      <button class="btn" onclick="openThresholds()">
+      <button class="btn" id="topbarAlertsBtn" onclick="openAlarmsPanel()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span data-i18n="nav.alerts">Alerts</span>
+        <span id="alertCountTopbar" style="margin-left:4px;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
       </button>
       <button class="btn btn-primary" onclick="openExport()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -347,11 +348,8 @@
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="footerDevice">M22MOP0007</span> · <span id="footerDate"></span></div>
+    <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="footerDate"></span></div>
     <div class="footer-chips">
-      <div class="footer-chip" id="footerPlatform">DL8 Platform</div>
-      <div class="footer-chip" id="footerSignal">Signal 4/4</div>
-      <div class="footer-chip" id="footerMemory">Memory 3.3 Gb</div>
       <div class="footer-chip" id="footerRecords">15 records</div>
     </div>
   </div>
@@ -548,6 +546,26 @@
   </div>
   <div id="thresholdChannels"></div>
   <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();" data-i18n="alert.saveandapply">Save & Apply</button>
+</div>
+
+<!-- ═══════════════════════ ALARMS PANEL ═══════════════════════ -->
+<div class="threshold-panel" id="alarmsPanel">
+  <div class="panel-header">
+    <span class="panel-title" data-i18n="alarms.title">Alarms</span>
+    <span class="panel-close" onclick="closeAlarmsPanel()">✕</span>
+  </div>
+  <div id="alarmsPanelContent"></div>
+</div>
+
+<!-- ═══════════════════════ EVENT DETAIL MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="eventDetailModal">
+  <div class="modal event-modal">
+    <div class="modal-title" data-i18n="alarms.eventDetail">Event Detail</div>
+    <div id="eventDetailContent" style="margin-bottom:16px;"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeEventModal()" data-i18n="common.close">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════ EXPORT MODAL ═══════════════════════ -->
