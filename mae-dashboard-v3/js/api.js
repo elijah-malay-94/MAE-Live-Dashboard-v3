@@ -1230,7 +1230,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
       showLoadingState(false);
       const cfg = getDeviceConfig();
       const mapped = rows.map(item => cfg.mapRow(item));
-      showSuccessMessage(`✅ ${mapped.length} records loaded (mock)`);
+      showSuccessMessage(`✅ ${mapped.length} ${(typeof window.t === 'function') ? window.t('common.records') : 'records'} ${(typeof window.t === 'function') ? window.t('data.loadedMock') : 'loaded (mock)'}`);
       return mapped;
     }
 

@@ -223,6 +223,8 @@
       'power.combinedView': 'Combined View — All Channels',
       'power.individualHistory': 'Individual Channel History',
 
+      'data.loadedMock': 'loaded (mock)',
+
       'common.yes': 'yes',
       'common.no': 'no',
 
@@ -477,6 +479,8 @@
       'power.externalSupply': 'Alimentazione esterna',
       'power.combinedView': 'Vista combinata — Tutti i canali',
       'power.individualHistory': 'Storico canali individuali',
+
+      'data.loadedMock': 'caricati (mock)',
 
       'common.yes': 'sì',
       'common.no': 'no',
