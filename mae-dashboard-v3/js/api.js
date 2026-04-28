@@ -309,7 +309,7 @@ function getMockDeviceData(deviceId, dateFrom, dateTo, workId = getActiveWorkId(
     const v1 = 35 + Math.sin(i / 7) * 2 + (rng() - 0.5) * 0.6;
     const v2 = -1 + Math.cos(i / 9) * 0.8 + (rng() - 0.5) * 0.4;
     const v3 = -1.5 + Math.sin(i / 11) * 0.9 + (rng() - 0.5) * 0.5;
-    return { timestamp: ts, data: [Number(v1.toFixed(2)), Number(v2.toFixed(2)), Number(v3.toFixed(2))] };
+    return { timestamp: ts, data: [Number(v1.toFixed(3)), Number(v2.toFixed(3)), Number(v3.toFixed(3))] };
   });
   return { header, records };
 }

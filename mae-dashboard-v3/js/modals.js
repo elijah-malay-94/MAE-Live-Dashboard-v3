@@ -258,7 +258,7 @@ function doExport(fmt) {
   const id   = activeDevice?.serial || activeDevice?.id || 'device';
   if (fmt === 'csv') {
     const header = cfg.tableHeaders.slice(0, -1).join(',') + '\n';
-    const rows   = data.map(r => [r.date, r.time, ...cfg.channels.map(ch => r[ch.key] ?? '')].join(',')).join('\n');
+    const rows   = data.map(r => [r.date, r.time, ...cfg.channels.map(ch => r[ch.key] != null ? Number(r[ch.key]).toFixed(3) : '')].join(',')).join('\n');
     downloadFile(`datalogger_${id}_export.csv`, 'text/csv', header + rows);
   } else if (fmt === 'json') {
     downloadFile(`datalogger_${id}_export.json`, 'application/json',
