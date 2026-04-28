@@ -700,7 +700,8 @@ document.addEventListener('click', e => {
   if (alarmsPanel && alarmsPanel.classList.contains('open')
     && !alarmsPanel.contains(e.target)
     && !e.target.closest('#navAlerts')
-    && !e.target.closest('#topbarAlertsBtn')) closeAlarmsPanel();
+    && !e.target.closest('#topbarAlertsBtn')
+    && !e.target.closest('#eventDetailModal')) closeAlarmsPanel();
 
   const modal = document.getElementById('exportModal');
   if (modal.classList.contains('open') && e.target === modal) closeExport();
@@ -1334,7 +1335,15 @@ async function openEventModal(fileName) {
   try {
     const cached = (typeof activeEventDetails !== 'undefined') ? activeEventDetails[fileName] : null;
     const data = cached || await fetchEventDetails(activeDevice.id, fileName);
-    if (!cached && data) activeEventDetails[fileName] = data;
+    if (!cached && data) {
+      activeEventDetails[fileName] = data;
+      const safeId = fileName.replace(/[^a-zA-Z0-9]/g, '_');
+      const el = document.getElementById(`alarm-val-${safeId}`);
+      if (el && data.Peak != null) {
+        const unit = data.Unit || '';
+        el.innerHTML = `${data.Peak}${unit ? ` <em>${unit}</em>` : ''}`;
+      }
+    }
     content.innerHTML = renderEventDetail(data, fileName);
   } catch (err) {
     content.innerHTML = `<p style="color:var(--red);font-size:13px;">${err.message || 'Error loading event details.'}</p>`;
@@ -1407,7 +1416,9 @@ async function downloadEventFile(fileName) {
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob), download: fileName,
     });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    document.body.appendChild(a);
+    a.dispatchEvent(new MouseEvent('click', { bubbles: false, cancelable: true }));
+    document.body.removeChild(a);
   } catch (err) {
     const msg = (typeof window.tf === 'function')
       ? window.tf('files.downloadFailed', { message: err.message })

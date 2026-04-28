@@ -333,38 +333,12 @@ async function loadEvents() {
     if (typeof setAlertsButtonsEnabled === 'function') setAlertsButtonsEnabled(activeEvents.length > 0);
     if (typeof updateEventsBadge === 'function') updateEventsBadge(activeEvents.length > 0 ? total : 0);
     if (typeof renderKPIs === 'function') renderKPIs();
-    // Pre-fetch event details in the background so measured values appear in the alarms panel.
-    loadAllEventDetails().catch(() => {});
   } catch (err) {
     console.warn('[loadEvents] error:', err.message);
     activeEvents = [];
     alarmedChannels = [];
     if (typeof setAlertsButtonsEnabled === 'function') setAlertsButtonsEnabled(false);
     if (typeof updateEventsBadge === 'function') updateEventsBadge(0);
-  }
-}
-
-async function loadAllEventDetails() {
-  if (!activeDevice || !Array.isArray(activeEvents) || !activeEvents.length) return;
-  const BATCH_SIZE = 5;
-  for (let i = 0; i < activeEvents.length; i += BATCH_SIZE) {
-    const batch = activeEvents.slice(i, i + BATCH_SIZE);
-    await Promise.allSettled(batch.map(async (evt) => {
-      if (!evt.name || activeEventDetails[evt.name]) return;
-      try {
-        const detail = await fetchEventDetails(activeDevice.id, evt.name);
-        if (detail) {
-          activeEventDetails[evt.name] = detail;
-          // Update the already-rendered alarm panel row if the panel is open
-          const safeId = evt.name.replace(/[^a-zA-Z0-9]/g, '_');
-          const el = document.getElementById(`alarm-val-${safeId}`);
-          if (el && detail.Peak != null) {
-            const unit = detail.Unit || '';
-            el.innerHTML = `${detail.Peak}${unit ? ` <em>${unit}</em>` : ''}`;
-          }
-        }
-      } catch (e) { /* ignore per-event failures */ }
-    }));
   }
 }
 
