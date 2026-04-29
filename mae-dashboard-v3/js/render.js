@@ -443,9 +443,9 @@ function updateChannelSelect() {
   const cur  = sel.value;
   const data = allData.length > 0 ? allData : filteredData;
 
-  // Only show channels that have at least one non-zero, non-null value in the full dataset
+  // Only show channels that have at least one non-null value in the full dataset
   const activeChannels = cfg.channels.filter(ch =>
-    data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
+    data.some(r => r[ch.key] !== undefined && r[ch.key] !== null)
   );
 
   if (activeChannels.length === 0) {

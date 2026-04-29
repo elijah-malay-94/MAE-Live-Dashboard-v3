@@ -297,7 +297,7 @@ async function loadData() {
     showErrorMessage(tf('error.couldNotLoadData', { detail }));
   }
   // Always operate on the last 50 readings (both Live and Previous data mode).
-  if (Array.isArray(allData)) allData = allData.slice(0, 50);
+  //if (Array.isArray(allData)) allData = allData.slice(0, 1000);
   applyFilters();
   loadEvents().catch(() => {});
 }
@@ -342,7 +342,7 @@ async function loadEvents() {
   }
 }
 
-const MAX_DISPLAY_RECORDS = 50;   // always show last 50 readings
+const MAX_DISPLAY_RECORDS = 1000;   // always show last N readings
 
 function applyFilters() {
   const interval = document.getElementById('intervalSelect').value;

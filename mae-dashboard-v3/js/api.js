@@ -200,7 +200,7 @@ function getMockDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId()) 
   const wid = String(workId || '101');
   const from = filters.from || filters.dateFrom || new Date().toISOString().slice(0, 10);
   const to = filters.to || filters.dateTo || from;
-  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 50;
+  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 150;
   const offset = Number.isFinite(Number(filters.offset)) ? Number(filters.offset) : 0;
   const type = typeof filters.type === 'string' ? filters.type.toLowerCase().trim() : '';
   const validType = ['evt', 'cir', 'day'].includes(type) ? type : null;
@@ -1244,8 +1244,8 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
     const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
     const dataPath = (wid && useWorkScopedEndpoints())
-      ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`
-      : `/api/v1/devices/${did}/data/from/${startDate}/to/${endDate}/limit/50/offset/0`;
+      ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${startDate}/to/${endDate}/limit/150/offset/0`
+      : `/api/v1/devices/${did}/data/from/${startDate}/to/${endDate}/limit/150/offset/0`;
     const fullUrl  = `${API_BASE}${dataPath}`;
     console.log('%c[fetchData] Calling API', 'color:blue;font-weight:bold');
     console.log('  URL:', fullUrl);
@@ -1270,8 +1270,8 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
         console.warn('[fetchData] Retrying with just today…');
         showLoadingState(true);
         const retryPath = (wid && useWorkScopedEndpoints())
-          ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`
-          : `/api/v1/devices/${did}/data/from/${today}/to/${today}/limit/50/offset/0`;
+          ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${today}/to/${today}/limit/150/offset/0`
+          : `/api/v1/devices/${did}/data/from/${today}/to/${today}/limit/150/offset/0`;
         try {
           ({ data, headers } = await apiFetchWithHeaders(
             retryPath,
@@ -1435,7 +1435,7 @@ async function fetchDeviceFiles(deviceId, filters = {}, workId = getActiveWorkId
   const today = new Date().toISOString().slice(0, 10);
   const from = filters.from || filters.dateFrom || today;
   const to = filters.to || filters.dateTo || today;
-  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 50;
+  const limit = Number.isFinite(Number(filters.limit)) ? Number(filters.limit) : 150;
   const offset = Number.isFinite(Number(filters.offset)) ? Number(filters.offset) : 0;
   const type = typeof filters.type === 'string' ? filters.type.toLowerCase().trim() : '';
   const validType = ['evt', 'cir', 'day'].includes(type) ? type : null;
