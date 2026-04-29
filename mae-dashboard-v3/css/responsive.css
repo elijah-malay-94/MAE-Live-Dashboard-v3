@@ -138,10 +138,11 @@
   .topbar-left .subtitle { font-size: 10px; color: var(--muted2); }
   .topbar-right { width: 100%; flex-wrap: wrap; gap: 6px; }
   .topbar-right .btn { flex: 1; min-width: 80px; justify-content: center; font-size: 12px; padding: 8px 10px; }
-  .logout-item { flex: 1; min-width: 80px; justify-content: center; }
+  .logout-item { flex: 1; min-width: 80px; justify-content: center; font-size: 12px; padding: 8px 10px; }
   .status-pill { width: 100%; justify-content: center; font-size: 12px; padding: 8px 14px; }
   .topbar-divider { display: none; }
-  .topbar-user-group { flex: 1; justify-content: flex-end; }
+  .topbar-user-group { display: contents; }
+  .topbar-user { display: none; }
 
   /* KPI: 2 columns */
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -219,7 +220,7 @@
   .topbar-right .btn,
   .logout-item,
   .status-pill { width: 100%; justify-content: center; }
-  .topbar-user-group { width: 100%; justify-content: space-between; }
+  .topbar-user-group { display: contents; }
 
   /* KPI: 1 column */
   .kpi-grid { grid-template-columns: 1fr; gap: 8px; }
