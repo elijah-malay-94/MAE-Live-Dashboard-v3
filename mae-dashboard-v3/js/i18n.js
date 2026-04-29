@@ -186,7 +186,7 @@
       'chart.avg': 'AVG',
       'chart.range': 'RANGE',
       'chart.samples': 'SAMPLES',
-      'chart.overlay': 'Overlay',
+      'chart.overlay': 'Channels Overlay',
 
       'threshold.minWarn': 'Min warn',
       'threshold.maxWarn': 'Max warn',
@@ -446,7 +446,7 @@
       'chart.avg': 'MEDIA',
       'chart.range': 'RANGE',
       'chart.samples': 'CAMPIONI',
-      'chart.overlay': 'Sovrapposto',
+      'chart.overlay': 'Overlay Canali',
 
       'threshold.minWarn': 'Min avviso',
       'threshold.maxWarn': 'Max avviso',

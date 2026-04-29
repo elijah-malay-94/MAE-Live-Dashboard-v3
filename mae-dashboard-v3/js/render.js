@@ -377,6 +377,61 @@ function checkAlerts() {
 let _yZoomFactor      = 1.0;
 let _lastChartChannel = null;
 let _chartWheelReady  = false;
+let _chartHoverData   = null;
+let _chartHoverMeta   = null;
+let _chartAllHoverData     = null;
+let _chartAllHoverChannels = null;
+
+function showChartTooltip(evt, idx) {
+  const tt = document.getElementById('chartTooltip');
+  if (!tt) return;
+  const svgEl = document.getElementById('mainChartSvg');
+  const svgRect = svgEl.getBoundingClientRect();
+  let html = '';
+  if (_chartHoverData && _chartHoverMeta) {
+    const d = _chartHoverData[idx]; if (!d) return;
+    const meta = _chartHoverMeta;
+    const val  = d[meta.key] ?? 0;
+    const timeStr = [d.date, d.time].filter(Boolean).join(' ');
+    const x = (idx / ((_chartHoverData.length - 1) || 1)) * 700;
+    const hl = document.getElementById('chartHoverLine');
+    if (hl) { hl.setAttribute('x1', x); hl.setAttribute('x2', x); hl.setAttribute('display', 'inline'); }
+    html = `<div class="chart-tooltip-time">${timeStr}</div>
+      <div class="chart-tooltip-row">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${meta.color};flex-shrink:0"></span>
+        <span style="color:var(--muted2);flex:1">${meta.label}</span>
+        <span style="font-weight:500;color:${meta.color}">${val.toFixed(3)} ${meta.unit}</span>
+      </div>`;
+  } else if (_chartAllHoverData && _chartAllHoverChannels) {
+    const d = _chartAllHoverData[idx]; if (!d) return;
+    const timeStr = [d.date, d.time].filter(Boolean).join(' ');
+    const x = (idx / ((_chartAllHoverData.length - 1) || 1)) * 700;
+    const hl = document.getElementById('chartHoverLine');
+    if (hl) { hl.setAttribute('x1', x); hl.setAttribute('x2', x); hl.setAttribute('display', 'inline'); }
+    const rows = _chartAllHoverChannels.map(({ch, meta}) => {
+      const val = d[ch.key] ?? 0;
+      return `<div class="chart-tooltip-row">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${meta.color};flex-shrink:0"></span>
+        <span style="color:var(--muted2);flex:1">${ch.label}</span>
+        <span style="font-weight:500;color:${meta.color}">${val.toFixed(3)}${ch.unit ? ' ' + ch.unit : ''}</span>
+      </div>`;
+    }).join('');
+    html = `<div class="chart-tooltip-time">${timeStr}</div>${rows}`;
+  } else { return; }
+  tt.innerHTML = html;
+  const ttX = evt.clientX - svgRect.left + 14;
+  const ttY = evt.clientY - svgRect.top  - 10;
+  tt.style.left = (ttX > svgRect.width - 175 ? ttX - 165 : ttX) + 'px';
+  tt.style.top  = (ttY < 0 ? 0 : ttY) + 'px';
+  tt.style.display = 'block';
+}
+
+function hideChartTooltip() {
+  const tt = document.getElementById('chartTooltip');
+  if (tt) tt.style.display = 'none';
+  const hl = document.getElementById('chartHoverLine');
+  if (hl) hl.setAttribute('display', 'none');
+}
 
 function resetYZoom() {
   _yZoomFactor = 1.0;
@@ -386,9 +441,9 @@ function updateChannelSelect() {
   const cfg  = getDeviceConfig();
   const sel  = document.getElementById('channelSelect');
   const cur  = sel.value;
-  const data = filteredData.length > 0 ? filteredData : allData;
+  const data = allData.length > 0 ? allData : filteredData;
 
-  // Only show channels that have at least one non-zero, non-null value
+  // Only show channels that have at least one non-zero, non-null value in the full dataset
   const activeChannels = cfg.channels.filter(ch =>
     data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
   );
@@ -456,7 +511,7 @@ function renderChart() {
   }
   // We have data: restore standard sizes and axes visibility.
   const svgWrap = document.querySelector('.chart-svg-area');
-  if (svgWrap) svgWrap.style.height = '160px';
+  if (svgWrap) svgWrap.style.height = '260px';
   const chartX = document.getElementById('chartXLabels');
   const chartY = document.getElementById('chartYLabels');
   if (chartX) chartX.style.display = 'flex';
@@ -474,7 +529,7 @@ function renderChart() {
   const half     = (baseYMax - baseYMin) / 2;
   const yMin     = center - half * _yZoomFactor;
   const yMax     = center + half * _yZoomFactor;
-  const W = 700, H = 160;
+  const W = 700, H = 260;
   const toY = v => H - ((v - yMin) / (yMax - yMin)) * H;
   const toX = i => (i / (data.length - 1 || 1)) * W;
 
@@ -504,6 +559,17 @@ function renderChart() {
     ? `<text x="${W-2}" y="10" fill="rgba(100,116,139,0.55)" font-size="8.5" text-anchor="end" font-family="monospace">⟳ dblclick to reset</text>`
     : `<text x="${W-2}" y="10" fill="rgba(100,116,139,0.22)" font-size="8.5" text-anchor="end" font-family="monospace">scroll to zoom</text>`;
 
+  _chartHoverData = data;
+  _chartHoverMeta = meta;
+  _chartAllHoverData = null;
+  _chartAllHoverChannels = null;
+
+  const hoverRects = data.map((_, i) => {
+    const cx = toX(i);
+    const hw = W / Math.max(data.length, 1);
+    return `<rect x="${Math.max(0, cx - hw / 2)}" y="0" width="${hw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
+  }).join('');
+
   document.getElementById('mainChartSvg').innerHTML = `
     <defs>
       <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
@@ -514,9 +580,11 @@ function renderChart() {
     </defs>
     ${gridLines}
     ${zoomHint}
+    <line id="chartHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="rgba(100,116,139,0.3)" stroke-width="1" stroke-dasharray="3,3" display="none"/>
     <path d="${areaPath}" fill="url(#${gradId})"/>
     <path d="${linePath}" fill="none" stroke="${meta.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
     <circle cx="${points[points.length-1][0]}" cy="${points[points.length-1][1]}" r="3.5" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/>
+    ${hoverRects}
   `;
 
   if (!_chartWheelReady) {
@@ -574,7 +642,7 @@ function renderChartAll() {
     return;
   }
 
-  document.querySelector('.chart-svg-area').style.height = '160px';
+  document.querySelector('.chart-svg-area').style.height = '260px';
   document.getElementById('chartXLabels').style.display = 'flex';
   document.getElementById('chartYLabels').style.display = 'flex';
 
@@ -582,7 +650,7 @@ function renderChartAll() {
     data.some(r => r[ch.key] !== undefined && r[ch.key] !== null && r[ch.key] !== 0)
   );
 
-  const W = 700, H = 160;
+  const W = 700, H = 260;
   const toX = i => (i / (data.length - 1 || 1)) * W;
 
   function smoothPath(pts) {
@@ -620,7 +688,20 @@ function renderChartAll() {
             <circle cx="${last[0]}" cy="${last[1]}" r="3" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/>`;
   }).join('');
 
-  document.getElementById('mainChartSvg').innerHTML = gridLines + lines;
+  _chartAllHoverData = data;
+  _chartAllHoverChannels = channelData;
+  _chartHoverData = null;
+  _chartHoverMeta = null;
+
+  const hoverRectsAll = data.map((_, i) => {
+    const cx = toX(i);
+    const hw = W / Math.max(data.length, 1);
+    return `<rect x="${Math.max(0, cx - hw / 2)}" y="0" width="${hw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
+  }).join('');
+
+  document.getElementById('mainChartSvg').innerHTML = gridLines +
+    `<line id="chartHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="rgba(100,116,139,0.3)" stroke-width="1" stroke-dasharray="3,3" display="none"/>` +
+    lines + hoverRectsAll;
 
   document.getElementById('chartYLabels').innerHTML = ['100%', '50%', '0%'].map(v => `<span>${v}</span>`).join('');
 
