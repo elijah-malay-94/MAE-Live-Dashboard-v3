@@ -320,9 +320,9 @@
       'controls.interval': 'Intervallo',
       'controls.interval.all': 'Tutti',
       'controls.interval.hour': 'Ultima ora',
-      'controls.interval.three_hours': 'Utlime 3 ore',
-      'controls.interval.six_hours': 'Utlime 6 ore',
-      'controls.interval.twelve_hours': 'Utlime 12 ore',
+      'controls.interval.three_hours': 'Ultime 3 ore',
+      'controls.interval.six_hours': 'Ultime 6 ore',
+      'controls.interval.twelve_hours': 'Ultime 12 ore',
       'controls.interval.day': 'Ultime 24h',
       'controls.autoRefresh': 'Auto-aggiornamento',
 
