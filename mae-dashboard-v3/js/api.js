@@ -1253,7 +1253,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
     // ── Call API ──────────────────────────────────────────────────────
     const wid = String(workId || '').trim();
     const did = encodeURIComponent(deviceId);
-    const dataPath = (wid && useWorkScopedEndpoints())
+    const dataPath = wid
       ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${startDate}/to/${endDate}/limit/150/offset/0`
       : `/api/v1/devices/${did}/data/from/${startDate}/to/${endDate}/limit/150/offset/0`;
     const fullUrl  = `${API_BASE}${dataPath}`;
@@ -1279,7 +1279,7 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
       if (firstErr.message.includes('408') || firstErr.message.includes('413') || firstErr.name === 'AbortError') {
         console.warn('[fetchData] Retrying with just today…');
         showLoadingState(true);
-        const retryPath = (wid && useWorkScopedEndpoints())
+        const retryPath = wid
           ? `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/data/from/${today}/to/${today}/limit/150/offset/0`
           : `/api/v1/devices/${did}/data/from/${today}/to/${today}/limit/150/offset/0`;
         try {

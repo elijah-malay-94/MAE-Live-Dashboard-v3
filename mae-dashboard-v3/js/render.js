@@ -605,8 +605,11 @@ function renderChart() {
   const steps = [yMin, (yMin + yMax) / 2, yMax];
   document.getElementById('chartYLabels').innerHTML = [...steps].reverse().map(v => `<span>${v.toFixed(3)}</span>`).join('');
 
-  const step = Math.max(1, Math.ceil(data.length / 8));
-  document.getElementById('chartXLabels').innerHTML = data.filter((_,i)=>i%step===0).map(d=>`<span>${d.time.slice(0,5)}</span>`).join('');
+  const xLabelCount = Math.min(8, data.length);
+  const xIndices = Array.from({length: xLabelCount}, (_, i) =>
+    xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
+  );
+  document.getElementById('chartXLabels').innerHTML = xIndices.map(idx => `<span>${data[idx].time.slice(0,5)}</span>`).join('');
 
   const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3);
   document.getElementById('chartStats').innerHTML = `
@@ -705,11 +708,11 @@ function renderChartAll() {
 
   document.getElementById('chartYLabels').innerHTML = ['100%', '50%', '0%'].map(v => `<span>${v}</span>`).join('');
 
-  const step = Math.max(1, Math.ceil(data.length / 8));
-  document.getElementById('chartXLabels').innerHTML = data
-    .filter((_, i) => i % step === 0)
-    .map(d => `<span>${d.time.slice(0, 5)}</span>`)
-    .join('');
+  const xLabelCount = Math.min(8, data.length);
+  const xIndices = Array.from({length: xLabelCount}, (_, i) =>
+    xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
+  );
+  document.getElementById('chartXLabels').innerHTML = xIndices.map(idx => `<span>${data[idx].time.slice(0,5)}</span>`).join('');
 
   document.getElementById('chartStats').innerHTML = channelData.map(({ ch, meta, minV, maxV }) =>
     `<div class="chart-stat-item">
