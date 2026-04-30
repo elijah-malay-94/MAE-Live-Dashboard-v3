@@ -583,7 +583,7 @@ function renderChart() {
     <line id="chartHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="rgba(100,116,139,0.3)" stroke-width="1" stroke-dasharray="3,3" display="none"/>
     <path d="${areaPath}" fill="url(#${gradId})"/>
     <path d="${linePath}" fill="none" stroke="${meta.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-    <circle cx="${points[points.length-1][0]}" cy="${points[points.length-1][1]}" r="3.5" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/>
+    <!--circle cx="${points[points.length-1][0]}" cy="${points[points.length-1][1]}" r="3.5" fill="${meta.color}" stroke="#fff" stroke-width="1.5" opacity="0.95"/-->
     ${hoverRects}
   `;
 

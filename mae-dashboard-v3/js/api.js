@@ -855,6 +855,15 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
     }
 
     return data.map(item => {
+    const devicePlace =
+      item['device-place'] ??
+      item.device_place ??
+      item.devicePlace ??
+      item.position ??
+      item.device_position ??
+      item.devicePosition ??
+      '';
+
       const coords = (item.posizione || '0;0').split(';');
       // Format the `updated` field (e.g. "2024-04-17 11:51:13") as dd/MM/yyyy HH:mm:ss
       let lastUpdate = '—';
@@ -887,7 +896,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         id:             String(item.id),
         serial:         item.matricola   || '',
         name:           item.descrizione || item.matricola || `Device ${item.id}`,
-        type:           item.tipologia   || 'DL8',
+        type:           item.tipologia   || '',
         status:         item.enabled === '1' ? 'online' : 'offline',
         signal:         0,
         memory:         '',
@@ -907,6 +916,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         port:        item.port       ?? '',
         ip_public:   item.ip_public  ?? '',
         port_public: item.port_public ?? '',
+        position: devicePlace,
       };
     }).sort(function (a, b) {
       const ta = a?.last_diagnostic ? new Date(String(a.last_diagnostic).replace(' ', 'T')).getTime() : 0;
