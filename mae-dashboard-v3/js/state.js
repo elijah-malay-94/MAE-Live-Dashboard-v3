@@ -345,13 +345,23 @@ async function loadEvents() {
 const MAX_DISPLAY_RECORDS = 1000;   // always show last N readings
 
 function applyFilters() {
-  const interval = document.getElementById('intervalSelect').value;
+  const interval = document.getElementById('intervalSelect').value;  
+  const getWindowMs = (interval) => {
+    if (interval === 'hour') return 60 * 60 * 1000;
+    if (interval === 'three_hours') return 3 * 60 * 60 * 1000;
+    if (interval === 'six_hours') return 6 * 60 * 60 * 1000;
+    if (interval === 'twelve_hours') return 12 * 60 * 60 * 1000;
+    if (interval === 'day') return 24 * 60 * 60 * 1000;
+    return 24 * 60 * 60 * 1000;
+  };
+
+
   let data = [...allData];
 
   const hasTs = data.some(r => Number.isFinite(Number(r?.ts)) && Number(r.ts) > 0);
   // Preserve original ordering (API order) — do not sort here.
 
-  if (interval === 'hour' || interval === 'day') {
+  if (interval === 'hour' || interval === 'three_hours' || interval === 'six_hours' || interval === 'twelve_hours' || interval === 'day') {
     if (hasTs) {
       // Filter relative to the newest reading we currently have, not the PC clock.
       // This makes "Last hour / Last 24h" work even when viewing historical ranges.
@@ -360,7 +370,8 @@ function applyFilters() {
         return t > max ? t : max;
       }, 0);
       const now = newestTs || Date.now();
-      const windowMs = interval === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+      //const windowMs = interval === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+      const windowMs = getWindowMs(interval);
       const cutoff = now - windowMs;
       data = data.filter(r => Number(r?.ts) >= cutoff);
     } else {

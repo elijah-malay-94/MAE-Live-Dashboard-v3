@@ -57,6 +57,9 @@
       'controls.interval': 'Interval',
       'controls.interval.all': 'All',
       'controls.interval.hour': 'Last hour',
+      'controls.interval.three_hours': 'Last 3 hours',
+      'controls.interval.six_hours': 'Last 6 hours',
+      'controls.interval.twelve_hours': 'Last 12 hours',
       'controls.interval.day': 'Last 24h',
       'controls.autoRefresh': 'Auto-refresh',
 
