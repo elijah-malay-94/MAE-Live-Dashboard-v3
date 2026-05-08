@@ -235,6 +235,11 @@
   margin-top:2px; 
   padding-bottom:0; 
 }
+.chart-x[data-scale="time"]{
+  display:block;
+  position:relative;
+  height:16px;
+}
 .chart-x span { 
   font-family:'DM Mono',monospace; 
   font-size:11px; 
@@ -242,6 +247,12 @@
   display:block; 
   text-align:center; 
   white-space:nowrap; 
+}
+.chart-x[data-scale="time"] span{
+  position:absolute;
+  top:0;
+  transform:translateX(-50%);
+  text-align:center;
 }
 .chart-stats { 
   display:flex; 

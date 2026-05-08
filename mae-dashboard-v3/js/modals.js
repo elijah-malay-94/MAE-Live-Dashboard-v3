@@ -87,6 +87,17 @@ function toggleAutoRefresh() {
 function openExport()  { document.getElementById('exportModal').classList.add('open'); }
 function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
 
+// ═══════════════════════ MANUAL DOWNLOAD ═══════════════════════
+function downloadManual() {
+  const lang = (window.MAE_I18N && window.MAE_I18N.getLanguage() === 'it') ? 'IT' : 'EN';
+  const a = document.createElement('a');
+  a.href = `docs/MAE_Dashboard_Handbook_${lang}.pdf`;
+  a.download = `MAE_Dashboard_Handbook_${lang}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 let currentDeviceFiles = [];
 let filesPagination = {
   offset: 0,

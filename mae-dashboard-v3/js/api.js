@@ -440,6 +440,13 @@ function decodeJwtPayload(token) {
   } catch (e) { return null; }
 }
 
+function isJwtExpired(token) {
+  const payload = decodeJwtPayload(token);
+  const exp = Number(payload?.exp);
+  if (!Number.isFinite(exp) || exp <= 0) return false; // token not a JWT or has no exp
+  return (exp * 1000) <= Date.now();
+}
+
 function loadAuthTokenFromStorage() {
   try {
     const t = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
@@ -466,6 +473,39 @@ function authLogout() {
   setAuthToken('');
   setUserId('');
   setUserName('');
+}
+
+function _isProbablyAuthExpired(status, detailsText = '') {
+  // Backend sometimes returns 400 (not 401) for expired/invalid tokens.
+  if (status === 401 || status === 403) return true;
+  if (status !== 400) return false;
+  const msg = String(detailsText || '').toLowerCase();
+  return (
+    msg.includes('token') ||
+    msg.includes('jwt') ||
+    msg.includes('expired') ||
+    msg.includes('invalid') ||
+    msg.includes('unauthor') ||
+    msg.includes('forbidden') ||
+    msg.includes('signature')
+  );
+}
+
+function _redirectToLogin(reason = '') {
+  try { authLogout(); } catch (e) { /* ignore */ }
+  try { showErrorMessage(reason || 'Session expired. Redirecting to login…'); } catch (e) { /* ignore */ }
+  try {
+    const qp = new URLSearchParams(window.location.search || '');
+    const next = new URLSearchParams();
+    next.set('page', 'works');
+    const mock = qp.get('mock');
+    const proxy = qp.get('proxy');
+    if (mock) next.set('mock', mock);
+    if (proxy) next.set('proxy', proxy);
+    window.location.href = `index.html?${next.toString()}`;
+  } catch (e) {
+    window.location.href = 'index.html?page=works';
+  }
 }
 
 async function authLogin(username, password) {
@@ -661,6 +701,11 @@ async function authLogin(username, password) {
 async function ensureAuth() {
   const existing = loadAuthTokenFromStorage();
   if (existing) {
+    if (isJwtExpired(existing)) {
+      console.warn('[auth] Token expired (jwt exp) — clearing session');
+      authLogout();
+      return "";
+    }
     console.log('%c[auth] Using token from localStorage', 'color:#16a34a;font-weight:700');
     return existing;
   }
@@ -722,8 +767,30 @@ async function apiFetch(path, timeoutMs = 30000, _retried = false) {
       signal: ctrl.signal,
     });
     clearTimeout(tid);
-  
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+    if (!res.ok) {
+      let details = '';
+      try {
+        const ct = String(res.headers.get('content-type') || '').toLowerCase();
+        if (ct.includes('application/json')) {
+          const j = await res.json();
+          details = j?.message || j?.error || j?.detail || '';
+          if (!details) {
+            try { details = JSON.stringify(j); } catch (e) { /* ignore */ }
+          }
+        } else {
+          details = await res.text();
+        }
+      } catch (e) { /* ignore */ }
+
+      if (_isProbablyAuthExpired(res.status, details)) {
+        _redirectToLogin('Session expired. Please sign in again.');
+        throw new Error('AUTH_EXPIRED');
+      }
+
+      const suffix = details ? ` — ${String(details).slice(0, 300)}` : '';
+      throw new Error(`HTTP ${res.status} ${res.statusText}${suffix}`);
+    }
     return await res.json();
   } catch (err) {
     clearTimeout(tid);
@@ -765,6 +832,11 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
           details = await res.text();
         }
       } catch (e) { /* ignore */ }
+
+      if (_isProbablyAuthExpired(res.status, details)) {
+        _redirectToLogin('Session expired. Please sign in again.');
+        throw new Error('AUTH_EXPIRED');
+      }
       const suffix = details ? ` — ${String(details).slice(0, 300)}` : '';
       throw new Error(`HTTP ${res.status} ${res.statusText}${suffix}`);
     }
@@ -1395,6 +1467,10 @@ async function fetchData(deviceId, dateFrom, dateTo, workId = getActiveWorkId())
 
   } catch (err) {
     showLoadingState(false);
+    if (String(err?.message || '') === 'AUTH_EXPIRED') {
+      // Redirect is handled centrally in apiFetch/apiFetchWithHeaders.
+      return [];
+    }
     if (err.message && err.message.includes('500')) {
       showErrorMessage('No data available for the selected date range. Try a different period.');
       return [];

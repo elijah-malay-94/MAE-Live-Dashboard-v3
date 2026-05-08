@@ -17,6 +17,7 @@
       'nav.alerts': 'Alerts',
       'nav.export': 'Export',
       'nav.settings': 'Settings',
+      'nav.manual': 'Manual',
       'nav.devices': 'Devices',
 
       'page.liveDashboard': 'Live Dashboard',
@@ -280,6 +281,7 @@
       'nav.alerts': 'Allarmi',
       'nav.export': 'Esporta',
       'nav.settings': 'Impostazioni',
+      'nav.manual': 'Manuale',
       'nav.devices': 'Dispositivi',
 
       'page.liveDashboard': 'Cruscotto Live',

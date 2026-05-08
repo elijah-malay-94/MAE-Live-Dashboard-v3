@@ -381,6 +381,8 @@ let _chartHoverData   = null;
 let _chartHoverMeta   = null;
 let _chartAllHoverData     = null;
 let _chartAllHoverChannels = null;
+let _chartHoverX = null;
+let _chartAllHoverX = null;
 
 function showChartTooltip(evt, idx) {
   const tt = document.getElementById('chartTooltip');
@@ -393,7 +395,7 @@ function showChartTooltip(evt, idx) {
     const meta = _chartHoverMeta;
     const val  = d[meta.key] ?? 0;
     const timeStr = [d.date, d.time].filter(Boolean).join(' ');
-    const x = (idx / ((_chartHoverData.length - 1) || 1)) * 700;
+    const x = Array.isArray(_chartHoverX) ? Number(_chartHoverX[idx]) : (idx / ((_chartHoverData.length - 1) || 1)) * 700;
     const hl = document.getElementById('chartHoverLine');
     if (hl) { hl.setAttribute('x1', x); hl.setAttribute('x2', x); hl.setAttribute('display', 'inline'); }
     html = `<div class="chart-tooltip-time">${timeStr}</div>
@@ -405,7 +407,7 @@ function showChartTooltip(evt, idx) {
   } else if (_chartAllHoverData && _chartAllHoverChannels) {
     const d = _chartAllHoverData[idx]; if (!d) return;
     const timeStr = [d.date, d.time].filter(Boolean).join(' ');
-    const x = (idx / ((_chartAllHoverData.length - 1) || 1)) * 700;
+    const x = Array.isArray(_chartAllHoverX) ? Number(_chartAllHoverX[idx]) : (idx / ((_chartAllHoverData.length - 1) || 1)) * 700;
     const hl = document.getElementById('chartHoverLine');
     if (hl) { hl.setAttribute('x1', x); hl.setAttribute('x2', x); hl.setAttribute('display', 'inline'); }
     const rows = _chartAllHoverChannels.map(({ch, meta}) => {
@@ -531,7 +533,17 @@ function renderChart() {
   const yMax     = center + half * _yZoomFactor;
   const W = 700, H = 260;
   const toY = v => H - ((v - yMin) / (yMax - yMin)) * H;
-  const toX = i => (i / (data.length - 1 || 1)) * W;
+  const tsVals = data.map(d => Number(d?.ts) || 0);
+  const hasTs = tsVals.some(t => Number.isFinite(t) && t > 0);
+  const minTs = hasTs ? Math.min(...tsVals.filter(t => Number.isFinite(t) && t > 0)) : 0;
+  const maxTs = hasTs ? Math.max(...tsVals.filter(t => Number.isFinite(t) && t > 0)) : 0;
+  const tsSpan = (maxTs - minTs) || 1;
+  const toX = (i) => {
+    if (!hasTs) return (i / (data.length - 1 || 1)) * W;
+    const t = Number(data[i]?.ts) || 0;
+    if (!Number.isFinite(t) || t <= 0) return (i / (data.length - 1 || 1)) * W;
+    return ((t - minTs) / tsSpan) * W;
+  };
 
   // Build smooth bezier path through data points
   function smoothPath(pts) {
@@ -563,12 +575,22 @@ function renderChart() {
   _chartHoverMeta = meta;
   _chartAllHoverData = null;
   _chartAllHoverChannels = null;
+  _chartHoverX = points.map(p => p[0]);
+  _chartAllHoverX = null;
 
-  const hoverRects = data.map((_, i) => {
-    const cx = toX(i);
-    const hw = W / Math.max(data.length, 1);
-    return `<rect x="${Math.max(0, cx - hw / 2)}" y="0" width="${hw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
-  }).join('');
+  const hoverRects = (() => {
+    const xs = _chartHoverX || [];
+    if (xs.length === 0) return '';
+    return xs.map((x, i) => {
+      const prev = xs[i - 1];
+      const next = xs[i + 1];
+      const left = (i === 0) ? 0 : (Number.isFinite(prev) ? (prev + x) / 2 : Math.max(0, x - 2));
+      const right = (i === xs.length - 1) ? W : (Number.isFinite(next) ? (x + next) / 2 : Math.min(W, x + 2));
+      const rx = Math.max(0, Math.min(W, left));
+      const rw = Math.max(0.5, Math.min(W - rx, right - rx));
+      return `<rect x="${rx}" y="0" width="${rw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
+    }).join('');
+  })();
 
   document.getElementById('mainChartSvg').innerHTML = `
     <defs>
@@ -606,10 +628,47 @@ function renderChart() {
   document.getElementById('chartYLabels').innerHTML = [...steps].reverse().map(v => `<span>${v.toFixed(3)}</span>`).join('');
 
   const xLabelCount = Math.min(8, data.length);
-  const xIndices = Array.from({length: xLabelCount}, (_, i) =>
-    xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
-  );
-  document.getElementById('chartXLabels').innerHTML = xIndices.map(idx => `<span>${data[idx].time.slice(0,5)}</span>`).join('');
+  const xIndices = (() => {
+    if (!hasTs) {
+      return Array.from({ length: xLabelCount }, (_, i) =>
+        xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
+      );
+    }
+    const targets = Array.from({ length: xLabelCount }, (_, i) =>
+      minTs + (i * tsSpan) / Math.max(1, (xLabelCount - 1))
+    );
+    return targets.map(target => {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < tsVals.length; i++) {
+        const t = tsVals[i];
+        if (!Number.isFinite(t) || t <= 0) continue;
+        const dist = Math.abs(t - target);
+        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+      }
+      return bestIdx;
+    });
+  })();
+  const xHost = document.getElementById('chartXLabels');
+  if (xHost) {
+    if (hasTs) xHost.setAttribute('data-scale', 'time');
+    else xHost.removeAttribute('data-scale');
+    xHost.innerHTML = xIndices.map((idx, j) => {
+      const d = data[idx] || {};
+      const label = (d.time || '').slice(0, 5) || '—';
+      if (!hasTs) return `<span>${label}</span>`;
+      const t = Number(d?.ts) || 0;
+      const leftPct = Number.isFinite(t) && t > 0 ? ((t - minTs) / tsSpan) * 100 : (j / Math.max(1, xIndices.length - 1)) * 100;
+      const clamp = (n) => Math.max(0, Math.min(100, n));
+      const pct = clamp(leftPct);
+      const style = (j === 0)
+        ? 'left:0%;transform:none;text-align:left;'
+        : (j === xIndices.length - 1)
+          ? 'left:100%;transform:translateX(-100%);text-align:right;'
+          : `left:${pct.toFixed(3)}%;`;
+      return `<span style="${style}">${label}</span>`;
+    }).join('');
+  }
 
   const avg = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3);
   document.getElementById('chartStats').innerHTML = `
@@ -654,7 +713,17 @@ function renderChartAll() {
   );
 
   const W = 700, H = 260;
-  const toX = i => (i / (data.length - 1 || 1)) * W;
+  const tsVals = data.map(d => Number(d?.ts) || 0);
+  const hasTs = tsVals.some(t => Number.isFinite(t) && t > 0);
+  const minTs = hasTs ? Math.min(...tsVals.filter(t => Number.isFinite(t) && t > 0)) : 0;
+  const maxTs = hasTs ? Math.max(...tsVals.filter(t => Number.isFinite(t) && t > 0)) : 0;
+  const tsSpan = (maxTs - minTs) || 1;
+  const toX = (i) => {
+    if (!hasTs) return (i / (data.length - 1 || 1)) * W;
+    const t = Number(data[i]?.ts) || 0;
+    if (!Number.isFinite(t) || t <= 0) return (i / (data.length - 1 || 1)) * W;
+    return ((t - minTs) / tsSpan) * W;
+  };
 
   function smoothPath(pts) {
     if (pts.length < 2) return pts.map(p => `${p[0]},${p[1]}`).join(' ');
@@ -695,12 +764,22 @@ function renderChartAll() {
   _chartAllHoverChannels = channelData;
   _chartHoverData = null;
   _chartHoverMeta = null;
+  _chartAllHoverX = data.map((_, i) => toX(i));
+  _chartHoverX = null;
 
-  const hoverRectsAll = data.map((_, i) => {
-    const cx = toX(i);
-    const hw = W / Math.max(data.length, 1);
-    return `<rect x="${Math.max(0, cx - hw / 2)}" y="0" width="${hw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
-  }).join('');
+  const hoverRectsAll = (() => {
+    const xs = _chartAllHoverX || [];
+    if (xs.length === 0) return '';
+    return xs.map((x, i) => {
+      const prev = xs[i - 1];
+      const next = xs[i + 1];
+      const left = (i === 0) ? 0 : (Number.isFinite(prev) ? (prev + x) / 2 : Math.max(0, x - 2));
+      const right = (i === xs.length - 1) ? W : (Number.isFinite(next) ? (x + next) / 2 : Math.min(W, x + 2));
+      const rx = Math.max(0, Math.min(W, left));
+      const rw = Math.max(0.5, Math.min(W - rx, right - rx));
+      return `<rect x="${rx}" y="0" width="${rw}" height="${H}" fill="transparent" onmouseover="showChartTooltip(event,${i})" onmouseout="hideChartTooltip()"/>`;
+    }).join('');
+  })();
 
   document.getElementById('mainChartSvg').innerHTML = gridLines +
     `<line id="chartHoverLine" x1="0" y1="0" x2="0" y2="${H}" stroke="rgba(100,116,139,0.3)" stroke-width="1" stroke-dasharray="3,3" display="none"/>` +
@@ -709,10 +788,47 @@ function renderChartAll() {
   document.getElementById('chartYLabels').innerHTML = ['100%', '50%', '0%'].map(v => `<span>${v}</span>`).join('');
 
   const xLabelCount = Math.min(8, data.length);
-  const xIndices = Array.from({length: xLabelCount}, (_, i) =>
-    xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
-  );
-  document.getElementById('chartXLabels').innerHTML = xIndices.map(idx => `<span>${data[idx].time.slice(0,5)}</span>`).join('');
+  const xIndices = (() => {
+    if (!hasTs) {
+      return Array.from({ length: xLabelCount }, (_, i) =>
+        xLabelCount === 1 ? 0 : Math.round(i * (data.length - 1) / (xLabelCount - 1))
+      );
+    }
+    const targets = Array.from({ length: xLabelCount }, (_, i) =>
+      minTs + (i * tsSpan) / Math.max(1, (xLabelCount - 1))
+    );
+    return targets.map(target => {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < tsVals.length; i++) {
+        const t = tsVals[i];
+        if (!Number.isFinite(t) || t <= 0) continue;
+        const dist = Math.abs(t - target);
+        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+      }
+      return bestIdx;
+    });
+  })();
+  const xHost = document.getElementById('chartXLabels');
+  if (xHost) {
+    if (hasTs) xHost.setAttribute('data-scale', 'time');
+    else xHost.removeAttribute('data-scale');
+    xHost.innerHTML = xIndices.map((idx, j) => {
+      const d = data[idx] || {};
+      const label = (d.time || '').slice(0, 5) || '—';
+      if (!hasTs) return `<span>${label}</span>`;
+      const t = Number(d?.ts) || 0;
+      const leftPct = Number.isFinite(t) && t > 0 ? ((t - minTs) / tsSpan) * 100 : (j / Math.max(1, xIndices.length - 1)) * 100;
+      const clamp = (n) => Math.max(0, Math.min(100, n));
+      const pct = clamp(leftPct);
+      const style = (j === 0)
+        ? 'left:0%;transform:none;text-align:left;'
+        : (j === xIndices.length - 1)
+          ? 'left:100%;transform:translateX(-100%);text-align:right;'
+          : `left:${pct.toFixed(3)}%;`;
+      return `<span style="${style}">${label}</span>`;
+    }).join('');
+  }
 
   document.getElementById('chartStats').innerHTML = channelData.map(({ ch, meta, minV, maxV }) =>
     `<div class="chart-stat-item">

@@ -290,6 +290,10 @@ async function loadData() {
   try {
     allData = await fetchData(activeDevice.id, from, to);
   } catch (err) {
+    if (String(err?.message || '') === 'AUTH_EXPIRED') {
+      allData = [];
+      return;
+    }
     allData = [];
     const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
     const tf = (k, vars) => (typeof window.tf === 'function') ? window.tf(k, vars) : tr(k, k);
