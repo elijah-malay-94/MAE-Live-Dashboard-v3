@@ -57,6 +57,135 @@
   .dot.inactive{background:#f97316;}
   .dot.total{background:var(--accent);box-shadow:0 0 14px rgba(56,189,248,0.35);}
   .dot.yellow{background:#eab308;box-shadow:0 0 12px rgba(234,179,8,0.22);}
+
+  /* ── Grafana embed section ── */
+  .grafana-section {
+    margin: 14px 0;
+  }
+  .grafana-card {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid var(--border2, rgba(255,255,255,0.08));
+    background: var(--surface, #0f172a);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+    overflow: hidden;
+  }
+  .grafana-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border2, rgba(255,255,255,0.06));
+    gap: 10px;
+  }
+  .grafana-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Syne', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text, #f1f5f9);
+  }
+  .grafana-live-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: #10b981;
+    letter-spacing: 0.8px;
+  }
+  .grafana-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse 1.5s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .grafana-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .grafana-open-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border2, rgba(255,255,255,0.1));
+    background: var(--surface2, rgba(255,255,255,0.04));
+    color: var(--muted, #94a3b8);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .grafana-open-btn:hover {
+    background: rgba(56,189,248,0.1);
+    border-color: rgba(56,189,248,0.3);
+    color: var(--accent, #38bdf8);
+  }
+  .grafana-iframe-wrap {
+    position: relative;
+    width: 100%;
+    background: #111827;
+  }
+  .grafana-iframe-wrap iframe {
+    display: block;
+    width: 100%;
+    height: 900px;
+    border: none;
+    border-radius: 0 0 14px 14px;
+  }
+  .grafana-iframe-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #111827;
+    border-radius: 0 0 14px 14px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.4s;
+  }
+  .grafana-iframe-loading.hidden { opacity: 0; }
+  .grafana-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(56,189,248,0.15);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .grafana-loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #475569;
+    letter-spacing: 0.5px;
+  }
+  .grafana-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted, #64748b);
+    letter-spacing: 0.3px;
+  }
 </style>
 </head>
 <body>
@@ -184,7 +313,7 @@
     </div>
   </div>
 
-  <!-- WORKS PAGE (single-file navigation: ?page=works) -->
+  <!-- WORKS PAGE -->
   <div id="worksPage" style="display:none;">
     <div class="api-hint" id="apiHintWorks" style="display:none;"></div>
     <div class="api-hint api-hint--warning" id="deviceTimeHintWorks" style="display:none;"></div>
@@ -239,7 +368,7 @@
     </div>
   </div>
 
-  <!-- DASHBOARD PAGE (single-file navigation: ?page=dashboard) -->
+  <!-- DASHBOARD PAGE -->
   <div id="dashboardPage">
   <div class="controls">
     <span class="controls-label" data-i18n="controls.period">Period</span>
@@ -252,9 +381,7 @@
     </button>
     <div class="controls-sep"></div>
     <span class="controls-label" data-i18n="controls.channel">Channel</span>
-    <select class="select-input" id="channelSelect" onchange="renderChart()">
-      <!-- options populated dynamically by updateChannelSelect() in dashboard.js -->
-    </select>
+    <select class="select-input" id="channelSelect" onchange="renderChart()"></select>
     <div class="controls-sep"></div>
     <span class="controls-label" data-i18n="controls.interval">Interval</span>
     <select class="select-input" id="intervalSelect" onchange="applyFilters()">
@@ -274,20 +401,13 @@
     </div>
   </div>
 
-  <!-- ERROR / INFO HINT -->
   <div class="api-hint" id="apiHint" style="display:none;"></div>
   <div class="api-hint api-hint--warning" id="deviceTimeHint" style="display:none;"></div>
-
-  <!-- ALERT BANNER -->
   <div id="alertBanner"></div>
-
-  <!-- KPI CARDS -->
   <div class="kpi-grid" id="kpiGrid"></div>
 
-  <!-- MAIN GRID -->
   <div class="main-grid">
     <div class="side-panel">
-      <!-- CHART CARD -->
       <div class="card">
         <div class="card-header">
           <span class="card-title" id="chartTitle" data-i18n="dashboard.selectedChannel">Selected channel</span>
@@ -300,15 +420,12 @@
         </div>
         <div class="chart-stats" id="chartStats"></div>
       </div>
-
-      <!-- SECONDARY CHANNELS CARD (moved from bottom section) -->
       <div class="card secondary-channels-card">
         <div class="card-header"><span class="card-title" id="miniChartsTitle" data-i18n="dashboard.allChannels">All Channels</span></div>
         <div id="channelsCharts"></div>
       </div>
     </div>
 
-    <!-- SIDE PANEL -->
     <div style="display:flex;flex-direction:column;gap:14px;">
       <div class="card">
         <div class="card-label" style="margin-bottom:12px;"><span class="kpi-dot" style="background:var(--accent2)" id="deviceInfoStatus"></span><span data-i18n="dashboard.deviceInfo">Device Info</span></div>
@@ -336,7 +453,6 @@
 
   <!-- BOTTOM GRID -->
   <div class="bottom-grid">
-    <!-- DATA TABLE -->
     <div class="card table-card">
       <div class="table-controls">
         <span class="table-controls-title" data-i18n="dashboard.measurementLog">Measurement Log</span>
@@ -350,6 +466,45 @@
       <div class="table-footer">
         <span class="table-count" id="tableCount">15 records</span>
         <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()" data-i18n="export.exportCsv">Export CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ GRAFANA EMBED ═══════════════════════ -->
+  <div class="grafana-section">
+    <div class="grafana-card">
+      <div class="grafana-card-header">
+        <div class="grafana-card-title">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15" height="15"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          MAE DataLogger MONITOR v2 — Grafana
+        </div>
+        <div class="grafana-live-pill">
+          <div class="grafana-live-dot"></div>
+          LIVE SNAPSHOT
+        </div>
+        <div class="grafana-card-actions">
+          <span class="grafana-meta">Auto-refresh · 5m</span>
+          <a class="grafana-open-btn"
+             href="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+             target="_blank" rel="noopener">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open in Grafana
+          </a>
+        </div>
+      </div>
+      <div class="grafana-iframe-wrap">
+        <div class="grafana-iframe-loading" id="grafanaLoading">
+          <div class="grafana-spinner"></div>
+          <div class="grafana-loading-text">Loading Grafana dashboard…</div>
+        </div>
+        <iframe
+          id="grafanaIframe"
+          src="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+          title="MAE DataLogger MONITOR v2 — Grafana Dashboard"
+          allowfullscreen
+          loading="lazy"
+          onload="document.getElementById('grafanaLoading').classList.add('hidden')">
+        </iframe>
       </div>
     </div>
   </div>
@@ -609,7 +764,6 @@
 <div class="modal-overlay" id="filesModal">
   <div class="modal files-modal">
     <div class="modal-title" data-i18n="files.title">Download files</div>
-
     <div class="files-filters">
       <div class="files-filter-item">
         <label for="filesFrom" data-i18n="files.from">From</label>
@@ -630,16 +784,13 @@
       </div>
       <button class="btn btn-primary" onclick="loadDeviceFiles()" data-i18n="files.loadFiles">Load files</button>
     </div>
-
     <div class="files-summary" id="filesSummary" data-i18n="files.noQueryYet">No file query yet.</div>
-
     <div class="files-list" id="filesList"></div>
     <div class="files-pagination">
       <button class="btn" id="filesPrevBtn" onclick="loadDeviceFilesPage('prev')" data-i18n="files.prev">Prev</button>
       <span id="filesPageInfo">Page 0 / 0</span>
       <button class="btn" id="filesNextBtn" onclick="loadDeviceFilesPage('next')" data-i18n="files.next">Next</button>
     </div>
-
     <div class="modal-actions">
       <button class="btn" onclick="closeFilesModal()" data-i18n="common.close">Close</button>
     </div>
@@ -654,9 +805,7 @@ function getCurrentPage() {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
     return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
-  } catch (e) {
-    return 'dashboard';
-  }
+  } catch (e) { return 'dashboard'; }
 }
 
 function setActiveNav(page) {
@@ -674,9 +823,6 @@ function togglePages() {
   if (works) works.style.display = (page === 'works') ? '' : 'none';
   setActiveNav(page);
 
-  // Sidebar rules:
-  // - Works route: show only Dashboard item (back to last viewed dashboard)
-  // - Dashboard route: show items in order WORKS, ALERTS, EXPORT, DASHBOARD
   const navDash = document.getElementById('navDashboard');
   const navWorks = document.getElementById('navWorks');
   const navAlerts = document.getElementById('navAlerts');
@@ -691,28 +837,21 @@ function togglePages() {
     showEl(navExport, false);
     showEl(navSettings, false);
     showEl(navDash, true);
-
-    // Dashboard link should take user back to the last dashboard they viewed.
     try {
       const last = localStorage.getItem('mae_last_dashboard_url') || '';
       if (navDash && last && last.includes('page=dashboard')) navDash.href = last;
       else if (navDash) navDash.href = 'index.html?page=dashboard';
-    } catch (e) { /* ignore */ }
+    } catch (e) {}
   } else {
     showEl(navWorks, true);
     showEl(navAlerts, true);
     showEl(navExport, true);
-    // Requirements: dashboard sidebar should only show WORKS/ALERTS/EXPORT/DASHBOARD.
     showEl(navSettings, false);
-    // On dashboard route, do not show "Dashboard" in sidebar list (requested list omits it).
     showEl(navDash, false);
-
-    // Reorder: WORKS, ALERTS, EXPORT (after nav-section)
     try {
       const sidebar = document.querySelector('.sidebar');
       const navSection = document.querySelector('.sidebar .nav-section');
       if (sidebar && navSection) {
-        // Use `.after()` to preserve order (insertBefore(nextSibling) would reverse it).
         let anchor = navSection;
         [navWorks, navAlerts, navExport].forEach(el => {
           if (el && anchor && typeof anchor.after === 'function') {
@@ -721,20 +860,17 @@ function togglePages() {
           }
         });
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {}
   }
 
-  // Remember last dashboard route (works page uses this as "back").
   if (page === 'dashboard') {
-    try { localStorage.setItem('mae_last_dashboard_url', window.location.href); } catch (e) { /* ignore */ }
+    try { localStorage.setItem('mae_last_dashboard_url', window.location.href); } catch (e) {}
   }
 
-  // Make it visually obvious which "page" you are on.
   const titleEl = document.getElementById('pageTitle');
   const subEl = document.getElementById('pageSubtitle');
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   if (titleEl) {
-    // Keep i18n in sync with route, otherwise applyLanguage() would overwrite the title.
     titleEl.setAttribute('data-i18n', page === 'works' ? 'page.works' : 'page.liveDashboard');
     titleEl.textContent = (page === 'works') ? tr('page.works', 'WORKS') : tr('page.liveDashboard', 'Live Dashboard');
   }
@@ -742,7 +878,6 @@ function togglePages() {
     if (page === 'works') {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
     } else {
-      // Show selected work summary (preferred) instead of redundant DEVICE/AUTO-REFRESH text.
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
       else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';
     }
@@ -754,20 +889,16 @@ function togglePages() {
   const sidebarDevices = document.getElementById('sidebarDevices');
   if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard') ? '' : 'none';
 
-  // Apply translations after route-level text changes.
   if (window.MAE_I18N?.applyLanguage) {
-    try { window.MAE_I18N.applyLanguage(window.MAE_I18N.getLanguage()); } catch (e) { /* ignore */ }
+    try { window.MAE_I18N.applyLanguage(window.MAE_I18N.getLanguage()); } catch (e) {}
   }
-
-  // Ensure theme is applied after route changes.
   if (window.MAE_THEME?.applyTheme) {
-    try { window.MAE_THEME.applyTheme(window.MAE_THEME.getTheme()); } catch (e) { /* ignore */ }
+    try { window.MAE_THEME.applyTheme(window.MAE_THEME.getTheme()); } catch (e) {}
   }
 }
 
 window.MAE_USE_WORK_SCOPED_ENDPOINTS = true;
 
-// Run after DOM is ready (and also immediately if already ready).
 document.addEventListener('DOMContentLoaded', togglePages);
 if (document.readyState !== 'loading') togglePages();
 </script>
