@@ -165,6 +165,42 @@
     transition: opacity 0.4s;
   }
   .grafana-iframe-loading.hidden { opacity: 0; }
+  .grafana-iframe-loading.is-error {
+    pointer-events: auto;
+  }
+  .grafana-iframe-error {
+    display: none;
+    max-width: 560px;
+    padding: 0 18px;
+    text-align: center;
+  }
+  .grafana-iframe-loading.is-error .grafana-spinner,
+  .grafana-iframe-loading.is-error .grafana-loading-text {
+    display: none;
+  }
+  .grafana-iframe-loading.is-error .grafana-iframe-error {
+    display: block;
+  }
+  .grafana-iframe-error-title {
+    font-family: 'Syne', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    color: var(--text, #f1f5f9);
+    margin-bottom: 6px;
+  }
+  .grafana-iframe-error-sub {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 12px;
+    color: var(--muted, #94a3b8);
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+  .grafana-iframe-error-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
   .grafana-spinner {
     width: 32px;
     height: 32px;
@@ -496,6 +532,20 @@
         <div class="grafana-iframe-loading" id="grafanaLoading">
           <div class="grafana-spinner"></div>
           <div class="grafana-loading-text">Loading Grafana dashboard…</div>
+          <div class="grafana-iframe-error" id="grafanaEmbedError">
+            <div class="grafana-iframe-error-title">Grafana embed blocked</div>
+            <div class="grafana-iframe-error-sub">
+              This Grafana public dashboard sets anti-embed headers (e.g. <span style="font-family:'DM Mono',monospace;">X-Frame-Options: DENY</span>),
+              so browsers refuse to show it inside this page.
+            </div>
+            <div class="grafana-iframe-error-actions">
+              <a class="grafana-open-btn"
+                 href="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+                 target="_blank" rel="noopener">
+                Open in Grafana
+              </a>
+            </div>
+          </div>
         </div>
         <iframe
           id="grafanaIframe"
@@ -503,7 +553,7 @@
           title="MAE DataLogger MONITOR v2 — Grafana Dashboard"
           allowfullscreen
           loading="lazy"
-          onload="document.getElementById('grafanaLoading').classList.add('hidden')">
+          onload="window.__MAE_GRAFANA_EMBED_OK__=true;document.getElementById('grafanaLoading').classList.add('hidden')">
         </iframe>
       </div>
     </div>
@@ -901,6 +951,21 @@ window.MAE_USE_WORK_SCOPED_ENDPOINTS = true;
 
 document.addEventListener('DOMContentLoaded', togglePages);
 if (document.readyState !== 'loading') togglePages();
+
+// Grafana public dashboards on grafana.net commonly send `X-Frame-Options: DENY`,
+// which cannot be fixed from frontend-only code. Show a clear fallback instead.
+(function initGrafanaEmbedFallback() {
+  const loading = document.getElementById('grafanaLoading');
+  const iframe = document.getElementById('grafanaIframe');
+  if (!loading || !iframe) return;
+
+  window.__MAE_GRAFANA_EMBED_OK__ = false;
+  window.setTimeout(() => {
+    if (window.__MAE_GRAFANA_EMBED_OK__) return;
+    loading.classList.remove('hidden');
+    loading.classList.add('is-error');
+  }, 3500);
+})();
 </script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
