@@ -520,8 +520,8 @@
         </div>
         <div class="grafana-card-actions">
           <span class="grafana-meta">Auto-refresh · 5m</span>
-          <a class="grafana-open-btn"
-             href="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+          <a class="grafana-open-btn" id="grafanaOpenBtn"
+             href="#"
              target="_blank" rel="noopener">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="11" height="11"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             Open in Grafana
@@ -539,8 +539,8 @@
               so browsers refuse to show it inside this page.
             </div>
             <div class="grafana-iframe-error-actions">
-              <a class="grafana-open-btn"
-                 href="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+              <a class="grafana-open-btn" id="grafanaOpenBtn2"
+                 href="#"
                  target="_blank" rel="noopener">
                 Open in Grafana
               </a>
@@ -549,7 +549,7 @@
         </div>
         <iframe
           id="grafanaIframe"
-          src="https://malaydovelee94.grafana.net/public-dashboards/7f08c78c46d5438799033ad1ff0c821a"
+          src="about:blank"
           title="MAE DataLogger MONITOR v2 — Grafana Dashboard"
           allowfullscreen
           loading="lazy"
@@ -958,6 +958,18 @@ if (document.readyState !== 'loading') togglePages();
   const loading = document.getElementById('grafanaLoading');
   const iframe = document.getElementById('grafanaIframe');
   if (!loading || !iframe) return;
+
+  const openBtn1 = document.getElementById('grafanaOpenBtn');
+  const openBtn2 = document.getElementById('grafanaOpenBtn2');
+
+  try {
+    const openUrl = window.MAE_GRAFANA_OPEN_URL || '';
+    const embedUrl = window.MAE_GRAFANA_EMBED_URL || '';
+
+    if (openBtn1 && openUrl) openBtn1.href = openUrl;
+    if (openBtn2 && openUrl) openBtn2.href = openUrl;
+    if (embedUrl) iframe.src = embedUrl;
+  } catch (e) {}
 
   window.__MAE_GRAFANA_EMBED_OK__ = false;
   window.setTimeout(() => {

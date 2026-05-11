@@ -13,6 +13,20 @@
 // ║  Load order:   1st                                           ║
 // ╚══════════════════════════════════════════════════════════════╝
 
+// ═══════════════════════ GRAFANA (SELF-HOSTED) ═══════════════════════
+// Grafana Cloud typically blocks iframe embedding via `X-Frame-Options: DENY`.
+// For real embeds, point these URLs to your self-hosted Grafana OSS/Enterprise.
+window.MAE_GRAFANA_OPEN_URL =
+  window.MAE_GRAFANA_OPEN_URL ||
+  "http://localhost:3000";
+
+// Use a kiosk-style view for embeds (adjust to your dashboard URL).
+// Example:
+//   http://localhost:3000/d/<uid>/<slug>?orgId=1&kiosk=tv&refresh=5m
+window.MAE_GRAFANA_EMBED_URL =
+  window.MAE_GRAFANA_EMBED_URL ||
+  "http://localhost:3000";
+
 // ═══════════════════════ DEVICE TYPE CONFIG ═══════════════════════
 // One entry per device family. Add new types here — everything else adapts automatically.
 const DEVICE_TYPE_CONFIG = {
