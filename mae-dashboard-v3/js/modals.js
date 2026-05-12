@@ -692,20 +692,32 @@ function downloadFile(name, type, content) {
 }
 
 // ═══════════════════════ THRESHOLD PANEL ═══════════════════════
+function setSidePanelOpen(panelId, isOpen) {
+  const el = document.getElementById(panelId);
+  if (!el) return;
+  el.classList.toggle('open', Boolean(isOpen));
+
+  // Small UX: prevent background scrolling while a side panel is open.
+  const anyOpen =
+    document.getElementById('thresholdPanel')?.classList.contains('open') ||
+    document.getElementById('alarmsPanel')?.classList.contains('open');
+  document.body.classList.toggle('side-panel-open', Boolean(anyOpen));
+}
+
 function openThresholds()  {
-  document.getElementById('thresholdPanel').classList.add('open');
+  setSidePanelOpen('thresholdPanel', true);
   if (typeof renderThresholdChannels === 'function') {
     try { renderThresholdChannels(); } catch (e) { /* ignore */ }
   }
 }
-function closeThresholds() { document.getElementById('thresholdPanel').classList.remove('open'); }
+function closeThresholds() { setSidePanelOpen('thresholdPanel', false); }
 
 document.addEventListener('click', e => {
   const panel = document.getElementById('thresholdPanel');
   if (panel.classList.contains('open')
     && !panel.contains(e.target)
-    && !e.target.closest('[onclick*="openThresholds"]')
-    && !e.target.closest('[onclick*="Alerts"]')) closeThresholds();
+    && !e.target.closest('#navSettings')
+    && !e.target.closest('[onclick*="openThresholds"]')) closeThresholds();
 
   const alarmsPanel = document.getElementById('alarmsPanel');
   if (alarmsPanel && alarmsPanel.classList.contains('open')
@@ -1259,13 +1271,32 @@ function doLogout() {
 
 // ═══════════════════════ ALARMS PANEL ═══════════════════════
 function openAlarmsPanel() {
-  document.getElementById('alarmsPanel').classList.add('open');
+  setSidePanelOpen('alarmsPanel', true);
   renderAlarmsList();
 }
 
 function closeAlarmsPanel() {
-  document.getElementById('alarmsPanel').classList.remove('open');
+  setSidePanelOpen('alarmsPanel', false);
 }
+
+// ESC closes the most recent/visible overlay-like UI.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const eventModal = document.getElementById('eventDetailModal');
+  if (eventModal?.classList.contains('open')) { closeEventModal(); return; }
+  const filesModal = document.getElementById('filesModal');
+  if (filesModal?.classList.contains('open')) { closeFilesModal(); return; }
+  const exportModal = document.getElementById('exportModal');
+  if (exportModal?.classList.contains('open')) { closeExport(); return; }
+  const powerModal = document.getElementById('powerModal');
+  if (powerModal?.classList.contains('open')) { closePowerModal(); return; }
+  const mapModal = document.getElementById('mapModal');
+  if (mapModal?.classList.contains('open')) { closeMapModal(); return; }
+  const alarmsPanel = document.getElementById('alarmsPanel');
+  if (alarmsPanel?.classList.contains('open')) { closeAlarmsPanel(); return; }
+  const thPanel = document.getElementById('thresholdPanel');
+  if (thPanel?.classList.contains('open')) { closeThresholds(); return; }
+});
 
 function renderAlarmsList() {
   const host = document.getElementById('alarmsPanelContent');

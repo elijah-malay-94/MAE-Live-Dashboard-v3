@@ -962,14 +962,30 @@ if (document.readyState !== 'loading') togglePages();
   const openBtn1 = document.getElementById('grafanaOpenBtn');
   const openBtn2 = document.getElementById('grafanaOpenBtn2');
 
-  try {
-    const openUrl = window.MAE_GRAFANA_OPEN_URL || '';
-    const embedUrl = window.MAE_GRAFANA_EMBED_URL || '';
+  const applyUrls = () => {
+    try {
+      const openUrl =
+        localStorage.getItem('mae_grafana_open_url') ||
+        window.MAE_GRAFANA_OPEN_URL ||
+        '';
+      const embedUrl =
+        localStorage.getItem('mae_grafana_embed_url') ||
+        window.MAE_GRAFANA_EMBED_URL ||
+        '';
 
-    if (openBtn1 && openUrl) openBtn1.href = openUrl;
-    if (openBtn2 && openUrl) openBtn2.href = openUrl;
-    if (embedUrl) iframe.src = embedUrl;
-  } catch (e) {}
+      if (openBtn1 && openUrl) openBtn1.href = openUrl;
+      if (openBtn2 && openUrl) openBtn2.href = openUrl;
+      if (embedUrl) iframe.src = embedUrl;
+      return Boolean(openUrl || embedUrl);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // `config.js` loads after this inline script, so try again shortly.
+  applyUrls();
+  window.setTimeout(applyUrls, 0);
+  window.setTimeout(applyUrls, 250);
 
   window.__MAE_GRAFANA_EMBED_OK__ = false;
   window.setTimeout(() => {

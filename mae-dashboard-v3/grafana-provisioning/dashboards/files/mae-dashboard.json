@@ -1,0 +1,1597 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "mae-datalogger-monitor-v2"
+  },
+  "spec": {
+    "annotations": [
+      {
+        "spec": {
+          "builtIn": true,
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "query": {
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "group": "grafana",
+            "spec": {},
+            "version": "v0"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "description": "MAE Dashboard",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "12"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 1,
+          "links": [],
+          "title": "Total Works",
+          "vizConfig": {
+            "group": "stat",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "dark-blue",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "#055a6d",
+                        "value": 0
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-10": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "Battery",
+                        "scenarioId": "random_walk",
+                        "spread": 0.05,
+                        "startValue": 4.1
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "USB",
+                        "scenarioId": "random_walk",
+                        "spread": 0.02,
+                        "startValue": 5
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "AUX",
+                        "scenarioId": "random_walk",
+                        "spread": 0.01,
+                        "startValue": 0.1
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 10,
+          "links": [],
+          "title": "Power Supply \u2014 History",
+          "vizConfig": {
+            "group": "timeseries",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "showValues": false,
+                    "spanNulls": true,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "last",
+                    "min",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-11": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "PT-50",
+                        "scenarioId": "random_walk",
+                        "spread": 0.3,
+                        "startValue": 2.3
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 11,
+          "links": [],
+          "title": "PT-50 \u2014 Displacement (mm)",
+          "vizConfig": {
+            "group": "timeseries",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 8,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "last",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-12": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "ISBC X",
+                        "scenarioId": "random_walk",
+                        "spread": 0.02,
+                        "startValue": 0.12
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "ISBC Y",
+                        "scenarioId": "random_walk",
+                        "spread": 0.02,
+                        "startValue": -0.08
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 12,
+          "links": [],
+          "title": "ISBC X / Y \u2014 Inclination",
+          "vizConfig": {
+            "group": "timeseries",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 8,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [
+                    "last",
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-16": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "Battery",
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "12.5"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "USB",
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "5.0"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "alias": "AUX",
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "23.9"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 16,
+          "links": [],
+          "title": "Individual Channel \u2014 Battery \u00b7 USB \u00b7 AUX",
+          "vizConfig": {
+            "group": "bargauge",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "max": 30,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  "unit": "volt"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Battery"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "red",
+                          "mode": "fixed"
+                        }
+                      },
+                      {
+                        "id": "max",
+                        "value": 15
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "USB"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "blue",
+                          "mode": "fixed"
+                        }
+                      },
+                      {
+                        "id": "max",
+                        "value": 6
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "AUX"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "green",
+                          "mode": "fixed"
+                        }
+                      },
+                      {
+                        "id": "max",
+                        "value": 30
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "displayMode": "gradient",
+                "fillOpacity": 100,
+                "groupWidth": 0.7,
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 10,
+                "minVizWidth": 0,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {},
+                "valueMode": "color"
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-17": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "1,20,90,30,5,0"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 17,
+          "links": [],
+          "title": "Live Device Location \u2014 Milano",
+          "vizConfig": {
+            "group": "geomap",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "controls": {
+                  "mouseWheelZoom": true,
+                  "showAttribution": true,
+                  "showDebug": false,
+                  "showMeasure": false,
+                  "showScale": false,
+                  "showZoom": true
+                },
+                "layers": [
+                  {
+                    "config": {
+                      "showLegend": true,
+                      "style": {
+                        "color": {
+                          "fixed": "dark-green"
+                        },
+                        "opacity": 0.4,
+                        "rotation": {
+                          "fixed": 0,
+                          "max": 360,
+                          "min": -360,
+                          "mode": "mod"
+                        },
+                        "size": {
+                          "fixed": 5,
+                          "max": 15,
+                          "min": 2
+                        },
+                        "symbol": {
+                          "fixed": "img/icons/marker/circle.svg",
+                          "mode": "fixed"
+                        },
+                        "symbolAlign": {
+                          "horizontal": "center",
+                          "vertical": "center"
+                        },
+                        "textConfig": {
+                          "fontSize": 12,
+                          "offsetX": 0,
+                          "offsetY": 0,
+                          "textAlign": "center",
+                          "textBaseline": "middle"
+                        }
+                      }
+                    },
+                    "location": {
+                      "mode": "auto"
+                    },
+                    "name": "Layer 1",
+                    "tooltip": true,
+                    "type": "markers"
+                  }
+                ],
+                "tooltip": {
+                  "mode": "details"
+                },
+                "view": {
+                  "allLayers": true,
+                  "dashboardVariable": false,
+                  "id": "coords",
+                  "lat": 45.4654,
+                  "lon": 9.1859,
+                  "noRepeat": false,
+                  "zoom": 10
+                }
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-18": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "2.31, 2.45, 2.28, 2.52, 2.39"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 18,
+          "links": [],
+          "title": "Measurement Log \u2014 M22MOP0007",
+          "vizConfig": {
+            "group": "table",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-2": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "7"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 2,
+          "links": [],
+          "title": "Active Works",
+          "vizConfig": {
+            "group": "stat",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "dark-green",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "dark-green",
+                        "value": 0
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-3": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "5"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 3,
+          "links": [],
+          "title": "Inactive Work",
+          "vizConfig": {
+            "group": "stat",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "dark-orange",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "dark-orange",
+                        "value": 0
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-4": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "3"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 4,
+          "links": [],
+          "title": "Devices Online",
+          "vizConfig": {
+            "group": "stat",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "purple",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "dark-blue",
+                        "value": 0
+                      },
+                      {
+                        "color": "dark-blue",
+                        "value": 0
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-5": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "4.1"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 5,
+          "links": [],
+          "title": "Battery Voltage",
+          "vizConfig": {
+            "group": "gauge",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "max": 4.2,
+                  "min": 3,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "volt"
+                },
+                "overrides": []
+              },
+              "options": {
+                "barShape": "flat",
+                "barWidthFactor": 0.5,
+                "effects": {
+                  "barGlow": false,
+                  "centerGlow": false,
+                  "gradient": true
+                },
+                "endpointMarker": "point",
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "segmentCount": 1,
+                "segmentSpacing": 0.3,
+                "shape": "gauge",
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto",
+                "sparkline": true,
+                "textMode": "auto"
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-8": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "5.0"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 8,
+          "links": [],
+          "title": "USB Voltage",
+          "vizConfig": {
+            "group": "gauge",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "max": 5.5,
+                  "min": 4,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "volt"
+                },
+                "overrides": []
+              },
+              "options": {
+                "barShape": "flat",
+                "barWidthFactor": 0.5,
+                "effects": {
+                  "barGlow": false,
+                  "centerGlow": false,
+                  "gradient": true
+                },
+                "endpointMarker": "point",
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "segmentCount": 1,
+                "segmentSpacing": 0.3,
+                "shape": "gauge",
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto",
+                "sparkline": true,
+                "textMode": "auto"
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      },
+      "panel-9": {
+        "spec": {
+          "data": {
+            "spec": {
+              "queries": [
+                {
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "eflcf72m3mrk0e"
+                      },
+                      "group": "grafana-testdata-datasource",
+                      "spec": {
+                        "scenarioId": "csv_metric_values",
+                        "stringInput": "0.1"
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 9,
+          "links": [],
+          "title": "AUX Voltage",
+          "vizConfig": {
+            "group": "gauge",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "max": 15,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  "unit": "volt"
+                },
+                "overrides": []
+              },
+              "options": {
+                "barShape": "flat",
+                "barWidthFactor": 0.5,
+                "effects": {
+                  "barGlow": false,
+                  "centerGlow": false,
+                  "gradient": true
+                },
+                "endpointMarker": "point",
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "segmentCount": 1,
+                "segmentSpacing": 0.3,
+                "shape": "gauge",
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto",
+                "sparkline": true,
+                "textMode": "auto"
+              }
+            },
+            "version": "13.1.0-25668120414"
+          }
+        }
+      }
+    },
+    "layout": {
+      "spec": {
+        "items": [
+          {
+            "spec": {
+              "element": {
+                "name": "panel-1"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-2"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-3"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 12,
+              "y": 0
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-4"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 18,
+              "y": 0
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-5"
+              },
+              "height": 8,
+              "width": 8,
+              "x": 0,
+              "y": 4
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-8"
+              },
+              "height": 8,
+              "width": 8,
+              "x": 8,
+              "y": 4
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-9"
+              },
+              "height": 8,
+              "width": 8,
+              "x": 16,
+              "y": 4
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-10"
+              },
+              "height": 8,
+              "width": 24,
+              "x": 0,
+              "y": 12
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-11"
+              },
+              "height": 8,
+              "width": 12,
+              "x": 0,
+              "y": 20
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-12"
+              },
+              "height": 8,
+              "width": 12,
+              "x": 12,
+              "y": 20
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-16"
+              },
+              "height": 6,
+              "width": 24,
+              "x": 0,
+              "y": 28
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-17"
+              },
+              "height": 8,
+              "width": 12,
+              "x": 0,
+              "y": 34
+            }
+          },
+          {
+            "spec": {
+              "element": {
+                "name": "panel-18"
+              },
+              "height": 8,
+              "width": 12,
+              "x": 12,
+              "y": 34
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preferences": {
+      "layout": {
+        "spec": {
+          "items": []
+        }
+      }
+    },
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "autoRefresh": "5m",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "fiscalYearStartMonth": 0,
+      "from": "now-6h",
+      "hideTimepicker": false,
+      "timezone": "browser",
+      "to": "now"
+    },
+    "title": "MAE DataLogger MONITOR v2",
+    "variables": []
+  }
+}

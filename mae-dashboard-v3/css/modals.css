@@ -44,6 +44,9 @@
 .threshold-panel { display:none; position:fixed; top:0; right:0; width:340px; height:100vh; background:var(--surface); border-left:1px solid var(--border); z-index:100; padding:24px; overflow-y:auto; box-shadow:-20px 0 60px rgba(0,0,0,0.4); animation:panelSlide 0.25s ease; }
 @keyframes panelSlide { from{transform:translateX(100%);} to{transform:translateX(0);} }
 .threshold-panel.open { display:block; }
+
+/* Prevent background scroll when side panels are open */
+body.side-panel-open { overflow:hidden; }
 .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
 .panel-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; }
 .panel-close { cursor:pointer; color:var(--muted); font-size:20px; line-height:1; }

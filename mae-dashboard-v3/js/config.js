@@ -18,14 +18,14 @@
 // For real embeds, point these URLs to your self-hosted Grafana OSS/Enterprise.
 window.MAE_GRAFANA_OPEN_URL =
   window.MAE_GRAFANA_OPEN_URL ||
-  "http://localhost:3000";
+  "http://localhost:3002/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&refresh=5m";
 
 // Use a kiosk-style view for embeds (adjust to your dashboard URL).
 // Example:
-//   http://localhost:3000/d/<uid>/<slug>?orgId=1&kiosk=tv&refresh=5m
+//   http://localhost:3002/d/<uid>/<slug>?orgId=1&kiosk=tv&refresh=5m
 window.MAE_GRAFANA_EMBED_URL =
   window.MAE_GRAFANA_EMBED_URL ||
-  "http://localhost:3000";
+  "http://localhost:3002/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&kiosk=tv&refresh=5m";
 
 // ═══════════════════════ DEVICE TYPE CONFIG ═══════════════════════
 // One entry per device family. Add new types here — everything else adapts automatically.
