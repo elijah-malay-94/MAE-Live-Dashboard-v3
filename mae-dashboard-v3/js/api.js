@@ -1612,8 +1612,8 @@ async function fetchAvailableDevices(customerId, status = '') {
     return getMockAvailableDevicesList(customerId, status);
   }
   try {
-    const query = status ? `?status=${encodeURIComponent(status)}` : '';
-    const path = `/devices${query}`;
+    const query = status ? `/status/free` : '';
+    const path = `/api/v1/devices${query}`;
     const data = await apiFetch(path);
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
@@ -1637,7 +1637,7 @@ async function fetchWorkDevices(workId) {
     return getMockDevicesList(getUserId(), workId);
   }
   try {
-    const path = `/works/${encodeURIComponent(workId)}/devices`;
+    const path = `/api/v1/works/${encodeURIComponent(workId)}/devices`;
     const data = await apiFetch(path);
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
@@ -1657,33 +1657,36 @@ async function fetchWorkDevices(workId) {
 
 async function createWork(payload) {
   if (isMockMode()) {
-    return { id: String(1000 + Math.floor(Math.random() * 9000)), active: false, ...payload };
+    return { status: 0, message: "", id: String(1000 + Math.floor(Math.random() * 9000)) };
   }
-  const result = await apiFetchWithHeaders('/work', { method: 'POST', body: payload });
+  const result = await apiFetchWithHeaders('/api/v1/works', { method: 'POST', body: payload });
   return result.data;
 }
 
-async function modifyWork(payload) {
+async function modifyWork(workId, payload) {
   if (isMockMode()) {
-    return { ...payload };
+    return { status: 0, message: "" };
   }
-  const result = await apiFetchWithHeaders('/work', { method: 'PUT', body: payload });
+  const path = `/api/v1/works/${encodeURIComponent(workId)}`;
+  const result = await apiFetchWithHeaders(path, { method: 'PUT', body: payload });
   return result.data;
 }
 
-async function changeWorkStatus(idWork, active) {
+async function changeWorkStatus(workId, active) {
   if (isMockMode()) {
-    return { id_work: String(idWork), active };
+    return { status: 0, message: "" };
   }
-  const result = await apiFetchWithHeaders('/work_status', { method: 'PUT', body: { id_work: idWork, active } });
+  const path = `/api/v1/works/${encodeURIComponent(workId)}/status`;
+  const result = await apiFetchWithHeaders(path, { method: 'PUT', body: { active: active } });
   return result.data;
 }
 
-async function connectWorkDevice(idWork, idDevice, status) {
+async function connectWorkDevice(workId, idDevice, status) {
   if (isMockMode()) {
-    return { id_work: String(idWork), id_device: String(idDevice), status };
+    return { status: 0, message: "" };
   }
-  const result = await apiFetchWithHeaders('/work_device', { method: 'PUT', body: { id_work: idWork, id_device: idDevice, status } });
+  const path = `/api/v1/works/${encodeURIComponent(workId)}/devices`;
+  const result = await apiFetchWithHeaders(path, { method: 'PUT', body: { id_device: idDevice, status: status } });
   return result.data;
 }
 
@@ -1709,7 +1712,7 @@ async function fetchWorks(customerId) {
 
   showLoadingState(true);
   try {
-    const data = await apiFetch(`/works`);
+    const data = await apiFetch(`/api/v1/works`);
     showLoadingState(false);
 
     const list = Array.isArray(data)

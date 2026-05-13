@@ -496,7 +496,7 @@ async function handleJobSave() {
         openWorkEditor(newId);
       }
     } else {
-      await modifyWork({ id_work: jobId, ...values });
+      await modifyWork(jobId, values);
       setJobEditorError('Job updated successfully.');
       await loadAndRenderWorks();
       openWorkEditor(jobId);
