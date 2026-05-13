@@ -158,7 +158,7 @@ function renderWorks() {
     const devCount = (Number.isFinite(devCountRaw) && devCountRaw > 0) ? devCountRaw : null;
 
     return `
-      <div class="work-card" data-work-id="${escapeHtml(wid)}" role="button" tabindex="0" style="text-align:left;cursor:pointer;">
+      <button class="work-card" data-work-id="${escapeHtml(wid)}" type="button" style="text-align:left;cursor:pointer;">
         <div class="work-top">
           <div>
             <p class="work-title">${escapeHtml(desc)}</p>
@@ -175,7 +175,7 @@ function renderWorks() {
             <span class="led ${ledClass}" title="${ledTitle}"></span>
           </div>
         </div>
-      </div>
+      </button>
     `;
   }).join('');
 

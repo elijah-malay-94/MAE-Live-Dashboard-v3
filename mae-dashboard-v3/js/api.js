@@ -57,11 +57,6 @@ function isMockMode() {
   }
 }
 
-// Auto-enable CORS proxy in mock mode for easier testing
-if (isMockMode()) {
-  USE_CORS_PROXY = true;
-}
-
 // ═══════════════════════ MOCK DATA (offline) ═══════════════════════
 function _mulberry32(seed) {
   let a = Number(seed) || 1;
@@ -1613,7 +1608,7 @@ async function fetchAvailableDevices(customerId, status = '') {
   }
   try {
     const query = status ? `?status=${encodeURIComponent(status)}` : '';
-    const path = `/devices${query}`;
+    const path = `/api/v1/devices${query}`;
     const data = await apiFetch(path);
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
@@ -1637,7 +1632,7 @@ async function fetchWorkDevices(workId) {
     return getMockDevicesList(getUserId(), workId);
   }
   try {
-    const path = `/works/${encodeURIComponent(workId)}/devices`;
+    const path = `/api/v1/works/${encodeURIComponent(workId)}/devices`;
     const data = await apiFetch(path);
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
@@ -1659,7 +1654,7 @@ async function createWork(payload) {
   if (isMockMode()) {
     return { id: String(1000 + Math.floor(Math.random() * 9000)), active: false, ...payload };
   }
-  const result = await apiFetchWithHeaders('/work', { method: 'POST', body: payload });
+  const result = await apiFetchWithHeaders('/api/v1/work', { method: 'POST', body: payload });
   return result.data;
 }
 
@@ -1667,7 +1662,7 @@ async function modifyWork(payload) {
   if (isMockMode()) {
     return { ...payload };
   }
-  const result = await apiFetchWithHeaders('/work', { method: 'PUT', body: payload });
+  const result = await apiFetchWithHeaders('/api/v1/work', { method: 'PUT', body: payload });
   return result.data;
 }
 
@@ -1675,7 +1670,7 @@ async function changeWorkStatus(idWork, active) {
   if (isMockMode()) {
     return { id_work: String(idWork), active };
   }
-  const result = await apiFetchWithHeaders('/work_status', { method: 'PUT', body: { id_work: idWork, active } });
+  const result = await apiFetchWithHeaders('/api/v1/work_status', { method: 'PUT', body: { id_work: idWork, active } });
   return result.data;
 }
 
@@ -1683,7 +1678,7 @@ async function connectWorkDevice(idWork, idDevice, status) {
   if (isMockMode()) {
     return { id_work: String(idWork), id_device: String(idDevice), status };
   }
-  const result = await apiFetchWithHeaders('/work_device', { method: 'PUT', body: { id_work: idWork, id_device: idDevice, status } });
+  const result = await apiFetchWithHeaders('/api/v1/work_device', { method: 'PUT', body: { id_work: idWork, id_device: idDevice, status } });
   return result.data;
 }
 
@@ -1709,7 +1704,7 @@ async function fetchWorks(customerId) {
 
   showLoadingState(true);
   try {
-    const data = await apiFetch(`/works`);
+    const data = await apiFetch(`/api/v1/works`);
     showLoadingState(false);
 
     const list = Array.isArray(data)
