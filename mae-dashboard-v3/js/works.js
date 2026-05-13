@@ -157,10 +157,12 @@ function renderWorks() {
     const devCountRaw = Number(w.deviceCount);
     const devCount = (Number.isFinite(devCountRaw) && devCountRaw > 0) ? devCountRaw : null;
 
+    const editLabel = tr('works.edit', 'Edit');
+    const editTitle = tr('works.editWork', 'Edit work');
     return `
-      <button class="work-card" data-work-id="${escapeHtml(wid)}" type="button" style="text-align:left;cursor:pointer;">
+      <div class="work-card" data-work-id="${escapeHtml(wid)}" role="button" tabindex="0" aria-label="${escapeHtml(desc)}">
         <div class="work-top">
-          <div>
+          <div class="work-main">
             <p class="work-title">${escapeHtml(desc)}</p>
             <div class="work-meta">
               <div class="meta-row"><span class="meta-key">${tr('works.place', 'Place')}</span><span class="meta-val">${escapeHtml(loc)}</span></div>
@@ -168,42 +170,60 @@ function renderWorks() {
             </div>
           </div>
           <div class="work-badges">
-            <button class="work-edit-button" type="button" onclick="navigateToJob('${escapeHtml(wid)}'); event.stopPropagation();" title="Edit work">
-              <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-              Edit
+            <button class="work-edit-button" type="button" title="${escapeHtml(editTitle)}">
+              <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              ${escapeHtml(editLabel)}
             </button>
-            <span class="led ${ledClass}" title="${ledTitle}"></span>
+            <span class="led ${ledClass}" title="${escapeHtml(ledTitle)}" role="img" aria-label="${escapeHtml(ledTitle)}"></span>
           </div>
         </div>
-      </button>
+      </div>
     `;
   }).join('');
 
-  grid.querySelectorAll('[data-work-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const workId = btn.getAttribute('data-work-id') || '';
-      if (!workId) return;
-      try {
-        localStorage.setItem(ACTIVE_WORK_STORAGE_KEY, workId);
-        const w = allWorks.find(x => String(x?.id || '') === String(workId));
-        if (w) {
-          localStorage.setItem(ACTIVE_WORK_DESC_STORAGE_KEY, String(w.description || ''));
-          localStorage.setItem(ACTIVE_WORK_PLACE_STORAGE_KEY, String(w.location || ''));
-          const n = Number(w.deviceCount);
-          localStorage.setItem(ACTIVE_WORK_DEVCOUNT_STORAGE_KEY, Number.isFinite(n) ? String(n) : '');
-        }
-      } catch (e) { /* ignore */ }
-      const qp = new URLSearchParams(window.location.search || '');
-      const mock = qp.get('mock');
-      const proxy = qp.get('proxy');
-      const customerId = qp.get('customer_id') || qp.get('customerId') || qp.get('customer');
-      const next = new URLSearchParams();
-      next.set('page', 'dashboard');
-      next.set('work_id', workId);
-      if (customerId) next.set('customer_id', customerId);
-      if (mock) next.set('mock', mock);
-      if (proxy) next.set('proxy', proxy);
-      window.location.href = `index.html?${next.toString()}`;
+  const openWorkDashboard = (workId) => {
+    if (!workId) return;
+    try {
+      localStorage.setItem(ACTIVE_WORK_STORAGE_KEY, workId);
+      const w = allWorks.find(x => String(x?.id || '') === String(workId));
+      if (w) {
+        localStorage.setItem(ACTIVE_WORK_DESC_STORAGE_KEY, String(w.description || ''));
+        localStorage.setItem(ACTIVE_WORK_PLACE_STORAGE_KEY, String(w.location || ''));
+        const n = Number(w.deviceCount);
+        localStorage.setItem(ACTIVE_WORK_DEVCOUNT_STORAGE_KEY, Number.isFinite(n) ? String(n) : '');
+      }
+    } catch (e) { /* ignore */ }
+    const qp = new URLSearchParams(window.location.search || '');
+    const mock = qp.get('mock');
+    const proxy = qp.get('proxy');
+    const customerId = qp.get('customer_id') || qp.get('customerId') || qp.get('customer');
+    const next = new URLSearchParams();
+    next.set('page', 'dashboard');
+    next.set('work_id', workId);
+    if (customerId) next.set('customer_id', customerId);
+    if (mock) next.set('mock', mock);
+    if (proxy) next.set('proxy', proxy);
+    window.location.href = `index.html?${next.toString()}`;
+  };
+
+  grid.querySelectorAll('.work-card[data-work-id]').forEach(card => {
+    const workId = card.getAttribute('data-work-id') || '';
+    const editBtn = card.querySelector('.work-edit-button');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof navigateToJob === 'function') navigateToJob(workId);
+      });
+    }
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.work-edit-button')) return;
+      openWorkDashboard(workId);
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('.work-edit-button')) return;
+      e.preventDefault();
+      openWorkDashboard(workId);
     });
   });
 }
@@ -322,7 +342,7 @@ async function initWorksPage() {
 
   const newWorkBtn = $('newWorkBtn');
   if (newWorkBtn) {
-    newWorkBtn.addEventListener('click', () => openWorkEditor('0'));
+    newWorkBtn.addEventListener('click', () => navigateToJob('0'));
   }
 
   const locationSearch = $('jobLocationSearch');
@@ -402,32 +422,84 @@ function getJobEditorValues() {
   };
 }
 
-function renderDeviceCards(list, targetId, connectAction) {
-  const container = document.getElementById(targetId);
-  if (!container) return;
+function jobDeviceLedColor(lastConnectionRaw) {
+  const raw = lastConnectionRaw ?? '';
+  const t = new Date(String(raw).replace(' ', 'T')).getTime();
+  if (!Number.isFinite(t)) return 'var(--muted)';
+  const mins = (Date.now() - t) / 60000;
+  if (mins <= 15) return 'var(--green)';
+  if (mins <= 30) return '#f97316';
+  return 'var(--red)';
+}
+
+function renderJobDashboardDeviceRows(list, listKey) {
+  const safe = (v) => {
+    const s = (v === undefined || v === null) ? '' : String(v).trim();
+    return s || '—';
+  };
   if (!Array.isArray(list) || list.length === 0) {
-    container.innerHTML = `<div style="color:var(--muted);font-size:13px;">No devices</div>`;
+    return '<div class="job-device-empty">No devices</div>';
+  }
+  return list.map((d) => {
+    const id = String(d.id || '');
+    const dot = jobDeviceLedColor(d.last_connection ?? d.lastConnection);
+    const line1 = safe(d.type);
+    const line2 = safe(d.position || d.devicePlace || d.position_name || d.serial);
+    const line3 = safe(d.serial || id);
+    return `
+    <div class="device-item" data-job-device-list="${listKey}" data-device-id="${escapeHtml(id)}" role="button" tabindex="0"
+      onclick="selectJobDeviceForTransfer(${JSON.stringify(id)}, ${JSON.stringify(listKey)})">
+      <div class="device-dot" style="background:${dot}"></div>
+      <div class="device-info">
+        <div class="device-serial">${escapeHtml(line1)}</div>
+        <div class="device-name">${escapeHtml(line2)}</div>
+        <div class="device-serial">${escapeHtml(line3)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectJobDeviceForTransfer(id, listKey) {
+  window._jobSelectedDeviceId = String(id || '');
+  window._jobSelectedDeviceList = String(listKey || '');
+  applyJobDeviceSelectionHighlight();
+}
+
+function applyJobDeviceSelectionHighlight() {
+  const selId = window._jobSelectedDeviceId || '';
+  const selList = window._jobSelectedDeviceList || '';
+  document.querySelectorAll('#jobDevicesSection .device-item[data-device-id]').forEach((el) => {
+    const match = el.getAttribute('data-device-id') === selId && el.getAttribute('data-job-device-list') === selList;
+    el.classList.toggle('active', Boolean(match));
+  });
+}
+
+async function onJobTransferToAssociated() {
+  const id = window._jobSelectedDeviceId || '';
+  const list = window._jobSelectedDeviceList || '';
+  if (!id || list !== 'available') {
+    setJobEditorError('Select a device in Available devices, then press →.');
     return;
   }
-  container.innerHTML = list.map(d => {
-    const deviceId = JSON.stringify(String(d.id || ''));
-    return `
-    <div class="job-device-card">
-      <div class="job-device-meta">
-        <strong>${escapeHtml(String(d.name || d.serial || d.id))}</strong>
-        <span>${escapeHtml(String(d.type || '').toUpperCase())} · ${escapeHtml(String(d.position || ''))}</span>
-        <span>${escapeHtml(String(d.status || 'offline'))}</span>
-      </div>
-      <button class="job-device-card-action" type="button" onclick="${connectAction}(${deviceId})">
-        ${targetId === 'availableDevicesList' ? '➜ Add' : '← Remove'}
-      </button>
-    </div>
-  `;
-  }).join('');
+  setJobEditorError('');
+  await connectDeviceToJob(id);
+}
+
+async function onJobTransferToAvailable() {
+  const id = window._jobSelectedDeviceId || '';
+  const list = window._jobSelectedDeviceList || '';
+  if (!id || list !== 'associated') {
+    setJobEditorError('Select a device in Associated devices, then press ←.');
+    return;
+  }
+  setJobEditorError('');
+  await disconnectDeviceFromJob(id);
 }
 
 async function loadJobDevices(workId) {
   if (!workId) return;
+  window._jobSelectedDeviceId = '';
+  window._jobSelectedDeviceList = '';
   const customerId = getUserId();
   const [available, associated] = await Promise.all([
     fetchAvailableDevices(customerId, 'free'),
@@ -435,8 +507,11 @@ async function loadJobDevices(workId) {
   ]);
   window._jobAvailableDevices = available;
   window._jobAssociatedDevices = associated;
-  renderDeviceCards(available.filter(d => !associated.some(a => String(a.id) === String(d.id))), 'availableDevicesList', 'connectDeviceToJob');
-  renderDeviceCards(associated, 'associatedDevicesList', 'disconnectDeviceFromJob');
+  const availableFiltered = available.filter(d => !associated.some(a => String(a.id) === String(d.id)));
+  const availEl = document.getElementById('availableDevicesList');
+  const assocEl = document.getElementById('associatedDevicesList');
+  if (availEl) availEl.innerHTML = renderJobDashboardDeviceRows(availableFiltered, 'available');
+  if (assocEl) assocEl.innerHTML = renderJobDashboardDeviceRows(associated, 'associated');
 }
 
 function openWorkEditor(workId) {
@@ -512,14 +587,8 @@ async function handleJobStatus(active) {
     setJobEditorError('Save the job before changing its status.');
     return;
   }
-  if (active) {
-    const assoc = Array.isArray(window._jobAssociatedDevices) ? window._jobAssociatedDevices.length : 0;
-    if (assoc === 0) {
-      setJobEditorError('Enable only when at least one device is associated.');
-      return;
-    }
-  }
   try {
+    setJobEditorError('');
     await changeWorkStatus(jobId, active);
     await loadAndRenderWorks();
     openWorkEditor(jobId);
