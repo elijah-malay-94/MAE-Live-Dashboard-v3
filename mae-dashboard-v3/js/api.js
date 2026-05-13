@@ -57,11 +57,6 @@ function isMockMode() {
   }
 }
 
-// Auto-enable CORS proxy in mock mode for easier testing
-if (isMockMode()) {
-  USE_CORS_PROXY = true;
-}
-
 // ═══════════════════════ MOCK DATA (offline) ═══════════════════════
 function _mulberry32(seed) {
   let a = Number(seed) || 1;
