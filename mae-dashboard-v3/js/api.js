@@ -57,6 +57,11 @@ function isMockMode() {
   }
 }
 
+// Auto-enable CORS proxy in mock mode for easier testing
+if (isMockMode()) {
+  USE_CORS_PROXY = true;
+}
+
 // ═══════════════════════ MOCK DATA (offline) ═══════════════════════
 function _mulberry32(seed) {
   let a = Number(seed) || 1;
@@ -1588,6 +1593,100 @@ async function fetchEventDetails(deviceId, eventId, workId = getActiveWorkId()) 
   return await apiFetch(path);
 }
 
+// ═══════════════════════ API: WORK DEVICE MANAGEMENT ═══════════════════════
+function getMockAvailableDevicesList(customerId, status = '') {
+  const devices = [
+    { id:'201', serial:'M2010001', name:'Device A', type:'DL8', status:'online', position:'Site A', lastConnection:'—' },
+    { id:'202', serial:'M2010002', name:'Device B', type:'DL4', status:'online', position:'Site B', lastConnection:'—' },
+    { id:'203', serial:'M2010003', name:'Device C', type:'DL16', status:'offline', position:'Warehouse', lastConnection:'—' },
+    { id:'204', serial:'M2010004', name:'Device D', type:'DL8', status:'online', position:'Field', lastConnection:'—' },
+  ];
+  const normalized = String(status || '').trim().toLowerCase();
+  if (!normalized || normalized === 'all') return devices;
+  if (normalized === 'free') return devices.filter(d => d.status === 'online');
+  return devices.filter(d => String(d.type || '').toLowerCase() === normalized);
+}
+
+async function fetchAvailableDevices(customerId, status = '') {
+  if (isMockMode()) {
+    return getMockAvailableDevicesList(customerId, status);
+  }
+  try {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+    const path = `/devices${query}`;
+    const data = await apiFetch(path);
+    if (!Array.isArray(data)) return [];
+    return data.map(item => ({
+      id: String(item.id || item.device_id || ''),
+      serial: item.matricola || item.serial || '',
+      name: item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      type: item.tipologia || item.type || '',
+      status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
+      position: item.position || item.device_place || item.location || '',
+      lastConnection: item.timestamp_server || item.updated || '—',
+    }));
+  } catch (err) {
+    showErrorMessage(`Could not load available devices: ${err?.message || err}`);
+    return [];
+  }
+}
+
+async function fetchWorkDevices(workId) {
+  if (!String(workId || '').trim()) return [];
+  if (isMockMode()) {
+    return getMockDevicesList(getUserId(), workId);
+  }
+  try {
+    const path = `/works/${encodeURIComponent(workId)}/devices`;
+    const data = await apiFetch(path);
+    if (!Array.isArray(data)) return [];
+    return data.map(item => ({
+      id: String(item.id || item.device_id || ''),
+      serial: item.matricola || item.serial || '',
+      name: item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      type: item.tipologia || item.type || '',
+      status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
+      position: item.position || item.device_place || item.location || '',
+      lastConnection: item.timestamp_server || item.updated || '—',
+    }));
+  } catch (err) {
+    showErrorMessage(`Could not load work devices: ${err?.message || err}`);
+    return [];
+  }
+}
+
+async function createWork(payload) {
+  if (isMockMode()) {
+    return { id: String(1000 + Math.floor(Math.random() * 9000)), active: false, ...payload };
+  }
+  const result = await apiFetchWithHeaders('/work', { method: 'POST', body: payload });
+  return result.data;
+}
+
+async function modifyWork(payload) {
+  if (isMockMode()) {
+    return { ...payload };
+  }
+  const result = await apiFetchWithHeaders('/work', { method: 'PUT', body: payload });
+  return result.data;
+}
+
+async function changeWorkStatus(idWork, active) {
+  if (isMockMode()) {
+    return { id_work: String(idWork), active };
+  }
+  const result = await apiFetchWithHeaders('/work_status', { method: 'PUT', body: { id_work: idWork, active } });
+  return result.data;
+}
+
+async function connectWorkDevice(idWork, idDevice, status) {
+  if (isMockMode()) {
+    return { id_work: String(idWork), id_device: String(idDevice), status };
+  }
+  const result = await apiFetchWithHeaders('/work_device', { method: 'PUT', body: { id_work: idWork, id_device: idDevice, status } });
+  return result.data;
+}
+
 // ═══════════════════════ API: WORKS LIST ═══════════════════════
 // GET /api/v1/customers/:customer_id/works
 //
@@ -1610,7 +1709,7 @@ async function fetchWorks(customerId) {
 
   showLoadingState(true);
   try {
-    const data = await apiFetch(`/api/v1/works`);
+    const data = await apiFetch(`/works`);
     showLoadingState(false);
 
     const list = Array.isArray(data)

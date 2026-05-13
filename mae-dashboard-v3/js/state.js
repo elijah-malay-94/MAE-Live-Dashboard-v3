@@ -81,7 +81,7 @@ function updateDashboardAuthButton() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
@@ -131,14 +131,14 @@ async function init() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
   const page = getCurrentPage();
   console.log('%c[init] Starting app init()', 'color:#2563eb;font-weight:700', { page });
-  // If on works page, let works.js handle it
-  if (page === 'works') {
+  // If on works or job page, let the dedicated page controllers handle it.
+  if (page === 'works' || page === 'job') {
     return;
   }
 

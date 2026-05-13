@@ -28,6 +28,35 @@
   .work-card::after{content:'';position:absolute;inset:-1px;pointer-events:none;background:radial-gradient(700px 220px at 10% 0%,rgba(56,189,248,0.06),transparent 55%),radial-gradient(700px 220px at 90% 0%,rgba(16,185,129,0.05),transparent 55%);opacity:.9;}
   .work-card>*{position:relative;z-index:1;}
   .work-top{display:flex;gap:10px;align-items:flex-start;}
+  .work-edit-button{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:0;margin:0;font-size:14px;display:flex;align-items:center;gap:6px;}
+  .work-edit-button:hover{color:var(--accent);}
+  .works-actions{display:flex;justify-content:flex-end;margin:18px 0 0;}
+  .job-editor-panel{display:none;margin-top:24px;padding:22px;border-radius:18px;border:1px solid var(--border2);background:var(--surface);box-shadow:0 20px 40px rgba(0,0,0,0.12);}
+  .job-editor-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;}
+  .job-editor-title{font-family:'Syne',system-ui,sans-serif;font-size:18px;font-weight:800;color:var(--text);}
+  .job-editor-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .job-editor-body{display:grid;grid-template-columns:1fr;gap:20px;}
+  .job-editor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+  @media (max-width:840px){.job-editor-fields{grid-template-columns:1fr;}}
+  .job-field{display:grid;gap:6px;}
+  .job-field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;}
+  .job-field input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);}
+  .job-location-search{display:grid;gap:10px;}
+  .job-location-results{max-height:260px;overflow:auto;border:1px solid var(--border2);border-radius:12px;background:var(--surface2);padding:10px;}
+  .job-location-item{padding:10px 12px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
+  .job-location-item:hover{background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);}
+  .job-devices-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:840px){.job-devices-grid{grid-template-columns:1fr;}}
+  .job-devices-card{border:1px solid var(--border2);border-radius:16px;padding:16px;background:var(--surface2);}
+  .job-devices-card h3{font-size:13px;font-weight:700;margin:0 0 12px;color:var(--text);}
+  .job-device-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:10px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,0.03);}
+  .job-device-card:last-child{margin-bottom:0;}
+  .job-device-meta{display:grid;gap:4px;font-size:12px;color:var(--muted);}
+  .job-device-card-action{border:none;border-radius:10px;padding:8px 10px;background:var(--surface);color:var(--accent);cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;transition:background 0.2s;}
+  .job-device-card-action:hover{background:rgba(56,189,248,0.1);}
+  .job-editor-footer{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}
+  .job-editor-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px;}
+  .job-editor-error{color:#f87171;font-size:13px;margin-top:8px;}
   .work-title{font-family:'Syne',system-ui,sans-serif;font-weight:700;letter-spacing:0.2px;color:var(--text);font-size:15px;line-height:1.15;margin:0;}
   .work-meta{margin-top:8px;display:grid;gap:6px;}
   .meta-row{display:flex;gap:8px;align-items:baseline;color:var(--muted);font-size:12px;}
@@ -395,11 +424,85 @@
     </div>
 
     <div class="works-grid" id="worksGrid"></div>
+    <div class="works-actions">
+      <button class="btn btn-primary" id="newWorkBtn" type="button" onclick="navigateToJob('0')">+ Add new work</button>
+    </div>
 
     <div class="footer" style="margin-top: 16px;">
       <div class="footer-left">DataLogger · User Page · Works</div>
       <div class="footer-chips">
         <div class="footer-chip" data-i18n="works.footerHint">Click a work to open measures</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOB MANAGEMENT PAGE -->
+  <div id="jobPage" style="display:none;">
+    <div class="api-hint" id="apiHintJob" style="display:none;"></div>
+    <div class="api-hint api-hint--warning" id="deviceTimeHintJob" style="display:none;"></div>
+
+    <div class="job-editor-panel" id="jobEditorPanel">
+      <div class="job-editor-header">
+        <div>
+          <div class="job-editor-title" id="jobEditorTitle">Job management</div>
+          <div class="job-editor-note" id="jobEditorModeHint">Create a new job or edit an existing one.</div>
+        </div>
+        <div class="job-editor-actions">
+          <button class="btn" type="button" id="jobCancelBtn" onclick="navigateToWorks(event)">Cancel</button>
+          <button class="btn btn-primary" type="button" id="jobSaveBtn" onclick="handleJobSave()">Save</button>
+          <button class="btn" type="button" id="jobEnableBtn" onclick="handleJobStatus(true)">Enable</button>
+          <button class="btn" type="button" id="jobDisableBtn" onclick="handleJobStatus(false)">Disable</button>
+        </div>
+      </div>
+      <div class="job-editor-body">
+        <div class="job-editor-fields">
+          <div class="job-field">
+            <label for="jobName">Description</label>
+            <input type="text" id="jobName" placeholder="Enter job description">
+          </div>
+          <div class="job-field">
+            <label for="jobLocation">Location</label>
+            <input type="text" id="jobLocation" placeholder="Enter location">
+          </div>
+          <div class="job-field job-location-search">
+            <label for="jobLocationSearch">Search Open Maps</label>
+            <input type="search" id="jobLocationSearch" placeholder="Search address or place">
+            <div class="job-location-results" id="jobLocationResults"></div>
+          </div>
+          <div class="job-field"></div>
+          <div class="job-field">
+            <label for="jobLatitude">Latitude</label>
+            <input type="number" id="jobLatitude" placeholder="Latitude" step="any">
+          </div>
+          <div class="job-field">
+            <label for="jobLongitude">Longitude</label>
+            <input type="number" id="jobLongitude" placeholder="Longitude" step="any">
+          </div>
+          <div class="job-field">
+            <label for="jobAltitude">Altitude</label>
+            <input type="number" id="jobAltitude" placeholder="Altitude" step="any">
+          </div>
+        </div>
+
+        <div class="job-devices-grid" id="jobDevicesSection">
+          <div class="job-devices-card">
+            <h3>Available devices</h3>
+            <div id="availableDevicesList"></div>
+          </div>
+          <div class="job-devices-card">
+            <h3>Associated devices</h3>
+            <div id="associatedDevicesList"></div>
+          </div>
+        </div>
+
+        <div class="job-editor-error" id="jobEditorError"></div>
+      </div>
+    </div>
+
+    <div class="footer" style="margin-top: 16px;">
+      <div class="footer-left">DataLogger · User Page · Job management</div>
+      <div class="footer-chips">
+        <div class="footer-chip">Save a job to assign devices and change status.</div>
       </div>
     </div>
   </div>
@@ -854,7 +957,7 @@ function getCurrentPage() {
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
-    return (p === 'works' || p === 'dashboard') ? p : 'dashboard';
+    return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
   } catch (e) { return 'dashboard'; }
 }
 
@@ -869,8 +972,10 @@ function togglePages() {
   const page = getCurrentPage();
   const dash = document.getElementById('dashboardPage');
   const works = document.getElementById('worksPage');
+  const job = document.getElementById('jobPage');
   if (dash) dash.style.display = (page === 'dashboard') ? '' : 'none';
   if (works) works.style.display = (page === 'works') ? '' : 'none';
+  if (job) job.style.display = (page === 'job') ? '' : 'none';
   setActiveNav(page);
 
   const navDash = document.getElementById('navDashboard');
@@ -881,7 +986,7 @@ function togglePages() {
 
   const showEl = (el, show) => { if (el) el.style.display = show ? '' : 'none'; };
 
-  if (page === 'works') {
+  if (page === 'works' || page === 'job') {
     showEl(navWorks, false);
     showEl(navAlerts, false);
     showEl(navExport, false);
@@ -921,12 +1026,22 @@ function togglePages() {
   const subEl = document.getElementById('pageSubtitle');
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   if (titleEl) {
-    titleEl.setAttribute('data-i18n', page === 'works' ? 'page.works' : 'page.liveDashboard');
-    titleEl.textContent = (page === 'works') ? tr('page.works', 'WORKS') : tr('page.liveDashboard', 'Live Dashboard');
+    if (page === 'works') {
+      titleEl.setAttribute('data-i18n', 'page.works');
+      titleEl.textContent = tr('page.works', 'WORKS');
+    } else if (page === 'job') {
+      titleEl.setAttribute('data-i18n', 'page.job');
+      titleEl.textContent = 'JOB MANAGEMENT';
+    } else {
+      titleEl.setAttribute('data-i18n', 'page.liveDashboard');
+      titleEl.textContent = tr('page.liveDashboard', 'Live Dashboard');
+    }
   }
   if (subEl) {
     if (page === 'works') {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
+    } else if (page === 'job') {
+      subEl.textContent = 'Create or edit a job, then manage devices.';
     } else {
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
       else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';

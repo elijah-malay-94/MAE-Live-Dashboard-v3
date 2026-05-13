@@ -16,16 +16,25 @@
 // ═══════════════════════ GRAFANA (SELF-HOSTED) ═══════════════════════
 // Grafana Cloud typically blocks iframe embedding via `X-Frame-Options: DENY`.
 // For real embeds, point these URLs to your self-hosted Grafana OSS/Enterprise.
+const MAE_GRAFANA_HOST =
+  window.MAE_GRAFANA_HOST ||
+  window.location.hostname ||
+  'localhost';
+const MAE_GRAFANA_PORT = window.MAE_GRAFANA_PORT || 3002;
+const MAE_GRAFANA_BASE_URL =
+  window.MAE_GRAFANA_BASE_URL ||
+  `http://${MAE_GRAFANA_HOST}:${MAE_GRAFANA_PORT}`;
+
 window.MAE_GRAFANA_OPEN_URL =
   window.MAE_GRAFANA_OPEN_URL ||
-  "http://localhost:3002/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&refresh=5m";
+  `${MAE_GRAFANA_BASE_URL}/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&refresh=5m`;
 
 // Use a kiosk-style view for embeds (adjust to your dashboard URL).
 // Example:
 //   http://localhost:3002/d/<uid>/<slug>?orgId=1&kiosk=tv&refresh=5m
 window.MAE_GRAFANA_EMBED_URL =
   window.MAE_GRAFANA_EMBED_URL ||
-  "http://localhost:3002/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&kiosk=tv&refresh=5m";
+  `${MAE_GRAFANA_BASE_URL}/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2?orgId=1&kiosk=tv&refresh=5m`;
 
 // ═══════════════════════ DEVICE TYPE CONFIG ═══════════════════════
 // One entry per device family. Add new types here — everything else adapts automatically.

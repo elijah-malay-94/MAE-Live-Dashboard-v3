@@ -15,8 +15,12 @@ To embed **real live data**, run **Grafana OSS self-hosted** and enable embeddin
 docker compose -f docker-compose.grafana-oss.yml up -d
 ```
 
-3) Open Grafana at `http://localhost:3000`
+3) Open Grafana at `http://localhost:3002`
    - Login: `admin / admin` (you will be prompted to change password)
+
+If you want other people on your local network to view the dashboard, share the URL with your machine IP instead of `localhost`, for example:
+
+- `http://192.168.1.10:3002/d/c69c69c4-00bd-4db3-9374-1db4d443b3b0/mae-datalogger-monitor-v2`
 
 ### Connect Grafana OSS to InfluxDB
 
