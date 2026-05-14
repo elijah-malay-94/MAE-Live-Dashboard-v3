@@ -449,7 +449,7 @@ function renderJobDashboardDeviceRows(list, listKey) {
     return s || '—';
   };
   if (!Array.isArray(list) || list.length === 0) {
-    return '<div class="job-device-empty">No devices</div>';
+    return `<div class="job-device-empty">${t('job.noDevices')}</div>`;
   }
   return list.map((d) => {
     const id = String(d.id || '').trim();
@@ -488,7 +488,7 @@ function applyJobDeviceSelectionHighlight() {
 async function onJobTransferToAssociated() {
   const filtered = Array.isArray(window._jobFilteredAvailable) ? window._jobFilteredAvailable : [];
   if (filtered.length === 0) {
-    setJobEditorError('No devices are listed under Available — nothing to add with →.');
+    setJobEditorError(t('job.noAvailableDevices'));
     return;
   }
   const id = window._jobSelectedDeviceId || '';
@@ -508,7 +508,7 @@ async function onJobTransferToAssociated() {
 async function onJobTransferToAvailable() {
   const associated = Array.isArray(window._jobAssociatedDevices) ? window._jobAssociatedDevices : [];
   if (associated.length === 0) {
-    setJobEditorError('No devices are associated with this job — nothing to remove with ←.');
+    setJobEditorError(t('job.noAssociatedDevices'));
     return;
   }
   const id = window._jobSelectedDeviceId || '';
@@ -589,7 +589,7 @@ async function handleJobSave() {
     setJobEditorError('');
     if (jobId === '0') {
       const result = await createWork(values);
-      setJobEditorError('Job created successfully.');
+      setJobEditorError(t('job.createdOk'));
       const newId = String(result?.id || result?.id_work || '0');
       if (isMockMode()) {
         allWorks.unshift({ id: newId, description: values.description, location: values.place, active: false, deviceCount: 0, raw: {} });
@@ -607,14 +607,14 @@ async function handleJobSave() {
       openWorkEditor(jobId);
     }
   } catch (err) {
-    setJobEditorError(err?.message || 'Could not save job.');
+    setJobEditorError(err?.message || t('job.couldNotSave'));
   }
 }
 
 async function handleJobStatus(active) {
   const jobId = String(window._jobEditorWorkId || '').trim();
   if (!jobId || jobId === '0') {
-    setJobEditorError('Save the job before changing its status.');
+    setJobEditorError(t('job.saveBeforeStatus'));
     return;
   }
   try {
@@ -623,35 +623,35 @@ async function handleJobStatus(active) {
     await loadAndRenderWorks();
     openWorkEditor(jobId);
   } catch (err) {
-    setJobEditorError(err?.message || 'Could not update job status.');
+    setJobEditorError(err?.message || t('job.couldNotUpdateStatus'));
   }
 }
 
 async function connectDeviceToJob(deviceId) {
   const jobId = String(window._jobEditorWorkId || '').trim();
   if (!jobId || jobId === '0') {
-    setJobEditorError('Save the job before associating devices.');
+    setJobEditorError(t('job.saveBeforeDevices'));
     return;
   }
   try {
     await connectWorkDevice(jobId, deviceId, true);
     await loadJobDevices(jobId);
   } catch (err) {
-    setJobEditorError(err?.message || 'Could not connect device to job.');
+    setJobEditorError(err?.message || t('job.couldNotConnect'));
   }
 }
 
 async function disconnectDeviceFromJob(deviceId) {
   const jobId = String(window._jobEditorWorkId || '').trim();
   if (!jobId || jobId === '0') {
-    setJobEditorError('Job not loaded.');
+    setJobEditorError(t('job.notLoaded'));
     return;
   }
   try {
     await connectWorkDevice(jobId, deviceId, false);
     await loadJobDevices(jobId);
   } catch (err) {
-    setJobEditorError(err?.message || 'Could not disconnect device.');
+    setJobEditorError(err?.message || t('job.couldNotDisconnect'));
   }
 }
 
@@ -743,7 +743,7 @@ async function searchJobLocation() {
     `;
     }).join('');
   } catch (err) {
-    results.innerHTML = '<div style="color:#f87171;font-size:13px;">Location search failed.</div>';
+    results.innerHTML = `<div style="color:#f87171;font-size:13px;">${t('job.locationSearchFailed')}</div>`;
   }
 }
 
