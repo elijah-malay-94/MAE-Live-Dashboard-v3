@@ -14,15 +14,16 @@ This dashboard includes a comprehensive job management system with CRUD operatio
 
 ### Running the Dashboard
 
-1. Start a local HTTP server:
+The app files live in `mae-dashboard-v3/` (next to this README).
 
 ```bash
+cd mae-dashboard-v3
 python3 -m http.server 8000
 ```
 
-2. Open `http://localhost:8000` in your browser.
+Or run `START_SERVER.bat` (Windows) or `START_SERVER.sh` from that folder.
 
-3. For mock mode (no backend required), the dashboard will use simulated data.
+Open `http://localhost:8000` in your browser. For mock mode (no backend required), the dashboard will use simulated data.
 
 ### API Endpoints
 
@@ -34,6 +35,8 @@ The system integrates with the following API endpoints:
 - `/devices` - Device management
 
 ### Development
+
+Paths are relative to `mae-dashboard-v3/`:
 
 - `js/api.js` - API integration and mock data
 - `js/works.js` - Job management UI logic
