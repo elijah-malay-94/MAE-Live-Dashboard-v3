@@ -22,6 +22,8 @@
 
       'page.liveDashboard': 'Live Dashboard',
       'page.works': 'WORKS',
+      'page.job': 'WORK MANAGEMENT',
+      'page.jobSubtitle': 'Create or edit a work, then manage devices.',
       'works.subtitle': 'Select a work to view measures',
 
       'works.search.placeholder': 'Search works…',
@@ -318,7 +320,9 @@
       'nav.devices': 'Dispositivi',
 
       'page.liveDashboard': 'Cruscotto Live',
-      'page.works': 'Lavori',
+      'page.works': 'LAVORI',
+      'page.job': 'GESTIONE LAVORI',
+      'page.jobSubtitle': 'Crea o modifica un lavoro, poi gestisci i dispositivi.',
       'works.subtitle': 'Seleziona un lavoro per vedere le misure',
 
       'works.search.placeholder': 'Cerca lavori…',
@@ -693,8 +697,12 @@
     // Job page: re-apply dynamic strings when language changes.
     try {
       if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'job') {
+        const titleEl = document.getElementById('pageTitle');
+        const subEl   = document.getElementById('pageSubtitle');
+        if (titleEl) titleEl.textContent = dict?.[lang]?.['page.job'] ?? dict?.en?.['page.job'] ?? 'WORK MANAGEMENT';
+        if (subEl)   subEl.textContent   = dict?.[lang]?.['page.jobSubtitle'] ?? dict?.en?.['page.jobSubtitle'] ?? '';
         if (typeof window.setJobEditorControls === 'function') {
-          const isNew = window._jobEditorIsNew !== undefined ? window._jobEditorIsNew : true;
+          const isNew    = window._jobEditorIsNew    !== undefined ? window._jobEditorIsNew    : true;
           const isActive = window._jobEditorIsActive !== undefined ? window._jobEditorIsActive : false;
           window.setJobEditorControls(isNew, isActive);
         }

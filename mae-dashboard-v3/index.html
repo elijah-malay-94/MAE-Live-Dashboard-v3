@@ -746,7 +746,7 @@ function togglePages() {
       titleEl.textContent = tr('page.works', 'WORKS');
     } else if (page === 'job') {
       titleEl.setAttribute('data-i18n', 'page.job');
-      titleEl.textContent = 'JOB MANAGEMENT';
+      titleEl.textContent = tr('page.job', 'WORK MANAGEMENT');
     } else {
       titleEl.setAttribute('data-i18n', 'page.liveDashboard');
       titleEl.textContent = tr('page.liveDashboard', 'Live Dashboard');
@@ -756,7 +756,7 @@ function togglePages() {
     if (page === 'works') {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
     } else if (page === 'job') {
-      subEl.textContent = 'Create or edit a job, then manage devices.';
+      subEl.textContent = tr('page.jobSubtitle', 'Create or edit a work, then manage devices.');
     } else {
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
       else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';
