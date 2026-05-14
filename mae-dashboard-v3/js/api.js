@@ -849,27 +849,35 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
 }
 
 // ═══════════════════════ STATUS BAR HELPERS ═══════════════════════
-function showLoadingState(show) {
-  const hint = document.getElementById('apiHint');
-  if (!hint) return;
-  if(show){
-  hint.style.display     = 'block';
-  hint.style.background  = '';
-  hint.style.borderColor = '';
-  hint.innerHTML = show
-    ? '<strong>⏳ Loading data from API…</strong>'
-    : `<strong>✅ API Connected</strong> — data from <code>${API_BASE}</code>`;
-  } else {
-      hint.style.display     = 'none';
-      hint.style.background  = '';
-      hint.style.borderColor = '';
-      hint.innerHTML = '';
-  }
+// Same top-of-content strip as dashboard (`#apiHint`), but routed per route
+// so Works / Job pages show messages under the top bar like the live dashboard.
+function getContextualApiHint() {
+  try {
+    const p = String(new URLSearchParams(window.location.search || '').get('page') || '').toLowerCase().trim();
+    if (p === 'works') return document.getElementById('apiHintWorks');
+    if (p === 'job') return document.getElementById('apiHintJob');
+  } catch (e) { /* ignore */ }
+  return document.getElementById('apiHint');
+}
 
+function showLoadingState(show) {
+  const hint = getContextualApiHint();
+  if (!hint) return;
+  if (show) {
+    hint.style.display = 'block';
+    hint.style.background = '';
+    hint.style.borderColor = '';
+    hint.innerHTML = '<strong>⏳ Loading data from API…</strong>';
+  } else {
+    hint.style.display = 'none';
+    hint.style.background = '';
+    hint.style.borderColor = '';
+    hint.innerHTML = '';
+  }
 }
 
 function showErrorMessage(msg) {
-  const hint = document.getElementById('apiHint');
+  const hint = getContextualApiHint();
   if (!hint) return;
   hint.style.display     = 'block';
   hint.style.background  = 'rgba(239,68,68,0.08)';
@@ -878,7 +886,7 @@ function showErrorMessage(msg) {
 }
 
 function showSuccessMessage(msg) {
-  const hint = document.getElementById('apiHint');
+  const hint = getContextualApiHint();
   if (!hint) return;
   hint.style.display     = 'block';
   hint.style.background  = 'rgba(16,185,129,0.08)';
@@ -890,6 +898,7 @@ function setDeviceTimeWarning(show) {
   const hints = [
     document.getElementById('deviceTimeHint'),
     document.getElementById('deviceTimeHintWorks'),
+    document.getElementById('deviceTimeHintJob'),
   ].filter(Boolean);
   if (hints.length === 0) return;
 

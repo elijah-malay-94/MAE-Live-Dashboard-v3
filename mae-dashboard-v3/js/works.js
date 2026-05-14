@@ -379,9 +379,27 @@ function getJobEditorField(id) {
 }
 
 function setJobEditorError(message) {
-  const error = document.getElementById('jobEditorError');
-  if (!error) return;
-  error.textContent = message ? String(message) : '';
+  const hint = document.getElementById('apiHintJob');
+  if (!hint) return;
+  const text = message ? String(message).trim() : '';
+  if (!text) {
+    hint.style.display = 'none';
+    hint.innerHTML = '';
+    hint.style.background = '';
+    hint.style.borderColor = '';
+    return;
+  }
+  const isSuccess = /\b(successfully|saved)\b/i.test(text) || /^Job (created|updated)\b/i.test(text);
+  hint.style.display = 'block';
+  if (isSuccess) {
+    hint.style.background = 'rgba(16,185,129,0.08)';
+    hint.style.borderColor = 'rgba(16,185,129,0.25)';
+    hint.innerHTML = `<strong>${escapeHtml(text)}</strong>`;
+  } else {
+    hint.style.background = 'rgba(239,68,68,0.08)';
+    hint.style.borderColor = 'rgba(239,68,68,0.25)';
+    hint.innerHTML = `<strong>⚠️ ${escapeHtml(text)}</strong>`;
+  }
 }
 
 function showJobEditor(show) {
@@ -475,10 +493,19 @@ function applyJobDeviceSelectionHighlight() {
 }
 
 async function onJobTransferToAssociated() {
+  const filtered = Array.isArray(window._jobFilteredAvailable) ? window._jobFilteredAvailable : [];
+  if (filtered.length === 0) {
+    setJobEditorError('No devices are listed under Available — nothing to add with →.');
+    return;
+  }
   const id = window._jobSelectedDeviceId || '';
   const list = window._jobSelectedDeviceList || '';
+  if (list === 'associated' && id) {
+    setJobEditorError('To add a device, select a row under Available devices, then press → (right).');
+    return;
+  }
   if (!id || list !== 'available') {
-    setJobEditorError('Select a device in Available devices, then press →.');
+    setJobEditorError('Select a device in Available devices, then press → (right).');
     return;
   }
   setJobEditorError('');
@@ -486,10 +513,19 @@ async function onJobTransferToAssociated() {
 }
 
 async function onJobTransferToAvailable() {
+  const associated = Array.isArray(window._jobAssociatedDevices) ? window._jobAssociatedDevices : [];
+  if (associated.length === 0) {
+    setJobEditorError('No devices are associated with this job — nothing to remove with ←.');
+    return;
+  }
   const id = window._jobSelectedDeviceId || '';
   const list = window._jobSelectedDeviceList || '';
+  if (list === 'available' && id) {
+    setJobEditorError('To remove a device, select a row under Associated devices, then press ← (left).');
+    return;
+  }
   if (!id || list !== 'associated') {
-    setJobEditorError('Select a device in Associated devices, then press ←.');
+    setJobEditorError('Select a device in Associated devices, then press ← (left).');
     return;
   }
   setJobEditorError('');
@@ -508,6 +544,7 @@ async function loadJobDevices(workId) {
   window._jobAvailableDevices = available;
   window._jobAssociatedDevices = associated;
   const availableFiltered = available.filter(d => !associated.some(a => String(a.id) === String(d.id)));
+  window._jobFilteredAvailable = availableFiltered;
   const availEl = document.getElementById('availableDevicesList');
   const assocEl = document.getElementById('associatedDevicesList');
   if (availEl) availEl.innerHTML = renderJobDashboardDeviceRows(availableFiltered, 'available');

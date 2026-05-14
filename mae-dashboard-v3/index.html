@@ -12,85 +12,8 @@
 <link rel="stylesheet" href="css/dashboard.css">
 <link rel="stylesheet" href="css/modals.css">
 <link rel="stylesheet" href="css/responsive.css">
-<style>
-  /* Works page styles (migrated from removed works.html) */
-  .works-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 12px;}
-  .works-search{flex:1 1 320px;max-width:520px;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:10px 12px;border-radius:10px;outline:none;}
-  .chip-row{display:flex;gap:8px;flex-wrap:wrap;}
-  .chip{padding:7px 10px;border-radius:999px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;user-select:none;}
-  .chip.active{border-color:var(--accent);background:rgba(56,189,248,0.14);color:var(--text);}
-
-  .works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
-  @media (max-width:1100px){.works-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  @media (max-width:720px){.works-grid{grid-template-columns:1fr;}}
-
-  .work-card{position:relative;padding:14px 14px 12px;border-radius:14px;border:1px solid var(--border2);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 12px 30px rgba(0,0,0,0.28);overflow:hidden;width:100%;cursor:pointer;text-align:left;outline:none;}
-  .work-card:focus-visible{box-shadow:0 12px 30px rgba(0,0,0,0.28),0 0 0 2px rgba(56,189,248,0.45);}
-  .work-card::after{content:'';position:absolute;inset:-1px;pointer-events:none;background:radial-gradient(700px 220px at 10% 0%,rgba(56,189,248,0.06),transparent 55%),radial-gradient(700px 220px at 90% 0%,rgba(16,185,129,0.05),transparent 55%);opacity:.9;}
-  .work-card>*{position:relative;z-index:1;}
-  .work-top{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;width:100%;}
-  .work-main{min-width:0;flex:1;}
-  .work-edit-button{border:none;background:transparent;color:var(--muted);cursor:pointer;padding:0;margin:0;font-size:13px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px;white-space:nowrap;}
-  .work-edit-button:hover{color:var(--accent);}
-  .work-edit-button:focus-visible{color:var(--accent);outline:1px solid rgba(255,255,255,0.35);outline-offset:3px;border-radius:4px;}
-  .works-actions{display:flex;justify-content:flex-end;margin:18px 0 0;}
-  .job-editor-panel{display:none;margin-top:24px;padding:22px;border-radius:18px;border:1px solid var(--border2);background:var(--surface);box-shadow:0 20px 40px rgba(0,0,0,0.12);}
-  .job-editor-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;}
-  .job-editor-title{font-family:'Syne',system-ui,sans-serif;font-size:18px;font-weight:800;color:var(--text);}
-  .job-editor-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
-  .job-editor-body{display:grid;grid-template-columns:1fr;gap:20px;}
-  .job-editor-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
-  @media (max-width:840px){.job-editor-fields{grid-template-columns:1fr;}}
-  .job-field{display:grid;gap:6px;}
-  .job-field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;}
-  .job-field input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);}
-  .job-location-search{display:grid;gap:10px;}
-  .job-location-results{max-height:260px;overflow:auto;border:1px solid var(--border2);border-radius:12px;background:var(--surface2);padding:10px;}
-  .job-location-item{padding:10px 12px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
-  .job-location-item:hover{background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);}
-  .job-devices-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;}
-  @media (max-width:840px){.job-devices-grid{grid-template-columns:1fr;}}
-  .job-devices-card{border:1px solid var(--border2);border-radius:16px;padding:16px;background:var(--surface2);}
-  .job-devices-card h3{font-size:13px;font-weight:700;margin:0 0 12px;color:var(--text);}
-  .job-device-list{display:flex;flex-direction:column;gap:4px;min-height:48px;}
-  .job-device-empty{font-size:12px;color:var(--muted);padding:8px 4px;}
-  .job-devices-transfer{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:8px 4px;}
-  .job-transfer-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--accent);font-size:22px;line-height:1;cursor:pointer;font-family:'DM Mono',monospace;transition:background 0.15s,border-color 0.15s,color 0.15s;}
-  .job-transfer-btn:hover{background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.35);color:var(--text);}
-  .job-transfer-btn:focus-visible{outline:2px solid rgba(56,189,248,0.45);outline-offset:2px;}
-  .job-editor-footer{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}
-  .job-editor-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px;}
-  .job-editor-error{color:#f87171;font-size:13px;margin-top:8px;}
-  .work-title{font-family:'Syne',system-ui,sans-serif;font-weight:700;letter-spacing:0.2px;color:var(--text);font-size:15px;line-height:1.15;margin:0;}
-  .work-meta{margin-top:8px;display:grid;gap:6px;}
-  .meta-row{display:flex;gap:8px;align-items:baseline;color:var(--muted);font-size:12px;}
-  .meta-key{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2,var(--muted));text-transform:uppercase;letter-spacing:0.7px;min-width:72px;}
-  .meta-val{color:var(--text);opacity:0.9;}
-  .work-badges{margin-left:12px;display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0;}
-  .led{width:10px;height:10px;border-radius:999px;box-shadow:0 0 0 2px rgba(255,255,255,0.04) inset;}
-  .led.active{background:var(--green);box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset,0 0 16px rgba(16,185,129,0.45);}
-  .led.inactive{background:#f97316;box-shadow:0 0 0 2px rgba(255,255,255,0.05) inset;opacity:0.85;}
-
-  .summary-panel{position:relative;padding:14px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);box-shadow:0 12px 30px rgba(15,23,42,0.12);overflow:hidden;margin:12px 0 14px;}
-  .summary-panel::after{content:'';position:absolute;inset:-1px;pointer-events:none;background:radial-gradient(980px 260px at 18% 0%,rgba(255,255,255,0.06),transparent 60%),radial-gradient(980px 260px at 70% 10%,rgba(56,189,248,0.10),transparent 62%),radial-gradient(980px 260px at 92% 70%,rgba(234,179,8,0.09),transparent 58%);opacity:0.9;}
-  .summary-panel>*{position:relative;z-index:1;}
-  .summary-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
-  .summary-title{font-family:'Syne',system-ui,sans-serif;font-weight:900;letter-spacing:0.2px;font-size:13px;color:var(--text);}
-  .summary-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);opacity:0.85;white-space:nowrap;}
-  .summary-body{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch;}
-  .summary-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
-  @media (max-width:980px){.summary-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  @media (max-width:520px){.summary-stats{grid-template-columns:1fr;}}
-  .stat-tile{padding:10px;border-radius:12px;background:var(--surface3);border:1px solid var(--border);}
-  .stat-k{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);opacity:0.88;text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:8px;}
-  .stat-v{margin-top:6px;font-family:'Syne',system-ui,sans-serif;font-weight:900;font-size:20px;color:var(--text);line-height:1.05;}
-  .stat-hint{margin-top:3px;font-size:11px;color:var(--muted);opacity:0.9;}
-  .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0;}
-  .dot.active{background:var(--green);box-shadow:0 0 14px rgba(16,185,129,0.45);}
-  .dot.inactive{background:#f97316;}
-  .dot.total{background:var(--accent);box-shadow:0 0 14px rgba(56,189,248,0.35);}
-  .dot.yellow{background:#eab308;box-shadow:0 0 12px rgba(234,179,8,0.22);}
-</style>
+<link rel="stylesheet" href="css/works.css">
+<link rel="stylesheet" href="css/index-extras.css">
 </head>
 <body>
 <!-- ═══════════════════════ LOGIN MODAL ═══════════════════════ -->
@@ -137,18 +60,18 @@
   </div>
 
   <div class="nav-section" data-i18n="nav.navigation">Navigation</div>
-  <a class="nav-item" href="index.html?page=dashboard" style="text-decoration:none;" id="navDashboard">
+  <a class="nav-item" href="index.html?page=dashboard" id="navDashboard">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span data-i18n="nav.dashboard">Dashboard</span>
   </a>
-  <a class="nav-item" href="#" style="text-decoration:none;" id="navWorks" onclick="navigateToWorks(event)">
+  <a class="nav-item" href="#" id="navWorks" onclick="navigateToWorks(event)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2"/></svg>
     <span data-i18n="nav.works">Works</span>
   </a>
   <div class="nav-item" id="navAlerts" onclick="openAlarmsPanel()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span data-i18n="nav.alerts">Alerts</span>
-    <span id="alertCount" style="margin-left:auto;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
+    <span id="alertCount" class="alert-count-badge">0</span>
   </div>
   <div class="nav-item" id="navExport" onclick="openExport()">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -181,22 +104,22 @@
       <div class="subtitle" id="pageSubtitle">DEVICE: M22MOP0007 · DL8 · AUTO-REFRESH ON</div>
     </div>
     <div class="topbar-right">
-      <div id="topbarGlobalControls" style="display:flex;align-items:center;gap:10px;">
+      <div id="topbarGlobalControls">
       <button class="btn" id="themeToggleBtn" onclick="toggleTheme()" aria-pressed="false" title="Light mode">
         <svg data-theme-icon="sun" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <svg data-theme-icon="moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
+        <svg data-theme-icon="moon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"/></svg>
         <span id="themeToggleLabel" data-i18n="theme.light">Light</span>
       </button>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')" style="padding:8px 10px;justify-content:center;">EN</button>
-        <button class="btn" type="button" id="langBtnIt" onclick="setLanguage('it')" style="padding:8px 10px;justify-content:center;">IT</button>
+      <div class="topbar-lang-group">
+        <button class="btn" type="button" id="langBtnEn" onclick="setLanguage('en')">EN</button>
+        <button class="btn" type="button" id="langBtnIt" onclick="setLanguage('it')">IT</button>
       </div>
       </div>
-      <div id="dashboardTopbarControls" style="display:flex;align-items:center;gap:10px;">
+      <div id="dashboardTopbarControls">
       <button class="btn" id="topbarAlertsBtn" onclick="openAlarmsPanel()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span data-i18n="nav.alerts">Alerts</span>
-        <span id="alertCountTopbar" style="margin-left:4px;background:var(--red);color:white;font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:100px;display:none;">0</span>
+        <span id="alertCountTopbar" class="alert-count-badge">0</span>
       </button>
       <button class="btn btn-primary" onclick="openExport()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -218,9 +141,9 @@
   </div>
 
   <!-- WORKS PAGE -->
-  <div id="worksPage" style="display:none;">
-    <div class="api-hint" id="apiHintWorks" style="display:none;"></div>
-    <div class="api-hint api-hint--warning" id="deviceTimeHintWorks" style="display:none;"></div>
+  <div id="worksPage">
+    <div class="api-hint" id="apiHintWorks"></div>
+    <div class="api-hint api-hint--warning" id="deviceTimeHintWorks"></div>
 
     <div class="works-toolbar">
       <input id="worksSearch" class="works-search" value="" placeholder="Search works…" data-i18n-placeholder="works.search.placeholder" />
@@ -267,7 +190,7 @@
       <button class="btn btn-primary" id="newWorkBtn" type="button">+ Add new work</button>
     </div>
 
-    <div class="footer" style="margin-top: 16px;">
+    <div class="footer">
       <div class="footer-left">DataLogger · User Page · Works</div>
       <div class="footer-chips">
         <div class="footer-chip" data-i18n="works.footerHint">Click a work to open measures</div>
@@ -276,9 +199,9 @@
   </div>
 
   <!-- JOB MANAGEMENT PAGE -->
-  <div id="jobPage" style="display:none;">
-    <div class="api-hint" id="apiHintJob" style="display:none;"></div>
-    <div class="api-hint api-hint--warning" id="deviceTimeHintJob" style="display:none;"></div>
+  <div id="jobPage">
+    <div class="api-hint" id="apiHintJob"></div>
+    <div class="api-hint api-hint--warning" id="deviceTimeHintJob"></div>
 
     <div class="job-editor-panel" id="jobEditorPanel">
       <div class="job-editor-header">
@@ -342,7 +265,7 @@
       </div>
     </div>
 
-    <div class="footer" style="margin-top: 16px;">
+    <div class="footer">
       <div class="footer-left">DataLogger · User Page · Job management</div>
       <div class="footer-chips">
         <div class="footer-chip">Save a job to assign devices and change status.</div>
@@ -355,7 +278,7 @@
   <div class="controls">
     <span class="controls-label" data-i18n="controls.period">Period</span>
     <input type="date" class="date-input" id="dateFrom">
-    <span style="color:var(--muted);font-size:12px">→</span>
+    <span class="controls-date-sep">→</span>
     <input type="date" class="date-input" id="dateTo">
     <button class="btn" onclick="applyDateFilter()">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -374,7 +297,7 @@
       <option value="twelve_hours" data-i18n="controls.interval.twelve_hours">Last 12 hours</option>
       <option value="day" data-i18n="controls.interval.day">Last 24h</option>
     </select>
-    <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+    <div class="controls-toolbar-end">
       <div class="status-pill"><div class="status-dot"></div><span id="statusLabel">LIVE</span></div>
       <div class="btn" id="refreshBtn" onclick="toggleAutoRefresh()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -383,8 +306,8 @@
     </div>
   </div>
 
-  <div class="api-hint" id="apiHint" style="display:none;"></div>
-  <div class="api-hint api-hint--warning" id="deviceTimeHint" style="display:none;"></div>
+  <div class="api-hint" id="apiHint"></div>
+  <div class="api-hint api-hint--warning" id="deviceTimeHint"></div>
   <div id="alertBanner"></div>
   <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -397,7 +320,7 @@
         </div>
         <div class="chart-wrap">
           <div class="chart-y" id="chartYLabels"></div>
-          <div class="chart-svg-area"><svg id="mainChartSvg" viewBox="0 0 700 260" preserveAspectRatio="none"></svg><div class="chart-tooltip" id="chartTooltip" style="display:none;"></div></div>
+          <div class="chart-svg-area"><svg id="mainChartSvg" viewBox="0 0 700 260" preserveAspectRatio="none"></svg><div class="chart-tooltip" id="chartTooltip"></div></div>
           <div class="chart-x" id="chartXLabels"></div>
         </div>
         <div class="chart-stats" id="chartStats"></div>
@@ -408,22 +331,22 @@
       </div>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="dashboard-side-column">
       <div class="card">
-        <div class="card-label" style="margin-bottom:12px;"><span class="kpi-dot" style="background:var(--accent2)" id="deviceInfoStatus"></span><span data-i18n="dashboard.deviceInfo">Device Info</span></div>
+        <div class="card-label card-label--device-info"><span class="kpi-dot" id="deviceInfoStatus"></span><span data-i18n="dashboard.deviceInfo">Device Info</span></div>
         <div class="info-list" id="deviceInfoList"></div>
       </div>
       <div class="card">
-        <div class="card-label" style="margin-bottom:0; justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:6px;"><span class="kpi-dot" id="powerStatusDot" style="background:var(--accent3)"></span><span data-i18n="dashboard.powerSupply">Power Supply</span></div>
+        <div class="card-label card-label--power">
+          <div class="card-label-power-title"><span class="kpi-dot" id="powerStatusDot"></span><span data-i18n="dashboard.powerSupply">Power Supply</span></div>
         </div>
         <div class="power-chart-wrap"><svg id="powerSvg" viewBox="0 0 300 80" preserveAspectRatio="none"></svg></div>
         <div class="power-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#da0649"></div>Batt <span id="legBatt">4.1V</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>USB <span id="legUsb">5.0V</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>AUX <span id="legAux">0.1V</span></div>
+          <div class="legend-item"><div class="legend-dot legend-dot--batt"></div>Batt <span id="legBatt">4.1V</span></div>
+          <div class="legend-item"><div class="legend-dot legend-dot--usb"></div>USB <span id="legUsb">5.0V</span></div>
+          <div class="legend-item"><div class="legend-dot legend-dot--aux"></div>AUX <span id="legAux">0.1V</span></div>
         </div>
-        <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="power-card-actions">
           <button class="btn" onclick="openPowerModal()">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>
             <span data-i18n="dashboard.powerSupplyLiveMonitor">Power Supply — Live Monitor</span>
@@ -447,7 +370,7 @@
       <div class="table-body" id="tableBody"></div>
       <div class="table-footer">
         <span class="table-count" id="tableCount">15 records</span>
-        <button class="btn" style="padding:5px 12px;font-size:11px;" onclick="openExport()" data-i18n="export.exportCsv">Export CSV</button>
+        <button class="btn btn--table-export" onclick="openExport()" data-i18n="export.exportCsv">Export CSV</button>
       </div>
     </div>
   </div>
@@ -484,64 +407,64 @@
           <div class="power-kpi-label" data-i18n="power.kpi.battery">Battery</div>
           <div class="power-kpi-val" id="pm_battVal">—</div>
           <div class="power-kpi-sub" id="pm_battSub" data-i18n="power.nominal.battery">Nominal: 3.7V – 4.2V</div>
-          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar" style="width:0%"></div></div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_battBar"></div></div>
         </div>
         <div class="power-kpi usb">
           <div class="power-kpi-label" data-i18n="power.kpi.usbVoltage">USB Voltage</div>
           <div class="power-kpi-val" id="pm_usbVal">—</div>
           <div class="power-kpi-sub" id="pm_usbSub" data-i18n="power.nominal.usb">Nominal: 5.0V</div>
-          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar" style="width:0%"></div></div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_usbBar"></div></div>
         </div>
         <div class="power-kpi aux">
           <div class="power-kpi-label" data-i18n="power.kpi.auxVoltage">AUX Voltage</div>
           <div class="power-kpi-val" id="pm_auxVal">—</div>
           <div class="power-kpi-sub" id="pm_auxSub" data-i18n="power.externalSupply">External supply</div>
-          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar" style="width:0%"></div></div>
+          <div class="power-kpi-bar"><div class="power-kpi-bar-fill" id="pm_auxBar"></div></div>
         </div>
       </div>
       <div class="pm-section-label" data-i18n="power.combinedView">Combined View — All Channels</div>
       <div class="power-full-chart">
         <div class="pm-tooltip" id="pmTooltip">
           <div class="pm-tooltip-time" id="pmTTTime"></div>
-          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#ef4444"></span><span class="pm-tooltip-label">Battery</span><span class="pm-tooltip-val" id="pmTTBatt" style="color:#ef4444"></span></div>
-          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#3b82f6"></span><span class="pm-tooltip-label">USB</span><span class="pm-tooltip-val" id="pmTTUsb" style="color:#3b82f6"></span></div>
-          <div class="pm-tooltip-row"><span class="pm-tooltip-dot" style="background:#10b981"></span><span class="pm-tooltip-label">AUX</span><span class="pm-tooltip-val" id="pmTTAux" style="color:#10b981"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot pm-dot--batt"></span><span class="pm-tooltip-label">Battery</span><span class="pm-tooltip-val pm-val--batt" id="pmTTBatt"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot pm-dot--usb"></span><span class="pm-tooltip-label">USB</span><span class="pm-tooltip-val pm-val--usb" id="pmTTUsb"></span></div>
+          <div class="pm-tooltip-row"><span class="pm-tooltip-dot pm-dot--aux"></span><span class="pm-tooltip-label">AUX</span><span class="pm-tooltip-val pm-val--aux" id="pmTTAux"></span></div>
         </div>
         <svg id="powerModalSvg" height="220" viewBox="0 0 720 220" preserveAspectRatio="none"></svg>
         <div class="pm-chart-legend">
           <div class="pm-legend-item" id="leg_batt" onclick="togglePowerLine('batt')">
-            <div class="pm-legend-line" style="background:#ef4444"></div>
+            <div class="pm-legend-line pm-line--batt"></div>
             <span class="pm-legend-text">Battery</span>
-            <span class="pm-legend-cur" style="color:#ef4444" id="leg_batt_cur">—</span>
+            <span class="pm-legend-cur pm-val--batt" id="leg_batt_cur">—</span>
           </div>
           <div class="pm-legend-item" id="leg_usb" onclick="togglePowerLine('usb')">
-            <div class="pm-legend-line" style="background:#3b82f6"></div>
+            <div class="pm-legend-line pm-line--usb"></div>
             <span class="pm-legend-text">USB</span>
-            <span class="pm-legend-cur" style="color:#3b82f6" id="leg_usb_cur">—</span>
+            <span class="pm-legend-cur pm-val--usb" id="leg_usb_cur">—</span>
           </div>
           <div class="pm-legend-item" id="leg_aux" onclick="togglePowerLine('aux')">
-            <div class="pm-legend-line" style="background:#10b981"></div>
+            <div class="pm-legend-line pm-line--aux"></div>
             <span class="pm-legend-text">AUX</span>
-            <span class="pm-legend-cur" style="color:#10b981" id="leg_aux_cur">—</span>
+            <span class="pm-legend-cur pm-val--aux" id="leg_aux_cur">—</span>
           </div>
-          <div class="pm-legend-item" style="margin-left:auto; cursor:default;">
+          <div class="pm-legend-item pm-legend-item--meta">
             <span class="pm-legend-text" data-i18n="common.updated">Updated</span>
             <span class="pm-legend-cur" id="leg_last_time">—</span>
           </div>
         </div>
       </div>
-      <div class="pm-section-label" style="margin-top:4px;" data-i18n="power.individualHistory">Individual Channel History</div>
+      <div class="pm-section-label pm-section-label--tight" data-i18n="power.individualHistory">Individual Channel History</div>
       <div class="pm-channel-grid">
         <div class="pm-channel-card">
-          <div class="pm-channel-title">Battery <span class="pm-cur-val" id="pm_ch_batt" style="color:#ef4444">—</span></div>
+          <div class="pm-channel-title">Battery <span class="pm-cur-val pm-val--batt" id="pm_ch_batt">—</span></div>
           <svg id="pm_spark_batt" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
         </div>
         <div class="pm-channel-card">
-          <div class="pm-channel-title">USB Voltage <span class="pm-cur-val" id="pm_ch_usb" style="color:#3b82f6">—</span></div>
+          <div class="pm-channel-title">USB Voltage <span class="pm-cur-val pm-val--usb" id="pm_ch_usb">—</span></div>
           <svg id="pm_spark_usb" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
         </div>
         <div class="pm-channel-card">
-          <div class="pm-channel-title">AUX Voltage <span class="pm-cur-val" id="pm_ch_aux" style="color:#10b981">—</span></div>
+          <div class="pm-channel-title">AUX Voltage <span class="pm-cur-val pm-val--aux" id="pm_ch_aux">—</span></div>
           <svg id="pm_spark_aux" viewBox="0 0 200 60" width="100%" height="60" preserveAspectRatio="none"></svg>
         </div>
       </div>
@@ -583,23 +506,23 @@
         </div>
         <div class="map-sidebar-section">
           <div class="map-sidebar-label" data-i18n="map.mapStyle">Map Style</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('streets')">
+          <div class="map-style-stack">
+            <div class="map-ctrl-btn map-ctrl-btn--static" onclick="setMapStyle('streets')">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span data-i18n="map.streets">Streets</span>
             </div>
-            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('satellite')">
+            <div class="map-ctrl-btn map-ctrl-btn--static" onclick="setMapStyle('satellite')">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg><span data-i18n="map.satellite">Satellite</span>
             </div>
-            <div class="map-ctrl-btn" style="position:static;background:var(--surface2);" onclick="setMapStyle('topo')">
+            <div class="map-ctrl-btn map-ctrl-btn--static" onclick="setMapStyle('topo')">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span data-i18n="map.terrain">Terrain</span>
             </div>
           </div>
         </div>
-        <div class="map-sidebar-section" style="border-bottom:none;">
+        <div class="map-sidebar-section map-sidebar-section--plain">
           <div class="map-sidebar-label" data-i18n="map.quickJump">Quick Jump</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <input id="mapSearchInput" type="text" placeholder="Search city or address…" data-i18n-placeholder="map.searchCityPlaceholder" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 10px;border-radius:8px;outline:none;width:100%;" onkeydown="if(event.key==='Enter')jumpToCity()">
-            <div class="map-ctrl-btn" style="position:static;background:var(--accent);color:white;border-color:var(--accent);justify-content:center;" onclick="jumpToCity()">
+          <div class="map-quick-stack">
+            <input id="mapSearchInput" class="map-search-input" type="text" placeholder="Search city or address…" data-i18n-placeholder="map.searchCityPlaceholder" onkeydown="if(event.key==='Enter')jumpToCity()">
+            <div class="map-ctrl-btn map-ctrl-btn--primary-go" onclick="jumpToCity()">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <span data-i18n="common.go">Go</span>
             </div>
@@ -616,8 +539,8 @@
           <div class="mob-title" id="mapBadgeName">—</div>
           <div class="mob-coord" id="mapBadgeCoord">—</div>
           <div class="mob-status">
-            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0;"></div>
-            <span id="mapBadgeStatus" style="color:var(--green);" data-i18n="map.online">Online</span>
+            <div class="map-badge-pulse"></div>
+            <span id="mapBadgeStatus" data-i18n="map.online">Online</span>
           </div>
         </div>
         <div class="map-controls-strip">
@@ -646,12 +569,12 @@
     <span class="toggle-label" data-i18n="alert.enable">Enable Alerts</span>
     <label class="toggle"><input type="checkbox" id="alertsEnabled" onchange="checkAlerts()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
   </div>
-  <div class="toggle-row" style="margin-bottom:20px;">
+  <div class="toggle-row toggle-row--spaced">
     <span class="toggle-label" data-i18n="alert.soundnotifications">Sound Notifications</span>
     <label class="toggle"><input type="checkbox" id="soundEnabled"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
   </div>
   <div id="thresholdChannels"></div>
-  <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="checkAlerts();closeThresholds();" data-i18n="alert.saveandapply">Save & Apply</button>
+  <button class="btn btn-primary btn--threshold-save" onclick="checkAlerts();closeThresholds();" data-i18n="alert.saveandapply">Save & Apply</button>
 </div>
 
 <!-- ═══════════════════════ ALARMS PANEL ═══════════════════════ -->
@@ -667,7 +590,7 @@
 <div class="modal-overlay" id="eventDetailModal">
   <div class="modal event-modal">
     <div class="modal-title" data-i18n="alarms.eventDetail">Event Detail</div>
-    <div id="eventDetailContent" style="margin-bottom:16px;"></div>
+    <div id="eventDetailContent"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeEventModal()" data-i18n="common.close">Close</button>
     </div>
@@ -763,9 +686,9 @@ function togglePages() {
   const dash = document.getElementById('dashboardPage');
   const works = document.getElementById('worksPage');
   const job = document.getElementById('jobPage');
-  if (dash) dash.style.display = (page === 'dashboard') ? '' : 'none';
-  if (works) works.style.display = (page === 'works') ? '' : 'none';
-  if (job) job.style.display = (page === 'job') ? '' : 'none';
+  if (dash) dash.style.display = page === 'dashboard' ? 'block' : 'none';
+  if (works) works.style.display = page === 'works' ? 'block' : 'none';
+  if (job) job.style.display = page === 'job' ? 'block' : 'none';
   setActiveNav(page);
 
   const navDash = document.getElementById('navDashboard');

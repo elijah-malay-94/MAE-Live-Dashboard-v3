@@ -29,10 +29,6 @@
     if (btn) {
       btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
       btn.title = theme === 'dark' ? tr('theme.darkMode', 'Dark mode') : tr('theme.lightMode', 'Light mode');
-      const sun = btn.querySelector('[data-theme-icon="sun"]');
-      const moon = btn.querySelector('[data-theme-icon="moon"]');
-      if (sun) sun.style.display = theme === 'dark' ? 'none' : '';
-      if (moon) moon.style.display = theme === 'dark' ? '' : 'none';
     }
   }
 
@@ -42,6 +38,10 @@
 
   window.MAE_THEME = { getTheme, setTheme, applyTheme, toggleTheme };
   window.toggleTheme = toggleTheme;
+
+  try {
+    applyTheme(getTheme());
+  } catch (e) { /* ignore */ }
 
   document.addEventListener('DOMContentLoaded', () => applyTheme(getTheme()));
 })();

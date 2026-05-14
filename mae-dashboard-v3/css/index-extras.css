@@ -1,0 +1,246 @@
+/* ================================================================
+   index-extras.css — layout and components migrated from index.html
+   inline style attributes (routing defaults, topbar, dashboard, modals)
+   ================================================================ */
+
+#worksPage,
+#jobPage {
+  display: none;
+}
+
+.sidebar a.nav-item {
+  text-decoration: none;
+}
+
+#topbarGlobalControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-lang-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.topbar-lang-group .btn {
+  padding: 8px 10px;
+  justify-content: center;
+}
+
+#dashboardTopbarControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-count-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: white;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 100px;
+  display: none;
+}
+
+#alertCountTopbar.alert-count-badge {
+  margin-left: 4px;
+}
+
+#themeToggleBtn [data-theme-icon="moon"] {
+  display: none;
+}
+
+html[data-theme="dark"] #themeToggleBtn [data-theme-icon="sun"] {
+  display: none;
+}
+
+html[data-theme="dark"] #themeToggleBtn [data-theme-icon="moon"] {
+  display: inline;
+}
+
+#worksPage > .footer,
+#jobPage > .footer {
+  margin-top: 16px;
+}
+
+.controls-date-sep {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.controls-toolbar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-label--device-info {
+  margin-bottom: 12px;
+}
+
+.card-label--power {
+  margin-bottom: 0;
+  justify-content: space-between;
+}
+
+.card-label-power-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#deviceInfoStatus {
+  background: var(--accent2);
+}
+
+#powerStatusDot {
+  background: var(--accent3);
+}
+
+.legend-dot--batt {
+  background: #da0649;
+}
+
+.legend-dot--usb {
+  background: #3b82f6;
+}
+
+.legend-dot--aux {
+  background: #10b981;
+}
+
+.power-card-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn--table-export {
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
+#pm_battBar,
+#pm_usbBar,
+#pm_auxBar {
+  width: 0%;
+}
+
+.pm-dot--batt {
+  background: #ef4444;
+}
+
+.pm-dot--usb {
+  background: #3b82f6;
+}
+
+.pm-dot--aux {
+  background: #10b981;
+}
+
+.pm-val--batt {
+  color: #ef4444;
+}
+
+.pm-val--usb {
+  color: #3b82f6;
+}
+
+.pm-val--aux {
+  color: #10b981;
+}
+
+.pm-line--batt {
+  background: #ef4444;
+}
+
+.pm-line--usb {
+  background: #3b82f6;
+}
+
+.pm-line--aux {
+  background: #10b981;
+}
+
+.pm-legend-item--meta {
+  margin-left: auto;
+  cursor: default;
+}
+
+.pm-section-label--tight {
+  margin-top: 4px;
+}
+
+.map-style-stack,
+.map-quick-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-ctrl-btn--static {
+  position: static;
+  background: var(--surface2);
+}
+
+.map-ctrl-btn--primary-go {
+  position: static;
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  justify-content: center;
+}
+
+.map-search-input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  outline: none;
+  width: 100%;
+}
+
+.map-sidebar-section--plain {
+  border-bottom: none;
+}
+
+.map-badge-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+
+#mapBadgeStatus {
+  color: var(--green);
+}
+
+.toggle-row--spaced {
+  margin-bottom: 20px;
+}
+
+.btn--threshold-save {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+#eventDetailModal #eventDetailContent {
+  margin-bottom: 16px;
+}
