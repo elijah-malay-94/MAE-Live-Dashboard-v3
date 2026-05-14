@@ -791,7 +791,9 @@ async function apiFetch(path, timeoutMs = 30000, _retried = false) {
       const suffix = details ? ` — ${String(details).slice(0, 300)}` : '';
       throw new Error(`HTTP ${res.status} ${res.statusText}${suffix}`);
     }
-    return await res.json();
+    const text = await res.text();
+    if (!text || !text.trim()) return {};
+    try { return JSON.parse(text); } catch (e) { return {}; }
   } catch (err) {
     clearTimeout(tid);
     throw err;
