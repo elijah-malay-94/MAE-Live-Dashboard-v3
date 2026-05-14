@@ -413,6 +413,7 @@ function setJobEditorControls(isNew, isActive) {
 }
 
 function fillJobEditorFields(work = {}) {
+  window._jobEditorCurrentWork = work;
   getJobEditorField('jobName').value = localizeWorkDesc(work.description || work.name || '', work.id);
   getJobEditorField('jobLocation').value = String(work.place || work.location || '').trim();
   getJobEditorField('jobLatitude').value = String(work.latitude ?? work.lat ?? work.raw?.latitude ?? work.raw?.lat ?? '').trim();

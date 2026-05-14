@@ -730,6 +730,17 @@
           const isActive = window._jobEditorIsActive !== undefined ? window._jobEditorIsActive : false;
           window.setJobEditorControls(isNew, isActive);
         }
+        if (typeof window.fillJobEditorFields === 'function' && window._jobEditorCurrentWork) {
+          window.fillJobEditorFields(window._jobEditorCurrentWork);
+        }
+        const availEl = document.getElementById('availableDevicesList');
+        const assocEl = document.getElementById('associatedDevicesList');
+        if (availEl && typeof window.renderJobDashboardDeviceRows === 'function') {
+          availEl.innerHTML = window.renderJobDashboardDeviceRows(window._jobFilteredAvailable || [], 'available');
+        }
+        if (assocEl && typeof window.renderJobDashboardDeviceRows === 'function') {
+          assocEl.innerHTML = window.renderJobDashboardDeviceRows(window._jobAssociatedDevices || [], 'associated');
+        }
       }
     } catch (e) { /* ignore */ }
 
