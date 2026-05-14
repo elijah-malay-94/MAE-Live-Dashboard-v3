@@ -733,7 +733,7 @@ async function searchJobLocation() {
       const latValue = String(item.lat || '');
       const lonValue = String(item.lon || '');
       return `
-      <div class="job-location-item" onclick="selectJobLocation(${JSON.stringify(displayName)}, ${JSON.stringify(latValue)}, ${JSON.stringify(lonValue)})">
+      <div class="job-location-item" data-display-name="${escapeHtml(displayName)}" data-lat="${escapeHtml(latValue)}" data-lon="${escapeHtml(lonValue)}" onclick="selectJobLocation(this.dataset.displayName, this.dataset.lat, this.dataset.lon)">
         <strong>${escapeHtml(displayName)}</strong>
         <div style="font-size:12px;color:var(--muted);">Lat ${escapeHtml(latValue)} · Lon ${escapeHtml(lonValue)}</div>
       </div>
