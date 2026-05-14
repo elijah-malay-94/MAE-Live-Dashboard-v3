@@ -842,7 +842,8 @@ async function apiFetchWithHeaders(path, options = {}, timeoutMs = 30000, _retri
       const suffix = details ? ` — ${String(details).slice(0, 300)}` : '';
       throw new Error(`HTTP ${res.status} ${res.statusText}${suffix}`);
     }
-    const data = await res.json();
+    const text = await res.text();
+    const data = (text && text.trim()) ? (() => { try { return JSON.parse(text); } catch(e) { return {}; } })() : {};
     return { data, headers: res.headers };
   } catch (err) {
     clearTimeout(tid);
