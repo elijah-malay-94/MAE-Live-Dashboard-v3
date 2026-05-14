@@ -271,6 +271,37 @@
       'alarms.peak': 'Peak',
       'alarms.value': 'Value',
       'alarms.channelsOverview': 'Channels overview',
+
+      'job.title': 'Work management',
+      'job.createNew': 'New work',
+      'job.editExisting': 'Edit work',
+      'job.createHint': 'Create a new work and save it to manage devices.',
+      'job.editHint': 'Edit the work details and manage associated devices.',
+      'job.cancel': 'Cancel',
+      'job.save': 'Save',
+      'job.enable': 'Enable',
+      'job.disable': 'Disable',
+      'job.description': 'Description',
+      'job.descriptionPlaceholder': 'Enter work description',
+      'job.location': 'Location',
+      'job.locationPlaceholder': 'Enter location',
+      'job.searchMaps': 'Search Open Maps',
+      'job.searchPlaceholder': 'Search address or place',
+      'job.search': 'Search',
+      'job.latitude': 'Latitude',
+      'job.latitudePlaceholder': 'Latitude',
+      'job.longitude': 'Longitude',
+      'job.longitudePlaceholder': 'Longitude',
+      'job.altitude': 'Altitude',
+      'job.altitudePlaceholder': 'Altitude',
+      'job.availableDevices': 'Available devices',
+      'job.associatedDevices': 'Associated devices',
+      'job.associateDevice': 'Associate selected device',
+      'job.disassociateDevice': 'Disassociate selected device',
+      'job.footerLeft': 'DataLogger · User Page · Work management',
+      'job.footerHint': 'Save a work to assign devices and change status.',
+      'job.addNew': '+ Add new work',
+      'works.footerLeft': 'DataLogger · User Page · Works',
     },
     it: {
       'lang.english': 'Inglese',
@@ -535,6 +566,37 @@
       'alarms.saturation': 'Saturazione',
       'alarms.peak': 'Picco',
       'alarms.channelsOverview': 'Panoramica canali',
+
+      'job.title': 'Gestione lavori',
+      'job.createNew': 'Nuovo lavoro',
+      'job.editExisting': 'Modifica lavoro',
+      'job.createHint': 'Crea un nuovo lavoro e salvalo per gestire i dispositivi.',
+      'job.editHint': 'Modifica i dettagli del lavoro e gestisci i dispositivi associati.',
+      'job.cancel': 'Annulla',
+      'job.save': 'Salva',
+      'job.enable': 'Abilita',
+      'job.disable': 'Disabilita',
+      'job.description': 'Descrizione',
+      'job.descriptionPlaceholder': 'Inserisci descrizione lavoro',
+      'job.location': 'Sede',
+      'job.locationPlaceholder': 'Inserisci sede',
+      'job.searchMaps': 'Cerca su Open Maps',
+      'job.searchPlaceholder': 'Cerca indirizzo o luogo',
+      'job.search': 'Cerca',
+      'job.latitude': 'Latitudine',
+      'job.latitudePlaceholder': 'Latitudine',
+      'job.longitude': 'Longitudine',
+      'job.longitudePlaceholder': 'Longitudine',
+      'job.altitude': 'Altitudine',
+      'job.altitudePlaceholder': 'Altitudine',
+      'job.availableDevices': 'Dispositivi disponibili',
+      'job.associatedDevices': 'Dispositivi associati',
+      'job.associateDevice': 'Associa dispositivo selezionato',
+      'job.disassociateDevice': 'Dissocia dispositivo selezionato',
+      'job.footerLeft': 'DataLogger · Pagina Utente · Gestione lavori',
+      'job.footerHint': 'Salva un lavoro per assegnare dispositivi e cambiare stato.',
+      'job.addNew': '+ Aggiungi nuovo lavoro',
+      'works.footerLeft': 'DataLogger · Pagina Utente · Lavori',
     },
   };
 
@@ -579,6 +641,14 @@
       el.textContent = dict?.[lang]?.[key] ?? dict?.en?.[key] ?? el.textContent;
     });
 
+    // Update title attributes
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-title');
+      if (!key) return;
+      const txt = dict?.[lang]?.[key] ?? dict?.en?.[key];
+      if (txt !== undefined && txt !== null) el.setAttribute('title', String(txt));
+    });
+
     // Update placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
       const key = el.getAttribute('data-i18n-placeholder');
@@ -617,6 +687,17 @@
         if (subEl) subEl.textContent = dict?.[lang]?.['works.subtitle'] ?? dict?.en?.['works.subtitle'] ?? '';
         if (typeof window.renderOverview === 'function') window.renderOverview();
         if (typeof window.renderWorks === 'function') window.renderWorks();
+      }
+    } catch (e) { /* ignore */ }
+
+    // Job page: re-apply dynamic strings when language changes.
+    try {
+      if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'job') {
+        if (typeof window.setJobEditorControls === 'function') {
+          const isNew = window._jobEditorIsNew !== undefined ? window._jobEditorIsNew : true;
+          const isActive = window._jobEditorIsActive !== undefined ? window._jobEditorIsActive : false;
+          window.setJobEditorControls(isNew, isActive);
+        }
       }
     } catch (e) { /* ignore */ }
 

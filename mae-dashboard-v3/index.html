@@ -187,11 +187,11 @@
 
     <div class="works-grid" id="worksGrid"></div>
     <div class="works-actions">
-      <button class="btn btn-primary" id="newWorkBtn" type="button">+ Add new work</button>
+      <button class="btn btn-primary" id="newWorkBtn" type="button" data-i18n="job.addNew">+ Add new work</button>
     </div>
 
     <div class="footer">
-      <div class="footer-left">DataLogger · User Page · Works</div>
+      <div class="footer-left" data-i18n="works.footerLeft">DataLogger · User Page · Works</div>
       <div class="footer-chips">
         <div class="footer-chip" data-i18n="works.footerHint">Click a work to open measures</div>
       </div>
@@ -206,59 +206,59 @@
     <div class="job-editor-panel" id="jobEditorPanel">
       <div class="job-editor-header">
         <div>
-          <div class="job-editor-title" id="jobEditorTitle">Job management</div>
-          <div class="job-editor-note" id="jobEditorModeHint">Create a new job or edit an existing one.</div>
+          <div class="job-editor-title" id="jobEditorTitle" data-i18n="job.title">Work management</div>
+          <div class="job-editor-note" id="jobEditorModeHint" data-i18n="job.createHint">Create a new work and save it to manage devices.</div>
         </div>
         <div class="job-editor-actions">
-          <button class="btn" type="button" id="jobCancelBtn" onclick="navigateToWorks(event)">Cancel</button>
-          <button class="btn btn-primary" type="button" id="jobSaveBtn" onclick="handleJobSave()">Save</button>
-          <button class="btn" type="button" id="jobEnableBtn" onclick="handleJobStatus(true)">Enable</button>
-          <button class="btn" type="button" id="jobDisableBtn" onclick="handleJobStatus(false)">Disable</button>
+          <button class="btn" type="button" id="jobCancelBtn" onclick="navigateToWorks(event)" data-i18n="job.cancel">Cancel</button>
+          <button class="btn btn-primary" type="button" id="jobSaveBtn" onclick="handleJobSave()" data-i18n="job.save">Save</button>
+          <button class="btn" type="button" id="jobEnableBtn" onclick="handleJobStatus(true)" data-i18n="job.enable">Enable</button>
+          <button class="btn" type="button" id="jobDisableBtn" onclick="handleJobStatus(false)" data-i18n="job.disable">Disable</button>
         </div>
       </div>
       <div class="job-editor-body">
         <div class="job-editor-fields">
           <div class="job-field">
-            <label for="jobName">Description</label>
-            <input type="text" id="jobName" placeholder="Enter job description">
+            <label for="jobName" data-i18n="job.description">Description</label>
+            <input type="text" id="jobName" placeholder="Enter work description" data-i18n-placeholder="job.descriptionPlaceholder">
           </div>
           <div class="job-field">
-            <label for="jobLocation">Location</label>
-            <input type="text" id="jobLocation" placeholder="Enter location">
+            <label for="jobLocation" data-i18n="job.location">Location</label>
+            <input type="text" id="jobLocation" placeholder="Enter location" data-i18n-placeholder="job.locationPlaceholder">
           </div>
           <div class="job-field job-location-search">
-            <label for="jobLocationSearch">Search Open Maps</label>
+            <label for="jobLocationSearch" data-i18n="job.searchMaps">Search Open Maps</label>
             <div class="job-location-search-row">
-              <input type="search" id="jobLocationSearch" placeholder="Search address or place">
-              <button type="button" class="btn job-location-search-btn" id="jobLocationSearchBtn">Search</button>
+              <input type="search" id="jobLocationSearch" placeholder="Search address or place" data-i18n-placeholder="job.searchPlaceholder">
+              <button type="button" class="btn job-location-search-btn" id="jobLocationSearchBtn" data-i18n="job.search">Search</button>
             </div>
             <div class="job-location-results" id="jobLocationResults"></div>
           </div>
           <div class="job-field">
-            <label for="jobLatitude">Latitude</label>
-            <input type="number" id="jobLatitude" placeholder="Latitude" step="any">
+            <label for="jobLatitude" data-i18n="job.latitude">Latitude</label>
+            <input type="number" id="jobLatitude" placeholder="Latitude" step="any" data-i18n-placeholder="job.latitudePlaceholder">
           </div>
           <div class="job-field">
-            <label for="jobLongitude">Longitude</label>
-            <input type="number" id="jobLongitude" placeholder="Longitude" step="any">
+            <label for="jobLongitude" data-i18n="job.longitude">Longitude</label>
+            <input type="number" id="jobLongitude" placeholder="Longitude" step="any" data-i18n-placeholder="job.longitudePlaceholder">
           </div>
           <div class="job-field">
-            <label for="jobAltitude">Altitude</label>
-            <input type="number" id="jobAltitude" placeholder="Altitude" step="any">
+            <label for="jobAltitude" data-i18n="job.altitude">Altitude</label>
+            <input type="number" id="jobAltitude" placeholder="Altitude" step="any" data-i18n-placeholder="job.altitudePlaceholder">
           </div>
         </div>
 
         <div class="job-devices-grid" id="jobDevicesSection">
           <div class="job-devices-card">
-            <h3>Available devices</h3>
+            <h3 data-i18n="job.availableDevices">Available devices</h3>
             <div class="job-device-list" id="availableDevicesList"></div>
           </div>
           <div class="job-devices-transfer" aria-label="Move devices between lists">
-            <button class="job-transfer-btn" type="button" id="jobTransferToAssociated" onclick="onJobTransferToAssociated()" title="Associate selected device">→</button>
-            <button class="job-transfer-btn" type="button" id="jobTransferToAvailable" onclick="onJobTransferToAvailable()" title="Disassociate selected device">←</button>
+            <button class="job-transfer-btn" type="button" id="jobTransferToAssociated" onclick="onJobTransferToAssociated()" title="Associate selected device" data-i18n-title="job.associateDevice">→</button>
+            <button class="job-transfer-btn" type="button" id="jobTransferToAvailable" onclick="onJobTransferToAvailable()" title="Disassociate selected device" data-i18n-title="job.disassociateDevice">←</button>
           </div>
           <div class="job-devices-card">
-            <h3>Associated devices</h3>
+            <h3 data-i18n="job.associatedDevices">Associated devices</h3>
             <div class="job-device-list" id="associatedDevicesList"></div>
           </div>
         </div>
@@ -268,9 +268,9 @@
     </div>
 
     <div class="footer">
-      <div class="footer-left">DataLogger · User Page · Job management</div>
+      <div class="footer-left" data-i18n="job.footerLeft">DataLogger · User Page · Work management</div>
       <div class="footer-chips">
-        <div class="footer-chip">Save a job to assign devices and change status.</div>
+        <div class="footer-chip" data-i18n="job.footerHint">Save a work to assign devices and change status.</div>
       </div>
     </div>
   </div>

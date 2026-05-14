@@ -3,6 +3,24 @@
    (migrated from inline styles in index.html)
    ================================================================ */
 
+/* ── Nav visibility per page ─────────────────────────────────── */
+/* Works page: show only Manual */
+body[data-page="works"] #navDashboard,
+body[data-page="works"] #navWorks,
+body[data-page="works"] #navAlerts,
+body[data-page="works"] #navExport,
+body[data-page="works"] #navSettings,
+body[data-page="works"] #sidebarDevices,
+body[data-page="works"] .nav-section { display: none; }
+
+/* Job page: show only Works and Manual */
+body[data-page="job"] #navDashboard,
+body[data-page="job"] #navAlerts,
+body[data-page="job"] #navExport,
+body[data-page="job"] #navSettings,
+body[data-page="job"] #sidebarDevices,
+body[data-page="job"] .nav-section { display: none; }
+
 .works-toolbar {
   display: flex;
   gap: 10px;

@@ -310,6 +310,7 @@ async function initWorksPage() {
   // This script is loaded on the single-page `index.html` for both routes.
   // Only initialize the Works UI when we're actually on the works route.
   if (getCurrentPage() !== 'works') return;
+  document.body.dataset.page = 'works';
 
   // Wire the shared top-right auth button on the Works page.
   // (state.js only wires it during dashboard init, which is skipped on ?page=works)
@@ -405,9 +406,11 @@ function setJobEditorControls(isNew, isActive) {
   const title = document.getElementById('jobEditorTitle');
   const hint = document.getElementById('jobEditorModeHint');
 
-  if (title) title.textContent = isNew ? 'Create new job' : 'Edit job';
-  if (hint) hint.textContent = isNew ? 'Create a new job and save it to manage devices.' : 'Edit the job details and manage associated devices.';
-  if (saveBtn) saveBtn.textContent = 'Save';
+  window._jobEditorIsNew = isNew;
+  window._jobEditorIsActive = isActive;
+  if (title) title.textContent = isNew ? t('job.createNew') : t('job.editExisting');
+  if (hint) hint.textContent = isNew ? t('job.createHint') : t('job.editHint');
+  if (saveBtn) saveBtn.textContent = t('job.save');
   if (enableBtn) enableBtn.style.display = isNew ? 'none' : (isActive ? 'none' : 'inline-flex');
   if (disableBtn) disableBtn.style.display = isNew ? 'none' : (isActive ? 'inline-flex' : 'none');
 }
@@ -764,6 +767,7 @@ async function selectJobLocation(displayName, lat, lon) {
 
 async function initJobPage() {
   if (getCurrentPage() !== 'job') return;
+  document.body.dataset.page = 'job';
 
   const authToken = loadAuthTokenFromStorage();
   if (!authToken) {
