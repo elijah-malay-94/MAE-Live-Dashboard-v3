@@ -193,6 +193,21 @@
 .job-location-search {
   display: grid;
   gap: 10px;
+  grid-column: 1 / -1;
+}
+.job-location-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+.job-location-search-row input[type='search'] {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.job-location-search-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 .job-location-results {
   max-height: 260px;

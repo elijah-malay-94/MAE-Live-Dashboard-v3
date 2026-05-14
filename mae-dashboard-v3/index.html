@@ -228,10 +228,12 @@
           </div>
           <div class="job-field job-location-search">
             <label for="jobLocationSearch">Search Open Maps</label>
-            <input type="search" id="jobLocationSearch" placeholder="Search address or place">
+            <div class="job-location-search-row">
+              <input type="search" id="jobLocationSearch" placeholder="Search address or place">
+              <button type="button" class="btn job-location-search-btn" id="jobLocationSearchBtn">Search</button>
+            </div>
             <div class="job-location-results" id="jobLocationResults"></div>
           </div>
-          <div class="job-field"></div>
           <div class="job-field">
             <label for="jobLatitude">Latitude</label>
             <input type="number" id="jobLatitude" placeholder="Latitude" step="any">

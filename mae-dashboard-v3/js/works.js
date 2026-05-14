@@ -345,16 +345,6 @@ async function initWorksPage() {
     newWorkBtn.addEventListener('click', () => navigateToJob('0'));
   }
 
-  const locationSearch = $('jobLocationSearch');
-  if (locationSearch) {
-    locationSearch.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        await searchJobLocation();
-      }
-    });
-  }
-
   // (legacy) there is no dedicated logout button on the works page anymore;
   // logout is done via the shared `#authBtn` in the top bar.
 
@@ -459,14 +449,14 @@ function renderJobDashboardDeviceRows(list, listKey) {
     return '<div class="job-device-empty">No devices</div>';
   }
   return list.map((d) => {
-    const id = String(d.id || '');
+    const id = String(d.id || '').trim();
     const dot = jobDeviceLedColor(d.last_connection ?? d.lastConnection);
     const line1 = safe(d.type);
     const line2 = safe(d.position || d.devicePlace || d.position_name || d.serial);
     const line3 = safe(d.serial || id);
     return `
     <div class="device-item" data-job-device-list="${listKey}" data-device-id="${escapeHtml(id)}" role="button" tabindex="0"
-      onclick="selectJobDeviceForTransfer(${JSON.stringify(id)}, ${JSON.stringify(listKey)})">
+      onclick="selectJobDeviceForTransfer('${escapeHtml(id)}', '${escapeHtml(listKey)}')">
       <div class="device-dot" style="background:${dot}"></div>
       <div class="device-info">
         <div class="device-serial">${escapeHtml(line1)}</div>
@@ -662,6 +652,67 @@ async function disconnectDeviceFromJob(deviceId) {
   }
 }
 
+function formatPhotonPlaceName(p) {
+  const raw = [
+    p.name,
+    p.street && (p.housenumber ? `${p.street} ${p.housenumber}` : p.street),
+    p.city || p.town || p.village || p.district || (p.county && String(p.county) !== String(p.name) ? p.county : ''),
+    p.state,
+    p.country,
+  ].map((s) => String(s || '').trim()).filter(Boolean);
+  const deduped = [];
+  for (const part of raw) {
+    if (!deduped.length || deduped[deduped.length - 1] !== part) deduped.push(part);
+  }
+  return deduped.join(', ');
+}
+
+/**
+ * Geocode for in-browser use. Photon is primary (CORS-friendly); Nominatim is a best-effort fallback
+ * (public instance may reject some browser requests per OSM usage policy).
+ * @returns {Promise<Array<{display_name:string,lat:string,lon:string}>>}
+ */
+async function maeGeocodeQuery(query, limit = 6) {
+  const q = String(query || '').trim();
+  const lim = Math.min(10, Math.max(1, Number(limit) || 6));
+  if (!q) return [];
+
+  try {
+    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=${lim}`);
+    if (res.ok) {
+      const json = await res.json();
+      const feats = Array.isArray(json?.features) ? json.features : [];
+      if (feats.length) {
+        return feats.map((f) => {
+          const coords = f.geometry?.coordinates || [];
+          const lon = coords[0];
+          const lat = coords[1];
+          const p = f.properties || {};
+          const display_name = formatPhotonPlaceName(p) || p.name || q;
+          return { display_name, lat: String(lat), lon: String(lon) };
+        });
+      }
+    }
+  } catch (_) { /* fall through */ }
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=${lim}&q=${encodeURIComponent(q)}`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data) || !data.length) return [];
+    return data.map((item) => ({
+      display_name: String(item.display_name || ''),
+      lat: String(item.lat || ''),
+      lon: String(item.lon || ''),
+    }));
+  } catch (_) {
+    return [];
+  }
+}
+
+window.maeGeocodeQuery = maeGeocodeQuery;
+
 async function searchJobLocation() {
   const query = String(getJobEditorField('jobLocationSearch')?.value || '').trim();
   const results = document.getElementById('jobLocationResults');
@@ -672,14 +723,12 @@ async function searchJobLocation() {
   }
   results.innerHTML = '<div style="color:var(--muted);font-size:13px;">Searching…</div>';
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(query)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (!Array.isArray(data) || data.length === 0) {
+    const data = await maeGeocodeQuery(query, 6);
+    if (!data.length) {
       results.innerHTML = '<div style="color:var(--muted);font-size:13px;">No results found.</div>';
       return;
     }
-    results.innerHTML = data.map(item => {
+    results.innerHTML = data.map((item) => {
       const displayName = String(item.display_name || '');
       const latValue = String(item.lat || '');
       const lonValue = String(item.lon || '');
@@ -699,7 +748,8 @@ async function selectJobLocation(displayName, lat, lon) {
   getJobEditorField('jobLocation').value = String(displayName || '').trim();
   getJobEditorField('jobLatitude').value = String(lat || '').trim();
   getJobEditorField('jobLongitude').value = String(lon || '').trim();
-  getJobEditorField('jobLocationResults').innerHTML = '';
+  const locResults = document.getElementById('jobLocationResults');
+  if (locResults) locResults.innerHTML = '';
   try {
     const elevationUrl = `https://api.open-elevation.com/api/v1/lookup?locations=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
     const response = await fetch(elevationUrl);
@@ -737,16 +787,6 @@ async function initJobPage() {
     authBtn.appendChild(document.createTextNode('\n          ' + (loggedIn ? tr('auth.logout', 'Logout') : tr('auth.login', 'Login')) + '\n        '));
   }
 
-  const locationSearch = $('jobLocationSearch');
-  if (locationSearch) {
-    locationSearch.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        await searchJobLocation();
-      }
-    });
-  }
-
   const workId = new URLSearchParams(window.location.search || '').get('work_id') || '0';
   const userId = getUserId();
   if (!userId) {
@@ -763,7 +803,26 @@ async function initJobPage() {
   openWorkEditor(workId);
 }
 
+function wireJobLocationSearchControls() {
+  const input = $('jobLocationSearch');
+  if (input && input.dataset.maeLocationSearchWired !== '1') {
+    input.dataset.maeLocationSearchWired = '1';
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await searchJobLocation();
+      }
+    });
+  }
+  const btn = $('jobLocationSearchBtn');
+  if (btn && btn.dataset.maeLocationSearchWired !== '1') {
+    btn.dataset.maeLocationSearchWired = '1';
+    btn.addEventListener('click', () => searchJobLocation());
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  wireJobLocationSearchControls();
   initWorksPage();
   initJobPage();
 });
@@ -771,6 +830,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fallback: if this script is loaded after DOMContentLoaded already fired,
 // ensure the page still initializes.
 if (document.readyState !== 'loading') {
-  try { initWorksPage(); initJobPage(); } catch (e) { /* ignore */ }
+  try {
+    wireJobLocationSearchControls();
+    initWorksPage();
+    initJobPage();
+  } catch (e) { /* ignore */ }
 }
 

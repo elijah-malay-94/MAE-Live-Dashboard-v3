@@ -827,21 +827,29 @@ function centerOnDevice()     { mapZoom = 15; loadMapForDevice(mapDevice || acti
 async function jumpToCity() {
   const q = document.getElementById('mapSearchInput').value.trim();
   if (!q) return;
+  const mapLoading = document.getElementById('mapLoading');
+  const iframe = document.getElementById('mapIframe');
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
   try {
-    document.getElementById('mapLoading').classList.remove('hidden');
-    const res  = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
-    const data = await res.json();
-    if (data?.[0]) {
-      const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
-      document.getElementById('mapIframe').src = buildMapUrl(lat, lng, 14, currentMapStyle);
-      document.getElementById('mapBadgeName').textContent  = data[0].display_name.split(',')[0];
-      document.getElementById('mapBadgeCoord').textContent = `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
-    } else {
-      const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
-      alert(tr('map.locationNotFound','Location not found.'));
-      document.getElementById('mapLoading').classList.add('hidden');
+    mapLoading.classList.remove('hidden');
+    const geocode = typeof window.maeGeocodeQuery === 'function' ? window.maeGeocodeQuery : null;
+    const data = geocode ? await geocode(q, 1) : [];
+    const first = data && data[0];
+    const lat = first ? parseFloat(first.lat) : NaN;
+    const lng = first ? parseFloat(first.lon) : NaN;
+    if (first && Number.isFinite(lat) && Number.isFinite(lng)) {
+      iframe.onload = onMapLoad;
+      iframe.src = buildMapUrl(lat, lng, 14, currentMapStyle);
+      const label = String(first.display_name || '').trim() || q;
+      document.getElementById('mapBadgeName').textContent = label.split(',')[0].trim() || q;
+      document.getElementById('mapBadgeCoord').textContent = `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
+      return;
     }
-  } catch(e) { document.getElementById('mapLoading').classList.add('hidden'); }
+    alert(tr('map.locationNotFound', 'Location not found.'));
+    mapLoading.classList.add('hidden');
+  } catch (e) {
+    mapLoading.classList.add('hidden');
+  }
 }
 
 function renderMiniMapPreview() {
