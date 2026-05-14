@@ -115,27 +115,24 @@ function getFilteredWorks() {
   });
 }
 
+function localizeWorkDesc(raw, id) {
+  const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
+  const s = String(raw || '').trim();
+  const word = tr('works.workWord', 'Work');
+  if (s) {
+    const m = s.match(/^(work|lavoro)\s+(\d+)\b/i);
+    if (m) return s.replace(m[0], `${word} ${m[2]}`);
+    return s;
+  }
+  const wid = String(id || '').trim();
+  return wid ? `${word} ${wid}` : word;
+}
+
 function renderWorks() {
   const grid = $('worksGrid');
   if (!grid) return;
 
   const tr = (k, fallback) => (typeof window.t === 'function') ? window.t(k) : fallback;
-  const localizeWorkDesc = (raw, id) => {
-    const s = String(raw || '').trim();
-    const word = tr('works.workWord', 'Work');
-    // If API already provides a description, only normalize the leading "Work/Lavoro <N>" prefix.
-    if (s) {
-      const m = s.match(/^(work|lavoro)\s+(\d+)\b/i);
-      if (m) {
-        const num = m[2];
-        return s.replace(m[0], `${word} ${num}`);
-      }
-      return s;
-    }
-    // Fallback if API description missing.
-    const wid = String(id || '').trim();
-    return wid ? `${word} ${wid}` : word;
-  };
 
   const list = getFilteredWorks();
   if (list.length === 0) {
@@ -416,7 +413,7 @@ function setJobEditorControls(isNew, isActive) {
 }
 
 function fillJobEditorFields(work = {}) {
-  getJobEditorField('jobName').value = String(work.description || work.name || '').trim();
+  getJobEditorField('jobName').value = localizeWorkDesc(work.description || work.name || '', work.id);
   getJobEditorField('jobLocation').value = String(work.place || work.location || '').trim();
   getJobEditorField('jobLatitude').value = String(work.latitude ?? work.lat ?? work.raw?.latitude ?? work.raw?.lat ?? '').trim();
   getJobEditorField('jobLongitude').value = String(work.longitude ?? work.lng ?? work.raw?.longitude ?? work.raw?.lng ?? '').trim();
