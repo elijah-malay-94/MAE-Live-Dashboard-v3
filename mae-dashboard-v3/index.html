@@ -698,30 +698,34 @@ function togglePages() {
   const navAlerts = document.getElementById('navAlerts');
   const navExport = document.getElementById('navExport');
   const navSettings = document.getElementById('navSettings');
+  const navManual = document.getElementById('navManual');
 
   const showEl = (el, show) => { if (el) el.style.display = show ? '' : 'none'; };
 
-  if (page === 'works' || page === 'job') {
+  if (page === 'job') {
+    showEl(navDash, false);
+    showEl(navWorks, true);
+    showEl(navAlerts, false);
+    showEl(navExport, false);
+    showEl(navSettings, false);
+    showEl(navManual, true);
+  } else if (page === 'works') {
+    showEl(navDash, false);
     showEl(navWorks, false);
     showEl(navAlerts, false);
     showEl(navExport, false);
     showEl(navSettings, false);
-    showEl(navDash, true);
-    try {
-      const last = localStorage.getItem('mae_last_dashboard_url') || '';
-      if (navDash && last && last.includes('page=dashboard')) navDash.href = last;
-      else if (navDash) navDash.href = 'index.html?page=dashboard';
-    } catch (e) {}
+    showEl(navManual, true);
   } else {
+    showEl(navDash, false);
     showEl(navWorks, true);
     showEl(navAlerts, true);
     showEl(navExport, true);
     showEl(navSettings, false);
-    showEl(navDash, false);
+    showEl(navManual, true);
     try {
-      const sidebar = document.querySelector('.sidebar');
       const navSection = document.querySelector('.sidebar .nav-section');
-      if (sidebar && navSection) {
+      if (navSection) {
         let anchor = navSection;
         [navWorks, navAlerts, navExport].forEach(el => {
           if (el && anchor && typeof anchor.after === 'function') {
