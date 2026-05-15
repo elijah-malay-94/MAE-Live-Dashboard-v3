@@ -1692,8 +1692,8 @@ async function connectWorkDevice(workId, idDevice, status) {
   if (isMockMode()) {
     return { status: 0, message: "" };
   }
-  const path = `/api/v1/works/${encodeURIComponent(workId)}/devices`;
-  const result = await apiFetchWithHeaders(path, { method: 'PUT', body: { id_device: idDevice, status: status } });
+  const path = `/api/v1/works/${encodeURIComponent(workId)}/devices/${encodeURIComponent(idDevice)}`;
+  const result = await apiFetchWithHeaders(path, { method: 'PUT', body: { status: status } });
   return result.data;
 }
 
