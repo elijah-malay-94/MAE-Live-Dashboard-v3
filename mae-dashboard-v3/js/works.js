@@ -163,14 +163,16 @@ function renderWorks() {
             <p class="work-title">${escapeHtml(desc)}</p>
             <div class="work-meta">
               <div class="meta-row"><span class="meta-key">${tr('works.place', 'Place')}</span><span class="meta-val">${escapeHtml(loc)}</span></div>
-              <div class="meta-row"><span class="meta-key">${tr('works.devicesLabel', 'Devices')}</span><span class="meta-val">${devCount === null ? '—' : devCount}</span></div>
+              <div class="meta-row">
+                <span class="meta-key">${tr('works.devicesLabel', 'Devices')}</span><span class="meta-val">${devCount === null ? '—' : devCount}</span>
+                <button class="work-edit-button" type="button" title="${escapeHtml(editTitle)}">
+                  <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                  ${escapeHtml(editLabel)}
+                </button>
+              </div>
             </div>
           </div>
           <div class="work-badges">
-            <button class="work-edit-button" type="button" title="${escapeHtml(editTitle)}">
-              <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-              ${escapeHtml(editLabel)}
-            </button>
             <span class="led ${ledClass}" title="${escapeHtml(ledTitle)}" role="img" aria-label="${escapeHtml(ledTitle)}"></span>
           </div>
         </div>
