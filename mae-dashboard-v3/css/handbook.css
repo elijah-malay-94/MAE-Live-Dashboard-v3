@@ -51,9 +51,9 @@
     overflow: hidden;
     position: relative;
   }
-  .handbook-page .cover    { background: var(--hb-navy); }
-  .handbook-page .toc-page { background: var(--hb-navy); }
-  .handbook-page .final-page { background: var(--hb-navy); }
+  .handbook-page .cover      { background: #0f172a; }
+  .handbook-page .toc-page   { background: var(--hb-navy); }
+  .handbook-page .final-page { background: #0f172a; }
 }
 
 /* ── Box-sizing scoped to handbook only ── */
@@ -61,11 +61,11 @@
   box-sizing: border-box;
 }
 
-/* ── Cover ── */
+/* ── Cover (dark navy design) ── */
 .handbook-page .cover {
   min-height: 297mm;
-  background: var(--hb-navy);
-  color: inherit;
+  background: #0f172a;
+  color: #e2e8f0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -77,27 +77,27 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--hb-accent), var(--hb-teal));
+  height: 6px;
+  background: linear-gradient(90deg, #0ea5e9 0%, #14b8a6 50%, #0ea5e9 100%);
 }
 .handbook-page .cover-logo    { display: flex; align-items: center; gap: 18px; }
-.handbook-page .logo-box      { background: var(--hb-accent); color: #fff; font-size: 22pt; font-weight: 800; padding: 14px 20px; border-radius: 8px; letter-spacing: -1px; }
-.handbook-page .logo-text     { color: var(--hb-muted); font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; line-height: 1.4; }
-.handbook-page .logo-text strong { color: var(--hb-text); display: block; }
-.handbook-page .cover-label   { color: var(--hb-accent); font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 18px; margin-top: 80px; }
-.handbook-page .cover-title   { font-size: 44pt; font-weight: 800; line-height: 1.05; color: var(--hb-text); }
-.handbook-page .cover-title span { color: #f8d200; }
-.handbook-page .cover-sub     { font-size: 14pt; color: var(--hb-muted); margin-top: 14px; font-weight: 300; }
+.handbook-page .logo-box      { background: #0ea5e9; color: #fff; font-size: 22pt; font-weight: 800; padding: 14px 20px; border-radius: 8px; letter-spacing: -1px; }
+.handbook-page .logo-text     { color: rgba(255,255,255,0.55); font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; line-height: 1.4; }
+.handbook-page .logo-text strong { color: #e2e8f0; display: block; }
+.handbook-page .cover-label   { color: #38bdf8; font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 18px; margin-top: 80px; }
+.handbook-page .cover-title   { font-size: 44pt; font-weight: 800; line-height: 1.05; color: #ffffff; }
+.handbook-page .cover-title span { color: #38bdf8; }
+.handbook-page .cover-sub     { font-size: 14pt; color: rgba(255,255,255,0.55); margin-top: 14px; font-weight: 300; }
 .handbook-page .cover-tags    { display: flex; gap: 12px; margin-top: 40px; }
-.handbook-page .tag           { border: 1.5px solid var(--hb-accent); color: var(--hb-accent); padding: 5px 16px; border-radius: 20px; font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.handbook-page .tag           { border: 1.5px solid rgba(56,189,248,0.5); color: #38bdf8; padding: 5px 16px; border-radius: 20px; font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 .handbook-page .cover-meta    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 60px; }
-.handbook-page .meta-card     { background: var(--hb-panel); border: 1px solid var(--hb-border); border-radius: 8px; padding: 16px 18px; }
-.handbook-page .meta-label    { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1.5px; color: var(--hb-muted); margin-bottom: 5px; }
-.handbook-page .meta-value    { font-size: 11pt; font-weight: 600; color: var(--hb-text); }
-.handbook-page .meta-value.accent { color: var(--hb-accent); }
-.handbook-page .cover-footer  { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--hb-border); display: flex; justify-content: space-between; align-items: flex-end; }
-.handbook-page .cover-footer p { font-size: 8.5pt; color: var(--hb-muted); line-height: 1.6; }
-.handbook-page .cover-footer a { color: var(--hb-accent); text-decoration: none; }
+.handbook-page .meta-card     { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px 18px; }
+.handbook-page .meta-label    { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin-bottom: 5px; }
+.handbook-page .meta-value    { font-size: 11pt; font-weight: 600; color: #e2e8f0; }
+.handbook-page .meta-value.accent { color: #38bdf8; }
+.handbook-page .cover-footer  { margin-top: 50px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.12); display: flex; justify-content: space-between; align-items: flex-end; }
+.handbook-page .cover-footer p { font-size: 8.5pt; color: rgba(255,255,255,0.4); line-height: 1.6; }
+.handbook-page .cover-footer a { color: #38bdf8; text-decoration: none; }
 
 /* ── TOC ── */
 .handbook-page .toc-page      { padding: 60px 70px; page-break-after: always; background: var(--hb-navy); color: inherit; }
@@ -227,10 +227,10 @@
 .handbook-page .chart-feat p        { font-size: 9.5pt; color: var(--hb-muted); margin: 0; }
 
 /* ── Final page ── */
-.handbook-page .final-page          { min-height: 297mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 70px; background: var(--hb-navy); }
-.handbook-page .final-page .fp-logo { font-size: 28pt; font-weight: 800; color: var(--hb-accent); margin-bottom: 10px; }
-.handbook-page .final-page p        { color: var(--hb-muted); font-size: 10pt; margin: 4px 0; }
-.handbook-page .final-page a        { color: var(--hb-accent); }
+.handbook-page .final-page          { min-height: 297mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 70px; background: #0f172a; }
+.handbook-page .final-page .fp-logo { font-size: 28pt; font-weight: 800; color: #38bdf8; margin-bottom: 10px; }
+.handbook-page .final-page p        { color: rgba(255,255,255,0.5); font-size: 10pt; margin: 4px 0; }
+.handbook-page .final-page a        { color: #38bdf8; }
 
 /* ══════════════════════════════════════════════════════════
    PRINT — A4 page breaks, hide dashboard chrome
