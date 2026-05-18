@@ -317,113 +317,99 @@
 .handbook-page .final-page a        { color: #38bdf8; }
 
 /* ══════════════════════════════════════════════════════════
-   PRINT — A4 page breaks, hide dashboard chrome
+   PRINT — Professional A4 PDF output
    ══════════════════════════════════════════════════════════ */
-@page { size: A4 portrait; margin: 15mm 20mm; }
+@page { size: A4 portrait; margin: 12mm 15mm; }
 
 @media print {
-  /* Hide all dashboard UI — show only the handbook */
-  .sidebar,
-  .login-overlay,
-  .topbar,
-  #exportModal,
-  #alarmsPanel { display: none !important; }
-
-  .app   { display: block !important; background: none !important; }
-  .main  { display: none !important; }
-
-  /* Reset screen-only sheet styling */
-  .handbook-page .cover,
-  .handbook-page .toc-page,
-  .handbook-page .chapter,
-  .handbook-page .final-page {
-    width: auto !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-  }
-
-  .handbook-page {
-    display: block !important;
-    position: static !important;  /* reset fixed positioning from screen */
-    overflow: visible !important;
-    height: auto !important;
-    width: 100% !important;
-    background: #ffffff !important;
-    font-size: 11pt !important;
-    line-height: 1.7 !important;
-  }
-  .handbook-lang        { display: none !important; }
+  /* 1. Hide dashboard chrome, reset layout */
+  .sidebar, .login-overlay, .topbar, #exportModal, #alarmsPanel, .handbook-toolbar { display: none !important; }
+  .app { display: block !important; background: none !important; }
+  .main { display: none !important; }
+  .handbook-page { display: block !important; position: static !important; overflow: visible !important; height: auto !important; width: 100% !important; background: #ffffff !important; font-family: 'Inter', Arial, sans-serif !important; font-size: 9.5pt !important; line-height: 1.6 !important; color: #1e293b !important; }
+  .handbook-lang { display: none !important; }
   .handbook-lang.active { display: block !important; }
 
-  /* ── Compact print spacing ── */
-  .handbook-page .cover         { padding: 24px 28px !important; }
-  .handbook-page .cover-label   { margin-top: 24px !important; margin-bottom: 10px !important; }
-  .handbook-page .cover-title   { font-size: 32pt !important; }
-  .handbook-page .cover-sub     { font-size: 12pt !important; margin-top: 8px !important; }
-  .handbook-page .cover-tags    { margin-top: 16px !important; }
-  .handbook-page .cover-meta    { margin-top: 16px !important; gap: 8px !important; }
-  .handbook-page .meta-card     { padding: 10px 12px !important; }
-  .handbook-page .cover-footer  { margin-top: 16px !important; padding-top: 12px !important; }
+  /* 2. Page breaks */
+  .handbook-page .cover { break-after: page; page-break-after: always; }
+  .handbook-page .toc-page { break-after: page; page-break-after: always; }
+  .handbook-page .chapter { break-before: page; page-break-before: always; }
+  .handbook-page .final-page { break-before: page; page-break-before: always; }
 
-  .handbook-page .toc-page      { padding: 20px 24px 4px !important; }
-  .handbook-page .toc-title     { font-size: 13pt !important; margin-bottom: 12px !important; }
-  .handbook-page .toc-item      { padding: 5px 0 !important; font-size: 10pt !important; }
-  .handbook-page .toc-sub       { padding: 3px 0 3px 22px !important; font-size: 9pt !important; }
+  /* 3. Cover — dark navy, full-page */
+  .handbook-page .cover { background: #0f172a !important; color: #e2e8f0 !important; padding: 18mm 20mm !important; min-height: 0 !important; }
+  .handbook-page .cover::before { height: 5px !important; background: linear-gradient(90deg, #0ea5e9, #f8d200, #0ea5e9) !important; }
+  .handbook-page .logo-box { background: #0ea5e9 !important; font-size: 16pt !important; padding: 8px 14px !important; }
+  .handbook-page .logo-text { font-size: 8pt !important; }
+  .handbook-page .cover-label { color: #0ea5e9 !important; font-size: 7pt !important; margin-top: 20mm !important; letter-spacing: 4px !important; }
+  .handbook-page .cover-title { font-size: 28pt !important; color: #ffffff !important; line-height: 1.1 !important; }
+  .handbook-page .cover-title span { color: #f8d200 !important; }
+  .handbook-page .cover-sub { font-size: 11pt !important; color: rgba(255,255,255,0.6) !important; margin-top: 6px !important; }
+  .handbook-page .tag { border-color: rgba(14,165,233,0.5) !important; color: #0ea5e9 !important; font-size: 7pt !important; padding: 3px 10px !important; }
+  .handbook-page .cover-meta { margin-top: 12mm !important; gap: 6px !important; }
+  .handbook-page .meta-card { background: rgba(255,255,255,0.06) !important; border: 1px solid rgba(255,255,255,0.12) !important; padding: 8px 10px !important; }
+  .handbook-page .meta-label { color: rgba(255,255,255,0.4) !important; font-size: 6.5pt !important; letter-spacing: 1.5px !important; }
+  .handbook-page .meta-value { color: #e2e8f0 !important; font-size: 10pt !important; }
+  .handbook-page .meta-value.accent { color: #0ea5e9 !important; }
+  .handbook-page .cover-footer { border-top-color: rgba(255,255,255,0.12) !important; }
+  .handbook-page .cover-footer p { color: rgba(255,255,255,0.35) !important; font-size: 7.5pt !important; }
 
-  .handbook-page .chapter-header { padding: 14px 20px !important; }
-  .handbook-page .ch-num        { font-size: 26pt !important; min-width: 50px !important; }
-  .handbook-page .ch-label      { font-size: 7pt !important; }
-  .handbook-page .ch-title      { font-size: 16pt !important; }
+  /* 4. TOC */
+  .handbook-page .toc-page { background: #f8fafc !important; padding: 14mm 16mm 6mm !important; }
+  .handbook-page .toc-title { font-size: 11pt !important; font-weight: 800 !important; color: #0ea5e9 !important; letter-spacing: 4px !important; padding-bottom: 6px !important; border-bottom: 2px solid #0ea5e9 !important; margin-bottom: 8mm !important; }
+  .handbook-page .toc-item { padding: 3.5px 0 !important; font-size: 9pt !important; border-bottom: 1px dotted #cbd5e1 !important; display: flex !important; }
+  .handbook-page .toc-item .num { color: #0ea5e9 !important; font-weight: 700 !important; min-width: 24px !important; font-size: 8.5pt !important; }
+  .handbook-page .toc-item .name { flex: 1 !important; color: #1e293b !important; font-weight: 500 !important; }
+  .handbook-page .toc-item .pg { color: #64748b !important; font-size: 8pt !important; }
+  .handbook-page .toc-sub { padding: 1.5px 0 1.5px 20px !important; font-size: 8pt !important; border-bottom: none !important; }
+  .handbook-page .toc-sub .name { color: #64748b !important; font-weight: 400 !important; }
 
-  .handbook-page .content       { padding: 18px 24px 4px !important; }
-  .handbook-page h3             { font-size: 11pt !important; margin: 20px 0 10px !important; padding-left: 10px !important; }
-  .handbook-page p              { margin-bottom: 9px !important; }
-  .handbook-page ul,
-  .handbook-page ol             { margin-bottom: 10px !important; padding-left: 20px !important; }
-  .handbook-page li             { margin-bottom: 4px !important; }
+  /* 5. Chapter header — white with top cyan bar */
+  .handbook-page .chapter-header { background: #ffffff !important; border-left: none !important; border-top: 4px solid #0ea5e9 !important; border-bottom: 1px solid #e2e8f0 !important; padding: 10px 14mm !important; gap: 14px !important; }
+  .handbook-page .chapter-header::after { display: none !important; }
+  .handbook-page .ch-num { font-size: 32pt !important; font-weight: 900 !important; color: #0ea5e9 !important; opacity: 0.18 !important; min-width: 48px !important; letter-spacing: -2px !important; }
+  .handbook-page .ch-label { font-size: 6.5pt !important; color: #0ea5e9 !important; letter-spacing: 3px !important; font-weight: 600 !important; }
+  .handbook-page .ch-title { font-size: 14pt !important; font-weight: 800 !important; color: #0f172a !important; }
 
-  .handbook-page table          { margin: 12px 0 !important; font-size: 10pt !important; }
-  .handbook-page thead th       { padding: 8px 12px !important; }
-  .handbook-page tbody td       { padding: 6px 12px !important; }
+  /* 6. Content */
+  .handbook-page .content { background: #ffffff !important; padding: 8mm 14mm 2mm !important; }
+  .handbook-page h3 { font-size: 9pt !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1.5px !important; color: #0ea5e9 !important; margin: 10px 0 5px !important; padding: 0 !important; background: none !important; border-left: none !important; border-bottom: 1px solid #e2e8f0 !important; padding-bottom: 3px !important; }
+  .handbook-page p { font-size: 9.5pt !important; margin-bottom: 5px !important; line-height: 1.55 !important; color: #1e293b !important; }
+  .handbook-page li { font-size: 9.5pt !important; margin-bottom: 3px !important; line-height: 1.5 !important; }
+  .handbook-page ul, .handbook-page ol { margin-bottom: 6px !important; padding-left: 16px !important; }
+  .handbook-page strong { color: #0f172a !important; }
+  .handbook-page code { font-size: 8pt !important; background: #f0f9ff !important; border: 1px solid #bae6fd !important; padding: 1px 4px !important; color: #0284c7 !important; border-radius: 3px !important; }
 
-  .handbook-page .callout       { margin: 10px 0 !important; padding: 10px 14px !important; font-size: 10pt !important; }
-  .handbook-page .steps         { margin: 10px 0 !important; }
-  .handbook-page .step          { margin-bottom: 10px !important; gap: 14px !important; }
-  .handbook-page .step-num      { width: 24px !important; height: 24px !important; font-size: 9pt !important; }
+  /* 7. Tables */
+  .handbook-page table { font-size: 8.5pt !important; margin: 8px 0 !important; border: 1px solid #e2e8f0 !important; border-radius: 0 !important; }
+  .handbook-page thead th { background: #0ea5e9 !important; color: #ffffff !important; font-size: 7.5pt !important; padding: 6px 10px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; }
+  .handbook-page tbody td { padding: 5px 10px !important; font-size: 8.5pt !important; border-bottom: 1px solid #f1f5f9 !important; vertical-align: top !important; }
+  .handbook-page tbody tr:nth-child(even) td { background: #f8faff !important; }
 
-  .handbook-page .kpi-colors,
-  .handbook-page .power-cards,
-  .handbook-page .alert-cards,
-  .handbook-page .lang-cards,
-  .handbook-page .sidebar-desc,
-  .handbook-page .chart-features { gap: 10px !important; margin: 10px 0 !important; }
+  /* 8. Callouts — left border only in print (no fill) */
+  .handbook-page .callout { padding: 6px 10px !important; margin: 6px 0 !important; border-left-width: 3px !important; border-radius: 0 !important; font-size: 9pt !important; line-height: 1.45 !important; }
+  .handbook-page .callout.note { background: rgba(14,165,233,0.05) !important; }
+  .handbook-page .callout.attention { background: rgba(234,88,12,0.05) !important; }
+  .handbook-page .callout.important { background: rgba(220,38,38,0.04) !important; }
+  .handbook-page .callout.tip { background: rgba(13,148,136,0.05) !important; }
+  .handbook-page .callout-label { font-size: 7pt !important; letter-spacing: 2px !important; margin-bottom: 3px !important; }
+  .handbook-page .callout p { font-size: 9pt !important; }
 
-  .handbook-page .support-box   { padding: 14px 18px !important; margin: 14px 0 0 !important; }
-  .handbook-page .kpi-card,
-  .handbook-page .power-card,
-  .handbook-page .alert-card,
-  .handbook-page .lang-card,
-  .handbook-page .chart-feat    { padding: 12px 14px !important; }
-  .handbook-page code           { font-size: 9pt !important; padding: 1px 4px !important; }
+  /* 9. Steps */
+  .handbook-page .steps { margin: 6px 0 !important; }
+  .handbook-page .step { margin-bottom: 6px !important; gap: 10px !important; }
+  .handbook-page .step-num { width: 20px !important; height: 20px !important; font-size: 8pt !important; background: #0ea5e9 !important; flex-shrink: 0 !important; }
+  .handbook-page .step-body strong { font-size: 9.5pt !important; }
+  .handbook-page .step-body p { color: #64748b !important; font-size: 9pt !important; }
 
-  /* A4 page-break rules */
-  .handbook-page .cover {
-    break-after: page;
-    page-break-after: always;
-    min-height: 0;
-  }
-  .handbook-page .toc-page {
-    break-after: page;
-    page-break-after: always;
-  }
-  .handbook-page .chapter {
-    break-before: page;
-    page-break-before: always;
-  }
-  .handbook-page .final-page {
-    break-before: page;
-    page-break-before: always;
-    min-height: 0;
-  }
+  /* 10. Cards/Grids */
+  .handbook-page .kpi-colors, .handbook-page .power-cards, .handbook-page .alert-cards, .handbook-page .lang-cards, .handbook-page .sidebar-desc, .handbook-page .chart-features { gap: 6px !important; margin: 6px 0 !important; }
+  .handbook-page .kpi-card, .handbook-page .power-card, .handbook-page .alert-card, .handbook-page .lang-card, .handbook-page .chart-feat, .handbook-page .meta-card { padding: 8px 10px !important; }
+  .handbook-page .support-box { padding: 10px 12px !important; margin: 8px 0 0 !important; border: 1px solid #0ea5e9 !important; background: rgba(14,165,233,0.04) !important; }
+
+  /* 11. Final page */
+  .handbook-page .final-page { background: #0f172a !important; color: rgba(255,255,255,0.5) !important; padding: 20mm !important; min-height: 0 !important; }
+  .handbook-page .final-page .fp-logo { color: #0ea5e9 !important; font-size: 22pt !important; }
+  .handbook-page .final-page p { color: rgba(255,255,255,0.45) !important; }
+  .handbook-page .final-page a { color: #0ea5e9 !important; }
 }
