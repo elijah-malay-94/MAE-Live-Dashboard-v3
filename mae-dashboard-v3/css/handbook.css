@@ -157,7 +157,7 @@
 .handbook-page .cover-footer a { color: #38bdf8; text-decoration: none; }
 
 /* ── TOC ── */
-.handbook-page .toc-page      { padding: 36px 50px; page-break-after: always; background: var(--hb-navy); color: inherit; }
+.handbook-page .toc-page      { padding: 28px 40px 4px; page-break-after: always; background: var(--hb-navy); color: inherit; }
 .handbook-page .toc-title     { font-size: 18pt; font-weight: 700; color: var(--hb-accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px; }
 .handbook-page .toc-item      { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--hb-border); font-size: 10pt; }
 .handbook-page .toc-item .num { color: var(--hb-accent); font-weight: 600; min-width: 30px; }
@@ -174,7 +174,9 @@
 .handbook-page .ch-num         { font-size: 36pt; font-weight: 800; color: var(--hb-accent); opacity: 0.25; line-height: 1; min-width: 80px; }
 .handbook-page .ch-label       { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 2.5px; color: var(--hb-muted); margin-bottom: 4px; }
 .handbook-page .ch-title       { font-size: 24pt; font-weight: 800; color: var(--hb-text); line-height: 1.1; }
-.handbook-page .content        { padding: 20px 40px; background: var(--hb-navy); color: inherit; }
+.handbook-page .content        { padding: 20px 40px 4px; background: var(--hb-navy); color: inherit; }
+.handbook-page .content > *:last-child  { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+.handbook-page .toc-page > *:last-child { margin-bottom: 0 !important; }
 
 /* ── Typography ── */
 .handbook-page h3      { font-size: 13pt; font-weight: 700; color: var(--hb-text); margin: 14px 0 8px; padding-left: 12px; border-left: 3px solid var(--hb-accent); }
@@ -272,7 +274,7 @@
 .handbook-page .sd-box li          { font-size: 9.5pt; color: var(--hb-muted); margin-bottom: 5px; }
 
 /* ── Support box ── */
-.handbook-page .support-box          { background: var(--hb-panel2); border: 1px solid var(--hb-accent); border-radius: 8px; padding: 20px 24px; margin: 24px 0; }
+.handbook-page .support-box          { background: var(--hb-panel2); border: 1px solid var(--hb-accent); border-radius: 8px; padding: 16px 20px; margin: 16px 0 0; }
 .handbook-page .support-box .sb-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--hb-accent); margin-bottom: 10px; }
 .handbook-page .support-box p        { font-size: 10.5pt; color: var(--hb-text); margin: 3px 0; }
 .handbook-page .support-box a        { color: var(--hb-accent); }
