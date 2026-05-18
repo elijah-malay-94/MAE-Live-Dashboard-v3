@@ -76,11 +76,11 @@
 
 /* ── Screen: render each section as a distinct A4 sheet ── */
 @media screen {
-  /* All pages — white A4 card with shadow */
+  /* TOC and chapters — white card, height follows content */
   .handbook-page .toc-page,
   .handbook-page .chapter {
     width: 210mm;
-    min-height: 297mm;
+    min-height: 0;
     margin: 24px auto;
     background: #ffffff;
     box-shadow: 0 4px 20px rgba(0,0,0,0.25);
@@ -90,7 +90,7 @@
   /* TOC: light gray background */
   .handbook-page .toc-page { background: var(--hb-navy); }
 
-  /* First page (cover) and last page (final-page): dark navy card */
+  /* Cover and final page — dark navy, full A4 height */
   .handbook-page .cover,
   .handbook-page .final-page {
     width: 210mm;
