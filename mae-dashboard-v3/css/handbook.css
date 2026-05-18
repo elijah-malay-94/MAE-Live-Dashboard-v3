@@ -7,20 +7,21 @@
 /* ── Layout shells ── */
 .handbook-page {
   /* Handbook-specific color tokens — scoped, won't affect dashboard */
-  --hb-navy:      #f4f6f8;
-  --hb-navy2:     #eaedf1;
+  --hb-navy:      #f0f4f8;
+  --hb-navy2:     #e4eaf1;
   --hb-panel:     #ffffff;
-  --hb-panel2:    #eef1f5;
-  --hb-accent:    #0077cc;
-  --hb-accent2:   #005fa3;
-  --hb-text:      #1a2535;
-  --hb-muted:     #5a7a99;
-  --hb-border:    #d0dae5;
-  --hb-green:     #22c55e;
-  --hb-amber:     #f59e0b;
-  --hb-red:       #ef4444;
-  --hb-orange:    #f97316;
-  --hb-teal:      #14b8a6;
+  --hb-panel2:    #e8f4fd;
+  --hb-accent:    #0ea5e9;
+  --hb-accent2:   #0284c7;
+  --hb-text:      #0f172a;
+  --hb-muted:     #64748b;
+  --hb-border:    #e2e8f0;
+  --hb-green:     #16a34a;
+  --hb-amber:     #d97706;
+  --hb-red:       #dc2626;
+  --hb-orange:    #ea580c;
+  --hb-teal:      #0d9488;
+  --hb-yellow:    #f8d200;
 
   display: none;
   overflow-y: auto;
@@ -158,35 +159,55 @@
 
 /* ── TOC ── */
 .handbook-page .toc-page      { padding: 16px 24px 4px; page-break-after: always; background: var(--hb-navy); color: inherit; }
-.handbook-page .toc-title     { font-size: 14pt; font-weight: 700; color: var(--hb-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
-.handbook-page .toc-item      { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--hb-border); font-size: 10pt; }
-.handbook-page .toc-item .num { color: var(--hb-accent); font-weight: 600; min-width: 30px; }
-.handbook-page .toc-item .name { flex: 1; color: var(--hb-text); }
-.handbook-page .toc-item .pg  { color: var(--hb-muted); font-size: 9pt; }
-.handbook-page .toc-sub       { display: flex; justify-content: space-between; padding: 2px 0 2px 24px; border-bottom: 1px solid rgba(30,58,85,0.5); font-size: 9pt; }
+.handbook-page .toc-title     { font-size: 13pt; font-weight: 800; color: var(--hb-accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 3px; padding-bottom: 8px; border-bottom: 2px solid var(--hb-accent); }
+.handbook-page .toc-item      { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; border-bottom: 1px solid var(--hb-border); font-size: 10pt; border-radius: 4px; }
+.handbook-page .toc-item:hover { background: rgba(14,165,233,0.06); }
+.handbook-page .toc-item .num { color: var(--hb-accent); font-weight: 700; min-width: 28px; font-size: 9pt; }
+.handbook-page .toc-item .name { flex: 1; color: var(--hb-text); font-weight: 500; }
+.handbook-page .toc-item .pg  { color: var(--hb-muted); font-size: 8.5pt; background: var(--hb-panel2); padding: 1px 6px; border-radius: 10px; }
+.handbook-page .toc-sub       { display: flex; justify-content: space-between; align-items: center; padding: 2px 8px 2px 32px; border-bottom: 1px solid rgba(14,165,233,0.1); font-size: 9pt; }
 .handbook-page .toc-sub .name { color: var(--hb-muted); }
-.handbook-page .toc-sub .pg   { color: var(--hb-muted); font-size: 9pt; }
+.handbook-page .toc-sub .pg   { color: var(--hb-muted); font-size: 8pt; }
 
 /* ── Chapters ── */
 .handbook-page .chapter        { page-break-before: always; }
-.handbook-page .chapter-header { background: linear-gradient(135deg, #dce6f0 0%, #eef1f5 100%); color: var(--hb-text); padding: 12px 24px; display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--hb-accent); position: relative; overflow: hidden; }
-.handbook-page .chapter-header::after { content: ''; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(0,119,204,0.06); }
-.handbook-page .ch-num         { font-size: 24pt; font-weight: 800; color: var(--hb-accent); opacity: 0.25; line-height: 1; min-width: 52px; }
-.handbook-page .ch-label       { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 2.5px; color: var(--hb-muted); margin-bottom: 4px; }
-.handbook-page .ch-title       { font-size: 18pt; font-weight: 800; color: var(--hb-text); line-height: 1.1; }
+.handbook-page .chapter-header {
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+  color: var(--hb-text);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-left: 5px solid var(--hb-accent);
+  border-bottom: 1px solid var(--hb-border);
+  position: relative;
+  overflow: hidden;
+}
+.handbook-page .chapter-header::after {
+  content: '';
+  position: absolute;
+  right: -20px; top: -20px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(14,165,233,0.08);
+}
+.handbook-page .ch-num         { font-size: 28pt; font-weight: 900; color: var(--hb-accent); opacity: 0.35; line-height: 1; min-width: 52px; letter-spacing: -1px; }
+.handbook-page .ch-label       { font-size: 7pt; text-transform: uppercase; letter-spacing: 3px; color: var(--hb-accent); margin-bottom: 3px; font-weight: 600; }
+.handbook-page .ch-title       { font-size: 16pt; font-weight: 800; color: var(--hb-text); line-height: 1.2; }
 .handbook-page .content        { padding: 12px 24px 4px; background: var(--hb-navy); color: inherit; }
 .handbook-page .content > *:last-child  { margin-bottom: 0 !important; padding-bottom: 0 !important; }
 .handbook-page .toc-page > *:last-child { margin-bottom: 0 !important; }
 
 /* ── Typography ── */
-.handbook-page h3      { font-size: 13pt; font-weight: 700; color: var(--hb-text); margin: 10px 0 6px; padding-left: 12px; border-left: 3px solid var(--hb-accent); }
+.handbook-page h3      { font-size: 12pt; font-weight: 700; color: var(--hb-text); margin: 10px 0 6px; padding: 4px 10px; border-left: 4px solid var(--hb-accent); background: rgba(14,165,233,0.04); border-radius: 0 4px 4px 0; }
 .handbook-page p       { margin-bottom: 8px; color: var(--hb-text); }
-.handbook-page a       { color: var(--hb-accent); }
+.handbook-page a       { color: var(--hb-accent); text-decoration: none; font-weight: 500; }
+.handbook-page a:hover { text-decoration: underline; }
 .handbook-page ul,
 .handbook-page ol      { padding-left: 22px; margin-bottom: 10px; }
 .handbook-page li      { margin-bottom: 5px; color: var(--hb-text); }
-.handbook-page strong  { color: var(--hb-text); font-weight: 600; }
-.handbook-page code    { background: var(--hb-panel2); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 9.5pt; color: var(--hb-accent); border: 1px solid var(--hb-border); }
+.handbook-page strong  { color: var(--hb-accent2); font-weight: 600; }
+.handbook-page code    { background: #f0f9ff; padding: 1px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 9pt; color: var(--hb-accent2); border: 1px solid #bae6fd; font-weight: 500; }
 
 /* ── Steps ── */
 .handbook-page .steps            { margin: 16px 0; }
@@ -196,25 +217,29 @@
 .handbook-page .step-body p      { margin-bottom: 0; font-size: 10.5pt; color: var(--hb-muted); }
 
 /* ── Callouts ── */
-.handbook-page .callout               { border-radius: 8px; padding: 16px 20px; margin: 18px 0; border-left: 4px solid; font-size: 10.5pt; }
-.handbook-page .callout-label         { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-.handbook-page .callout.note          { background: rgba(0,119,204,0.07); border-color: var(--hb-accent); }
+.handbook-page .callout               { border-radius: 6px; padding: 12px 16px; margin: 14px 0; border-left: 4px solid; font-size: 10pt; }
+.handbook-page .callout-label         { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+.handbook-page .callout.note          { background: rgba(14,165,233,0.08); border-color: var(--hb-accent); }
 .handbook-page .callout.note .callout-label     { color: var(--hb-accent); }
-.handbook-page .callout.attention     { background: rgba(249,115,22,0.1); border-color: var(--hb-orange); }
+.handbook-page .callout.note .callout-label::before     { content: 'ℹ'; font-style: normal; }
+.handbook-page .callout.attention     { background: rgba(234,88,12,0.08); border-color: var(--hb-orange); }
 .handbook-page .callout.attention .callout-label { color: var(--hb-orange); }
-.handbook-page .callout.important     { background: rgba(239,68,68,0.08); border-color: var(--hb-red); }
+.handbook-page .callout.attention .callout-label::before { content: '⚠'; }
+.handbook-page .callout.important     { background: rgba(220,38,38,0.07); border-color: var(--hb-red); }
 .handbook-page .callout.important .callout-label { color: var(--hb-red); }
-.handbook-page .callout.tip           { background: rgba(20,184,166,0.08); border-color: var(--hb-teal); }
+.handbook-page .callout.important .callout-label::before { content: '⛔'; }
+.handbook-page .callout.tip           { background: rgba(13,148,136,0.08); border-color: var(--hb-teal); }
 .handbook-page .callout.tip .callout-label       { color: var(--hb-teal); }
-.handbook-page .callout p             { margin: 0; color: var(--hb-text); }
+.handbook-page .callout.tip .callout-label::before       { content: '💡'; }
+.handbook-page .callout p             { margin: 0; color: var(--hb-text); line-height: 1.55; }
 
 /* ── Tables ── */
-.handbook-page table               { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 10pt; }
-.handbook-page thead th            { background: var(--hb-panel2); color: var(--hb-text); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--hb-accent); }
+.handbook-page table               { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10pt; border-radius: 6px; overflow: hidden; border: 1px solid var(--hb-border); }
+.handbook-page thead th            { background: var(--hb-accent); color: #ffffff; font-weight: 600; padding: 9px 14px; text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }
 .handbook-page tbody tr            { border-bottom: 1px solid var(--hb-border); }
 .handbook-page tbody tr:last-child { border-bottom: none; }
-.handbook-page tbody td            { padding: 9px 14px; color: var(--hb-text); vertical-align: top; }
-.handbook-page tbody tr:nth-child(even) td { background: rgba(0,0,0,0.03); }
+.handbook-page tbody td            { padding: 8px 14px; color: var(--hb-text); vertical-align: top; }
+.handbook-page tbody tr:nth-child(even) td { background: rgba(14,165,233,0.04); }
 
 /* ── LEDs ── */
 .handbook-page .led        { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
