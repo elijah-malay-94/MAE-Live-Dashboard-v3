@@ -28,8 +28,8 @@
   z-index: 1;
   flex: 1;
   font-family: 'Inter', sans-serif;
-  background: var(--hb-navy);
-  color: var(--hb-text);
+  background: var(--hb-navy) !important;
+  color: var(--hb-text) !important;
   font-size: 11pt;
   line-height: 1.65;
 }
@@ -46,6 +46,7 @@
 .handbook-page .cover {
   min-height: 100vh;
   background: var(--hb-navy);
+  color: inherit;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -80,7 +81,7 @@
 .handbook-page .cover-footer a { color: var(--hb-accent); text-decoration: none; }
 
 /* ── TOC ── */
-.handbook-page .toc-page      { padding: 60px 70px; page-break-after: always; }
+.handbook-page .toc-page      { padding: 60px 70px; page-break-after: always; background: var(--hb-navy); color: inherit; }
 .handbook-page .toc-title     { font-size: 18pt; font-weight: 700; color: var(--hb-accent); margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
 .handbook-page .toc-item      { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--hb-border); font-size: 10pt; }
 .handbook-page .toc-item .num { color: var(--hb-accent); font-weight: 600; min-width: 30px; }
@@ -92,12 +93,12 @@
 
 /* ── Chapters ── */
 .handbook-page .chapter        { page-break-before: always; }
-.handbook-page .chapter-header { background: linear-gradient(135deg, #dce6f0 0%, #eef1f5 100%); padding: 36px 70px; display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--hb-accent); position: relative; overflow: hidden; }
+.handbook-page .chapter-header { background: linear-gradient(135deg, #dce6f0 0%, #eef1f5 100%); color: var(--hb-text); padding: 36px 70px; display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--hb-accent); position: relative; overflow: hidden; }
 .handbook-page .chapter-header::after { content: ''; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(0,119,204,0.06); }
 .handbook-page .ch-num         { font-size: 48pt; font-weight: 800; color: var(--hb-accent); opacity: 0.25; line-height: 1; min-width: 80px; }
 .handbook-page .ch-label       { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 2.5px; color: var(--hb-muted); margin-bottom: 4px; }
 .handbook-page .ch-title       { font-size: 24pt; font-weight: 800; color: var(--hb-text); line-height: 1.1; }
-.handbook-page .content        { padding: 40px 70px; }
+.handbook-page .content        { padding: 40px 70px; background: var(--hb-navy); color: inherit; }
 
 /* ── Typography ── */
 .handbook-page h3      { font-size: 13pt; font-weight: 700; color: var(--hb-text); margin: 28px 0 12px; padding-left: 12px; border-left: 3px solid var(--hb-accent); }
@@ -215,7 +216,7 @@
 /* ══════════════════════════════════════════════════════════
    PRINT — A4 page breaks, hide dashboard chrome
    ══════════════════════════════════════════════════════════ */
-@page { size: A4; margin: 0; }
+@page { size: A4; margin: 15mm 20mm; }
 
 @media print {
   /* Hide all dashboard UI, show only handbook */
@@ -228,7 +229,7 @@
   .app   { display: block !important; }
   .main  { display: none !important; }
 
-  .handbook-page             { display: block !important; overflow: visible !important; }
+  .handbook-page             { display: block !important; overflow: visible !important; height: auto !important; }
   .handbook-lang             { display: none !important; }
   .handbook-lang.active      { display: block !important; }
 
