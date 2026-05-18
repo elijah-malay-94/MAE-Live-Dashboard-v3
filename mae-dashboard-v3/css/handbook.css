@@ -76,10 +76,9 @@
 
 /* ── Screen: render each section as a distinct A4 sheet ── */
 @media screen {
-  .handbook-page .cover,
+  /* All pages — white A4 card with shadow */
   .handbook-page .toc-page,
-  .handbook-page .chapter,
-  .handbook-page .final-page {
+  .handbook-page .chapter {
     width: 210mm;
     min-height: 297mm;
     margin: 24px auto;
@@ -88,9 +87,20 @@
     overflow: hidden;
     position: relative;
   }
-  .handbook-page .cover      { background: #0f172a; }
-  .handbook-page .toc-page   { background: var(--hb-navy); }
-  .handbook-page .final-page { background: #0f172a; }
+  /* TOC: light gray background */
+  .handbook-page .toc-page { background: var(--hb-navy); }
+
+  /* First page (cover) and last page (final-page): dark navy card */
+  .handbook-page .cover,
+  .handbook-page .final-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    background: #0f172a;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    overflow: hidden;
+    position: relative;
+  }
 }
 
 /* ── Box-sizing scoped to handbook only ── */
@@ -101,7 +111,7 @@
 /* ── Cover (dark navy design) ── */
 .handbook-page .cover {
   min-height: 297mm;
-  background: #0f172a;
+  background: #0f172a; /* fallback; @media screen overrides per-context */
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
