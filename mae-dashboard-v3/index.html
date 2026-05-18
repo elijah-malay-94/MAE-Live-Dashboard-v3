@@ -390,6 +390,16 @@
 
 <!-- ═══════════════════════ HANDBOOK ═══════════════════════ -->
 <div id="handbookPage" class="handbook-page">
+  <div class="handbook-toolbar">
+    <button class="handbook-toolbar-btn" onclick="closeHandbook()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+      <span data-i18n="nav.dashboard">Dashboard</span>
+    </button>
+    <button class="handbook-toolbar-btn handbook-toolbar-btn--primary" onclick="downloadManual()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span data-i18n="handbook.downloadPdf">Download PDF</span>
+    </button>
+  </div>
   <div id="handbookIT" class="handbook-lang active">
 <!-- COPERTINA -->
 <div class="cover">

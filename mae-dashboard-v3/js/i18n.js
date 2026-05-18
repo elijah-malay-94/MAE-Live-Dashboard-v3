@@ -18,6 +18,7 @@
       'nav.export': 'Export',
       'nav.settings': 'Settings',
       'nav.manual': 'Manual',
+      'handbook.downloadPdf': 'Download PDF',
       'nav.devices': 'Devices',
 
       'page.liveDashboard': 'Live Dashboard',
@@ -329,6 +330,7 @@
       'nav.export': 'Esporta',
       'nav.settings': 'Impostazioni',
       'nav.manual': 'Manuale',
+      'handbook.downloadPdf': 'Scarica PDF',
       'nav.devices': 'Dispositivi',
 
       'page.liveDashboard': 'Cruscotto Live',

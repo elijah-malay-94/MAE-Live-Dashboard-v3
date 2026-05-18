@@ -37,6 +37,43 @@
 .handbook-lang         { display: none; }
 .handbook-lang.active  { display: block; }
 
+/* ── Toolbar ── */
+.handbook-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: #1e293b;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.handbook-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.07);
+  color: #e2e8f0;
+  font-family: 'DM Mono', 'DM Sans', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.handbook-toolbar-btn:hover { background: rgba(255,255,255,0.13); }
+.handbook-toolbar-btn--primary {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
+.handbook-toolbar-btn--primary:hover { opacity: 0.88; background: #0ea5e9; }
+
+@media print { .handbook-toolbar { display: none !important; } }
+
 /* ── Screen: render each section as a distinct A4 sheet ── */
 @media screen {
   .handbook-page .cover,
