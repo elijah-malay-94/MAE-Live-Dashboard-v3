@@ -336,23 +336,33 @@
   .handbook-page .chapter { break-before: page; page-break-before: always; }
   .handbook-page .final-page { break-before: page; page-break-before: always; }
 
-  /* 3. Cover — dark navy, full-page */
-  .handbook-page .cover { background: #0f172a !important; color: #e2e8f0 !important; padding: 18mm 20mm !important; min-height: 0 !important; }
+  /* 3. Cover — dark navy, full A4 page */
+  .handbook-page .cover {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    padding: 14mm 18mm !important;
+    min-height: 267mm !important; /* fills most of the A4 page content area so footer reaches bottom */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: visible !important;
+  }
   .handbook-page .cover::before { height: 5px !important; background: linear-gradient(90deg, #0ea5e9, #f8d200, #0ea5e9) !important; }
-  .handbook-page .logo-box { background: #0ea5e9 !important; font-size: 16pt !important; padding: 8px 14px !important; }
-  .handbook-page .logo-text { font-size: 8pt !important; }
-  .handbook-page .cover-label { color: #0ea5e9 !important; font-size: 7pt !important; margin-top: 20mm !important; letter-spacing: 4px !important; }
-  .handbook-page .cover-title { font-size: 28pt !important; color: #ffffff !important; line-height: 1.1 !important; }
+  .handbook-page .logo-box      { background: #0ea5e9 !important; font-size: 15pt !important; padding: 8px 13px !important; }
+  .handbook-page .logo-text     { font-size: 8pt !important; }
+  .handbook-page .cover-label   { color: #0ea5e9 !important; font-size: 7pt !important; margin-top: 14mm !important; letter-spacing: 4px !important; }
+  .handbook-page .cover-title   { font-size: 26pt !important; color: #ffffff !important; line-height: 1.1 !important; }
   .handbook-page .cover-title span { color: #f8d200 !important; }
-  .handbook-page .cover-sub { font-size: 11pt !important; color: rgba(255,255,255,0.6) !important; margin-top: 6px !important; }
-  .handbook-page .tag { border-color: rgba(14,165,233,0.5) !important; color: #0ea5e9 !important; font-size: 7pt !important; padding: 3px 10px !important; }
-  .handbook-page .cover-meta { margin-top: 12mm !important; gap: 6px !important; }
-  .handbook-page .meta-card { background: rgba(255,255,255,0.06) !important; border: 1px solid rgba(255,255,255,0.12) !important; padding: 8px 10px !important; }
-  .handbook-page .meta-label { color: rgba(255,255,255,0.4) !important; font-size: 6.5pt !important; letter-spacing: 1.5px !important; }
-  .handbook-page .meta-value { color: #e2e8f0 !important; font-size: 10pt !important; }
+  .handbook-page .cover-sub     { font-size: 11pt !important; color: rgba(255,255,255,0.6) !important; margin-top: 5px !important; }
+  .handbook-page .cover-tags    { margin-top: 8mm !important; }
+  .handbook-page .tag           { border-color: rgba(14,165,233,0.5) !important; color: #0ea5e9 !important; font-size: 7pt !important; padding: 3px 10px !important; }
+  .handbook-page .cover-meta    { margin-top: 8mm !important; gap: 5px !important; }
+  .handbook-page .meta-card     { background: rgba(255,255,255,0.06) !important; border: 1px solid rgba(255,255,255,0.12) !important; padding: 7px 10px !important; }
+  .handbook-page .meta-label    { color: rgba(255,255,255,0.4) !important; font-size: 6pt !important; letter-spacing: 1.5px !important; }
+  .handbook-page .meta-value    { color: #e2e8f0 !important; font-size: 10pt !important; font-weight: 600 !important; }
   .handbook-page .meta-value.accent { color: #0ea5e9 !important; }
-  .handbook-page .cover-footer { border-top-color: rgba(255,255,255,0.12) !important; }
-  .handbook-page .cover-footer p { color: rgba(255,255,255,0.35) !important; font-size: 7.5pt !important; }
+  .handbook-page .cover-footer  { border-top: 1px solid rgba(255,255,255,0.12) !important; padding-top: 10px !important; display: flex !important; justify-content: space-between !important; }
+  .handbook-page .cover-footer p { color: rgba(255,255,255,0.5) !important; font-size: 7.5pt !important; margin: 0 !important; line-height: 1.5 !important; }
 
   /* 4. TOC */
   .handbook-page .toc-page { background: #f8fafc !important; padding: 14mm 16mm 6mm !important; }
