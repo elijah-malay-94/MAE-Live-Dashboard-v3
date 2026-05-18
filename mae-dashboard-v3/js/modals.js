@@ -87,6 +87,24 @@ function toggleAutoRefresh() {
 function openExport()  { document.getElementById('exportModal').classList.add('open'); }
 function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
 
+// ═══════════════════════ HANDBOOK ═══════════════════════
+function openHandbook() {
+  const page = document.getElementById('handbookPage');
+  const mainEl = document.querySelector('.main');
+  if (!page) return;
+  if (mainEl) mainEl.style.display = 'none';
+  page.classList.add('active');
+  const lang = (window.MAE_I18N && window.MAE_I18N.getLanguage() === 'it') ? 'IT' : 'EN';
+  document.getElementById('handbookIT').classList.toggle('active', lang === 'IT');
+  document.getElementById('handbookEN').classList.toggle('active', lang === 'EN');
+}
+function closeHandbook() {
+  const page = document.getElementById('handbookPage');
+  const mainEl = document.querySelector('.main');
+  if (page) page.classList.remove('active');
+  if (mainEl) mainEl.style.display = '';
+}
+
 // ═══════════════════════ MANUAL DOWNLOAD ═══════════════════════
 function downloadManual() {
   const lang = (window.MAE_I18N && window.MAE_I18N.getLanguage() === 'it') ? 'IT' : 'EN';
