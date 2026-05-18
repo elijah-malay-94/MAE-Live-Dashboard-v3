@@ -126,7 +126,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 36px 50px;
+  padding: 20px 28px;
   page-break-after: always;
   position: relative;
 }
@@ -138,17 +138,17 @@
   background: linear-gradient(90deg, #0ea5e9 0%, #14b8a6 50%, #0ea5e9 100%);
 }
 .handbook-page .cover-logo    { display: flex; align-items: center; gap: 18px; }
-.handbook-page .logo-box      { background: #0ea5e9; color: #fff; font-size: 22pt; font-weight: 800; padding: 14px 20px; border-radius: 8px; letter-spacing: -1px; }
+.handbook-page .logo-box      { background: #0ea5e9; color: #fff; font-size: 18pt; font-weight: 800; padding: 10px 14px; border-radius: 8px; letter-spacing: -1px; }
 .handbook-page .logo-text     { color: rgba(255,255,255,0.55); font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; line-height: 1.4; }
 .handbook-page .logo-text strong { color: #f8d200; display: block; }
-.handbook-page .cover-label   { color: #38bdf8; font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 12px; margin-top: 36px; }
-.handbook-page .cover-title   { font-size: 44pt; font-weight: 800; line-height: 1.05; color: #ffffff; }
+.handbook-page .cover-label   { color: #38bdf8; font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px; margin-top: 20px; }
+.handbook-page .cover-title   { font-size: 34pt; font-weight: 800; line-height: 1.05; color: #ffffff; }
 .handbook-page .cover-title span { color: #f8d200; }
-.handbook-page .cover-sub     { font-size: 14pt; color: rgba(255,255,255,0.55); margin-top: 10px; font-weight: 300; }
+.handbook-page .cover-sub     { font-size: 12pt; color: rgba(255,255,255,0.55); margin-top: 6px; font-weight: 300; }
 .handbook-page .cover-tags    { display: flex; gap: 12px; margin-top: 20px; }
 .handbook-page .tag           { border: 1.5px solid rgba(56,189,248,0.5); color: #38bdf8; padding: 5px 16px; border-radius: 20px; font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-.handbook-page .cover-meta    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
-.handbook-page .meta-card     { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px 18px; }
+.handbook-page .cover-meta    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.handbook-page .meta-card     { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; }
 .handbook-page .meta-label    { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin-bottom: 5px; }
 .handbook-page .meta-value    { font-size: 11pt; font-weight: 600; color: #e2e8f0; }
 .handbook-page .meta-value.accent { color: #38bdf8; }
@@ -157,29 +157,29 @@
 .handbook-page .cover-footer a { color: #38bdf8; text-decoration: none; }
 
 /* ── TOC ── */
-.handbook-page .toc-page      { padding: 28px 40px 4px; page-break-after: always; background: var(--hb-navy); color: inherit; }
-.handbook-page .toc-title     { font-size: 18pt; font-weight: 700; color: var(--hb-accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px; }
-.handbook-page .toc-item      { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--hb-border); font-size: 10pt; }
+.handbook-page .toc-page      { padding: 16px 24px 4px; page-break-after: always; background: var(--hb-navy); color: inherit; }
+.handbook-page .toc-title     { font-size: 14pt; font-weight: 700; color: var(--hb-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+.handbook-page .toc-item      { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--hb-border); font-size: 10pt; }
 .handbook-page .toc-item .num { color: var(--hb-accent); font-weight: 600; min-width: 30px; }
 .handbook-page .toc-item .name { flex: 1; color: var(--hb-text); }
 .handbook-page .toc-item .pg  { color: var(--hb-muted); font-size: 9pt; }
-.handbook-page .toc-sub       { display: flex; justify-content: space-between; padding: 4px 0 4px 30px; border-bottom: 1px solid rgba(30,58,85,0.5); font-size: 9.5pt; }
+.handbook-page .toc-sub       { display: flex; justify-content: space-between; padding: 2px 0 2px 24px; border-bottom: 1px solid rgba(30,58,85,0.5); font-size: 9pt; }
 .handbook-page .toc-sub .name { color: var(--hb-muted); }
 .handbook-page .toc-sub .pg   { color: var(--hb-muted); font-size: 9pt; }
 
 /* ── Chapters ── */
 .handbook-page .chapter        { page-break-before: always; }
-.handbook-page .chapter-header { background: linear-gradient(135deg, #dce6f0 0%, #eef1f5 100%); color: var(--hb-text); padding: 20px 40px; display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--hb-accent); position: relative; overflow: hidden; }
+.handbook-page .chapter-header { background: linear-gradient(135deg, #dce6f0 0%, #eef1f5 100%); color: var(--hb-text); padding: 12px 24px; display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--hb-accent); position: relative; overflow: hidden; }
 .handbook-page .chapter-header::after { content: ''; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(0,119,204,0.06); }
-.handbook-page .ch-num         { font-size: 36pt; font-weight: 800; color: var(--hb-accent); opacity: 0.25; line-height: 1; min-width: 80px; }
+.handbook-page .ch-num         { font-size: 24pt; font-weight: 800; color: var(--hb-accent); opacity: 0.25; line-height: 1; min-width: 52px; }
 .handbook-page .ch-label       { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 2.5px; color: var(--hb-muted); margin-bottom: 4px; }
-.handbook-page .ch-title       { font-size: 24pt; font-weight: 800; color: var(--hb-text); line-height: 1.1; }
-.handbook-page .content        { padding: 20px 40px 4px; background: var(--hb-navy); color: inherit; }
+.handbook-page .ch-title       { font-size: 18pt; font-weight: 800; color: var(--hb-text); line-height: 1.1; }
+.handbook-page .content        { padding: 12px 24px 4px; background: var(--hb-navy); color: inherit; }
 .handbook-page .content > *:last-child  { margin-bottom: 0 !important; padding-bottom: 0 !important; }
 .handbook-page .toc-page > *:last-child { margin-bottom: 0 !important; }
 
 /* ── Typography ── */
-.handbook-page h3      { font-size: 13pt; font-weight: 700; color: var(--hb-text); margin: 14px 0 8px; padding-left: 12px; border-left: 3px solid var(--hb-accent); }
+.handbook-page h3      { font-size: 13pt; font-weight: 700; color: var(--hb-text); margin: 10px 0 6px; padding-left: 12px; border-left: 3px solid var(--hb-accent); }
 .handbook-page p       { margin-bottom: 8px; color: var(--hb-text); }
 .handbook-page a       { color: var(--hb-accent); }
 .handbook-page ul,
