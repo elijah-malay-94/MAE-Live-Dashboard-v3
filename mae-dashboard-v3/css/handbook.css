@@ -86,7 +86,7 @@
 .handbook-page .logo-text strong { color: #e2e8f0; display: block; }
 .handbook-page .cover-label   { color: #38bdf8; font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 18px; margin-top: 80px; }
 .handbook-page .cover-title   { font-size: 44pt; font-weight: 800; line-height: 1.05; color: #ffffff; }
-.handbook-page .cover-title span { color: #38bdf8; }
+.handbook-page .cover-title span { color: #f8d200; }
 .handbook-page .cover-sub     { font-size: 14pt; color: rgba(255,255,255,0.55); margin-top: 14px; font-weight: 300; }
 .handbook-page .cover-tags    { display: flex; gap: 12px; margin-top: 40px; }
 .handbook-page .tag           { border: 1.5px solid rgba(56,189,248,0.5); color: #38bdf8; padding: 5px 16px; border-radius: 20px; font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
