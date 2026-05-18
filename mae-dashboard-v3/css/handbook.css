@@ -28,7 +28,7 @@
   z-index: 1;
   flex: 1;
   font-family: 'Inter', sans-serif;
-  background: var(--hb-navy) !important;
+  background: #c8cdd4 !important;
   color: var(--hb-text) !important;
   font-size: 11pt;
   line-height: 1.65;
@@ -37,6 +37,25 @@
 .handbook-lang         { display: none; }
 .handbook-lang.active  { display: block; }
 
+/* ── Screen: render each section as a distinct A4 sheet ── */
+@media screen {
+  .handbook-page .cover,
+  .handbook-page .toc-page,
+  .handbook-page .chapter,
+  .handbook-page .final-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    overflow: hidden;
+    position: relative;
+  }
+  .handbook-page .cover    { background: var(--hb-navy); }
+  .handbook-page .toc-page { background: var(--hb-navy); }
+  .handbook-page .final-page { background: var(--hb-navy); }
+}
+
 /* ── Box-sizing scoped to handbook only ── */
 .handbook-page *, .handbook-page *::before, .handbook-page *::after {
   box-sizing: border-box;
@@ -44,7 +63,7 @@
 
 /* ── Cover ── */
 .handbook-page .cover {
-  min-height: 100vh;
+  min-height: 297mm;
   background: var(--hb-navy);
   color: inherit;
   display: flex;
@@ -208,7 +227,7 @@
 .handbook-page .chart-feat p        { font-size: 9.5pt; color: var(--hb-muted); margin: 0; }
 
 /* ── Final page ── */
-.handbook-page .final-page          { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 70px; background: var(--hb-navy); }
+.handbook-page .final-page          { min-height: 297mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 70px; background: var(--hb-navy); }
 .handbook-page .final-page .fp-logo { font-size: 28pt; font-weight: 800; color: var(--hb-accent); margin-bottom: 10px; }
 .handbook-page .final-page p        { color: var(--hb-muted); font-size: 10pt; margin: 4px 0; }
 .handbook-page .final-page a        { color: var(--hb-accent); }
@@ -216,42 +235,57 @@
 /* ══════════════════════════════════════════════════════════
    PRINT — A4 page breaks, hide dashboard chrome
    ══════════════════════════════════════════════════════════ */
-@page { size: A4; margin: 15mm 20mm; }
+@page { size: A4 portrait; margin: 15mm 20mm; }
 
 @media print {
-  /* Hide all dashboard UI, show only handbook */
+  /* Hide all dashboard UI — show only the handbook */
   .sidebar,
   .login-overlay,
   .topbar,
   #exportModal,
   #alarmsPanel { display: none !important; }
 
-  .app   { display: block !important; }
+  .app   { display: block !important; background: none !important; }
   .main  { display: none !important; }
 
-  .handbook-page             { display: block !important; overflow: visible !important; height: auto !important; }
-  .handbook-lang             { display: none !important; }
-  .handbook-lang.active      { display: block !important; }
+  /* Reset screen-only sheet styling */
+  .handbook-page .cover,
+  .handbook-page .toc-page,
+  .handbook-page .chapter,
+  .handbook-page .final-page {
+    width: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
 
-  /* Page break rules */
+  .handbook-page {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    background: #ffffff !important;
+  }
+  .handbook-lang        { display: none !important; }
+  .handbook-lang.active { display: block !important; }
+
+  /* A4 page-break rules */
   .handbook-page .cover {
-    page-break-after: always;
     break-after: page;
-    min-height: 297mm;
-    max-height: 297mm;
-    overflow: hidden;
+    page-break-after: always;
+    min-height: 0;
   }
   .handbook-page .toc-page {
-    page-break-after: always;
     break-after: page;
+    page-break-after: always;
   }
   .handbook-page .chapter {
-    page-break-before: always;
     break-before: page;
+    page-break-before: always;
   }
   .handbook-page .final-page {
-    page-break-before: always;
     break-before: page;
-    min-height: 297mm;
+    page-break-before: always;
+    min-height: 0;
   }
 }
