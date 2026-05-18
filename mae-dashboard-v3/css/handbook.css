@@ -320,13 +320,67 @@
 
   .handbook-page {
     display: block !important;
+    position: static !important;  /* reset fixed positioning from screen */
     overflow: visible !important;
     height: auto !important;
     width: 100% !important;
     background: #ffffff !important;
+    font-size: 11pt !important;
+    line-height: 1.7 !important;
   }
   .handbook-lang        { display: none !important; }
   .handbook-lang.active { display: block !important; }
+
+  /* ── Compact print spacing ── */
+  .handbook-page .cover         { padding: 24px 28px !important; }
+  .handbook-page .cover-label   { margin-top: 24px !important; margin-bottom: 10px !important; }
+  .handbook-page .cover-title   { font-size: 32pt !important; }
+  .handbook-page .cover-sub     { font-size: 12pt !important; margin-top: 8px !important; }
+  .handbook-page .cover-tags    { margin-top: 16px !important; }
+  .handbook-page .cover-meta    { margin-top: 16px !important; gap: 8px !important; }
+  .handbook-page .meta-card     { padding: 10px 12px !important; }
+  .handbook-page .cover-footer  { margin-top: 16px !important; padding-top: 12px !important; }
+
+  .handbook-page .toc-page      { padding: 20px 24px 4px !important; }
+  .handbook-page .toc-title     { font-size: 13pt !important; margin-bottom: 12px !important; }
+  .handbook-page .toc-item      { padding: 5px 0 !important; font-size: 10pt !important; }
+  .handbook-page .toc-sub       { padding: 3px 0 3px 22px !important; font-size: 9pt !important; }
+
+  .handbook-page .chapter-header { padding: 14px 20px !important; }
+  .handbook-page .ch-num        { font-size: 26pt !important; min-width: 50px !important; }
+  .handbook-page .ch-label      { font-size: 7pt !important; }
+  .handbook-page .ch-title      { font-size: 16pt !important; }
+
+  .handbook-page .content       { padding: 18px 24px 4px !important; }
+  .handbook-page h3             { font-size: 11pt !important; margin: 20px 0 10px !important; padding-left: 10px !important; }
+  .handbook-page p              { margin-bottom: 9px !important; }
+  .handbook-page ul,
+  .handbook-page ol             { margin-bottom: 10px !important; padding-left: 20px !important; }
+  .handbook-page li             { margin-bottom: 4px !important; }
+
+  .handbook-page table          { margin: 12px 0 !important; font-size: 10pt !important; }
+  .handbook-page thead th       { padding: 8px 12px !important; }
+  .handbook-page tbody td       { padding: 6px 12px !important; }
+
+  .handbook-page .callout       { margin: 10px 0 !important; padding: 10px 14px !important; font-size: 10pt !important; }
+  .handbook-page .steps         { margin: 10px 0 !important; }
+  .handbook-page .step          { margin-bottom: 10px !important; gap: 14px !important; }
+  .handbook-page .step-num      { width: 24px !important; height: 24px !important; font-size: 9pt !important; }
+
+  .handbook-page .kpi-colors,
+  .handbook-page .power-cards,
+  .handbook-page .alert-cards,
+  .handbook-page .lang-cards,
+  .handbook-page .sidebar-desc,
+  .handbook-page .chart-features { gap: 10px !important; margin: 10px 0 !important; }
+
+  .handbook-page .support-box   { padding: 14px 18px !important; margin: 14px 0 0 !important; }
+  .handbook-page .kpi-card,
+  .handbook-page .power-card,
+  .handbook-page .alert-card,
+  .handbook-page .lang-card,
+  .handbook-page .chart-feat    { padding: 12px 14px !important; }
+  .handbook-page code           { font-size: 9pt !important; padding: 1px 4px !important; }
 
   /* A4 page-break rules */
   .handbook-page .cover {
