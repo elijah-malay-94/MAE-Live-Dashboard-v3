@@ -140,8 +140,8 @@
 }
 .handbook-page .cover-logo    { display: flex; align-items: center; gap: 18px; }
 .handbook-page .logo-box      { background: #0ea5e9; color: #fff; font-size: 18pt; font-weight: 800; padding: 10px 14px; border-radius: 8px; letter-spacing: -1px; }
-.handbook-page .logo-text     { color: rgba(255,255,255,0.55); font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; line-height: 1.4; }
-.handbook-page .logo-text strong { color: #f8d200; display: block; }
+.handbook-page .logo-text     { color: rgba(255,255,255,0.5); font-size: 9pt; text-transform: uppercase; letter-spacing: 2px; line-height: 1.4; }
+.handbook-page .logo-text strong { color: #ffffff; font-weight: 700; display: block; }
 .handbook-page .cover-label   { color: #38bdf8; font-size: 8pt; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px; margin-top: 20px; }
 .handbook-page .cover-title   { font-size: 34pt; font-weight: 800; line-height: 1.05; color: #ffffff; }
 .handbook-page .cover-title span { color: #f8d200; }
@@ -348,8 +348,9 @@
     overflow: visible !important;
   }
   .handbook-page .cover::before { height: 5px !important; background: linear-gradient(90deg, #0ea5e9, #f8d200, #0ea5e9) !important; }
-  .handbook-page .logo-box      { background: #0ea5e9 !important; font-size: 15pt !important; padding: 8px 13px !important; }
-  .handbook-page .logo-text     { font-size: 8pt !important; }
+  .handbook-page .logo-box               { background: #0ea5e9 !important; font-size: 15pt !important; padding: 8px 13px !important; }
+  .handbook-page .logo-text              { font-size: 8pt !important; color: rgba(255,255,255,0.5) !important; }
+  .handbook-page .logo-text strong       { color: #ffffff !important; font-weight: 700 !important; display: block !important; }
   .handbook-page .cover-label   { color: #0ea5e9 !important; font-size: 7pt !important; margin-top: 14mm !important; letter-spacing: 4px !important; }
   .handbook-page .cover-title   { font-size: 26pt !important; color: #ffffff !important; line-height: 1.1 !important; }
   .handbook-page .cover-title span { color: #f8d200 !important; }
