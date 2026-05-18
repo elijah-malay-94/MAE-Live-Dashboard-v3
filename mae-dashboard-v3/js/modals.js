@@ -97,12 +97,14 @@ function openHandbook() {
   const lang = (window.MAE_I18N && window.MAE_I18N.getLanguage() === 'it') ? 'IT' : 'EN';
   document.getElementById('handbookIT').classList.toggle('active', lang === 'IT');
   document.getElementById('handbookEN').classList.toggle('active', lang === 'EN');
+  window.scrollTo(0, 0);
 }
 function closeHandbook() {
   const page = document.getElementById('handbookPage');
   const mainEl = document.querySelector('.main');
   if (page) page.classList.remove('active');
   if (mainEl) mainEl.style.display = '';
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════ MANUAL DOWNLOAD ═══════════════════════
