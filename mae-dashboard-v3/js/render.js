@@ -113,12 +113,14 @@ async function switchDevice(id) {
 
 
   // Set the period to the last diagnostic date, in order to have some data to view
-  if(activeDevice.last_diagnostic){
+  if(activeDevice.last_diagnostic && typeof activeDevice.last_diagnostic === 'string'){
     const datetoset = activeDevice.last_diagnostic.slice(0, 10);
-    const fromEl = document.getElementById('dateFrom');
-    const toEl = document.getElementById('dateTo');
-    if (fromEl) fromEl.value = datetoset;
-    if (toEl) toEl.value = datetoset;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(datetoset)) {
+      const fromEl = document.getElementById('dateFrom');
+      const toEl = document.getElementById('dateTo');
+      if (fromEl) fromEl.value = datetoset;
+      if (toEl) toEl.value = datetoset;
+    }
   }  
 
   var isOnline = true;
@@ -316,7 +318,7 @@ function getThresholds() {
     if (!key) return;
     const read = (id) => {
       const el = document.getElementById(id);
-      const v = el ? Number(el.value) : NaN;
+      const v = (el && el.value.trim() !== '') ? Number(el.value) : NaN;
       return Number.isFinite(v) ? v : undefined;
     };
     out[key] = {

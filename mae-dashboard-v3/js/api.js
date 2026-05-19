@@ -1625,11 +1625,11 @@ async function fetchAvailableDevices(customerId, status = '') {
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
       id: String(item.id || item.device_id || ''),
-      serial: item.matricola || item.serial || '',
-      name: item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
-      type: item.tipologia || item.type || '',
+      serial: item.serial || item.matricola || '',
+      name: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      type: item.type || item.tipologia || '',
       status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
-      position: item.position || item.device_place || item.location || '',
+      position: item.position || item.posizione || item.device_place || item.location || '',
       lastConnection: item.timestamp_server || item.updated || '—',
     }));
   } catch (err) {
@@ -1649,11 +1649,11 @@ async function fetchWorkDevices(workId) {
     if (!Array.isArray(data)) return [];
     return data.map(item => ({
       id: String(item.id || item.device_id || ''),
-      serial: item.matricola || item.serial || '',
-      name: item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
-      type: item.tipologia || item.type || '',
+      serial: item.serial || item.matricola || '',
+      name: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      type: item.type || item.tipologia || '',
       status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
-      position: item.position || item.device_place || item.location || '',
+      position: item.position || item.posizione || item.device_place || '',
       lastConnection: item.timestamp_server || item.updated || '—',
     }));
   } catch (err) {
