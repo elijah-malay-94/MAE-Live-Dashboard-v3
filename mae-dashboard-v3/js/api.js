@@ -1664,6 +1664,11 @@ async function fetchWorkDevices(workId) {
   }
 }
 
+async function renameDevice(workId, deviceId, devicePlace) {
+  const path = `/api/v1/works/${encodeURIComponent(workId)}/devices/${encodeURIComponent(deviceId)}/rename`;
+  return await apiFetch(path, { method: 'PUT', body: { device_place: String(devicePlace || '').trim() } });
+}
+
 async function createWork(payload) {
   if (isMockMode()) {
     return { status: 0, message: "", id: String(1000 + Math.floor(Math.random() * 9000)) };

@@ -249,6 +249,19 @@
 </div>
 </div>
 <div class="job-editor-error" id="jobEditorError"></div>
+
+<!-- Device Rename Popup -->
+<div id="deviceRenameOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;width:320px;display:flex;flex-direction:column;gap:14px;">
+    <div style="font-weight:600;font-size:14px;" data-i18n="device.renameTitle">Rename device</div>
+    <input id="deviceRenameInput" type="text" maxlength="30" style="background:var(--input-bg,var(--sidebar));border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;width:100%;box-sizing:border-box;" placeholder="Device place name"/>
+    <div id="deviceRenameError" style="color:var(--red,#f87171);font-size:12px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn" onclick="closeDeviceRenamePopup()" data-i18n="job.cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="submitDeviceRename()" data-i18n="job.save">Save</button>
+    </div>
+  </div>
+</div>
 </div>
 </div>
 <div class="footer">

@@ -457,6 +457,10 @@ function renderJobDashboardDeviceRows(list, listKey) {
     const line1 = safe(d.type);
     const line2 = safe(d.device_place || d.description || d.serial);
     const line3 = safe(d.serial || id);
+    const editBtn = listKey === 'associated' ? `
+      <button class="work-edit-button" type="button" title="Rename" onclick="event.stopPropagation();openDeviceRenamePopup('${escapeHtml(id)}','${escapeHtml(line2)}')">
+        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      </button>` : '';
     return `
     <div class="device-item" data-job-device-list="${listKey}" data-device-id="${escapeHtml(id)}" role="button" tabindex="0"
       onclick="selectJobDeviceForTransfer('${escapeHtml(id)}', '${escapeHtml(listKey)}')">
@@ -466,6 +470,7 @@ function renderJobDashboardDeviceRows(list, listKey) {
         <div class="device-name">${escapeHtml(line2)}</div>
         <div class="device-serial">${escapeHtml(line3)}</div>
       </div>
+      ${editBtn}
     </div>`;
   }).join('');
 }
@@ -822,6 +827,50 @@ function wireJobLocationSearchControls() {
   if (btn && btn.dataset.maeLocationSearchWired !== '1') {
     btn.dataset.maeLocationSearchWired = '1';
     btn.addEventListener('click', () => searchJobLocation());
+  }
+}
+
+function openDeviceRenamePopup(deviceId, currentName) {
+  window._renameDeviceId = String(deviceId || '');
+  const overlay = document.getElementById('deviceRenameOverlay');
+  const input = document.getElementById('deviceRenameInput');
+  const err = document.getElementById('deviceRenameError');
+  if (!overlay || !input) return;
+  input.value = currentName === '—' ? '' : currentName;
+  if (err) err.textContent = '';
+  overlay.style.display = 'flex';
+  input.focus();
+  input.select();
+}
+
+function closeDeviceRenamePopup() {
+  const overlay = document.getElementById('deviceRenameOverlay');
+  if (overlay) overlay.style.display = 'none';
+  window._renameDeviceId = '';
+}
+
+async function submitDeviceRename() {
+  const deviceId = window._renameDeviceId || '';
+  const workId = window._jobEditorWorkId || '';
+  const input = document.getElementById('deviceRenameInput');
+  const err = document.getElementById('deviceRenameError');
+  const newName = String(input?.value || '').trim();
+
+  if (!newName) { if (err) err.textContent = 'Name cannot be empty.'; return; }
+  if (newName.length > 30) { if (err) err.textContent = 'Max 30 characters.'; return; }
+  if (!deviceId || !workId) { if (err) err.textContent = 'Missing device or work ID.'; return; }
+
+  try {
+    await renameDevice(workId, deviceId, newName);
+    // Update local cache so re-render shows new name without reload
+    if (Array.isArray(window._jobAssociatedDevices)) {
+      const d = window._jobAssociatedDevices.find(x => String(x.id) === deviceId);
+      if (d) { d.device_place = newName; d.description = newName; }
+    }
+    closeDeviceRenamePopup();
+    await loadJobDevices(workId);
+  } catch (e) {
+    if (err) err.textContent = e?.message || 'Could not rename device.';
   }
 }
 
