@@ -1666,7 +1666,7 @@ async function fetchWorkDevices(workId) {
 
 async function renameDevice(workId, deviceId, devicePlace) {
   const path = `/api/v1/works/${encodeURIComponent(workId)}/devices/${encodeURIComponent(deviceId)}/rename`;
-  return await apiFetch(path, { method: 'PUT', body: { device_place: String(devicePlace || '').trim() } });
+  return await apiFetchWithHeaders(path, { method: 'PUT', body: { device_place: String(devicePlace || '').trim() } });
 }
 
 async function createWork(payload) {
