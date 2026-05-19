@@ -978,9 +978,9 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
       }
       return {
         id:             String(item.id),
-        serial:         item.matricola   || '',
-        name:           item.descrizione || item.matricola || `Device ${item.id}`,
-        type:           item.tipologia   || '',
+        serial:         item.serial   || '',
+        description:    item.description || item.serial || `Device ${item.id}`,
+        type:           item.type   || '',
         status:         item.enabled === '1' ? 'online' : 'offline',
         signal:         0,
         memory:         '',
@@ -988,7 +988,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         usb:            0,
         aux:            0,
         city:           '',
-        position:       '',
+        position:       item.posiiton   || '0.0000, 0.0000',
         lat:            parseFloat(coords[0]) || 0,
         lng:            parseFloat(coords[1]) || 0,
         lastConnection: lastConn,
@@ -1000,7 +1000,7 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         port:        item.port       ?? '',
         ip_public:   item.ip_public  ?? '',
         port_public: item.port_public ?? '',
-        position: devicePlace,
+        device_place: devicePlace,
       };
     }).sort(function (a, b) {
       const ta = a?.last_diagnostic ? new Date(String(a.last_diagnostic).replace(' ', 'T')).getTime() : 0;
@@ -1148,7 +1148,7 @@ async function fetchDevicesInfo(deviceId, workId = getActiveWorkId()) {
 
     // Work-scoped mapping (Client req): Location = work-place, Position = device-place
     if (workPlace !== undefined) activeDevice.location = String(workPlace || '').trim();
-    if (devicePlace !== undefined) activeDevice.position = String(devicePlace || '').trim();
+    if (devicePlace !== undefined) activeDevice.device_place = String(devicePlace || '').trim();
     // Backward-compat for existing UI pieces still using `.city`
     if (activeDevice.location && !activeDevice.city) activeDevice.city = activeDevice.location;
 
@@ -1626,9 +1626,10 @@ async function fetchAvailableDevices(customerId, status = '') {
     return data.map(item => ({
       id: String(item.id || item.device_id || ''),
       serial: item.serial || item.matricola || '',
-      name: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      description: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
       type: item.type || item.tipologia || '',
       status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
+      device_place: item.device_place || item.description || '', 
       position: item.position || item.posizione || item.device_place || item.location || '',
       lastConnection: item.timestamp_server || item.updated || '—',
     }));
@@ -1650,10 +1651,11 @@ async function fetchWorkDevices(workId) {
     return data.map(item => ({
       id: String(item.id || item.device_id || ''),
       serial: item.serial || item.matricola || '',
-      name: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
+      description: item.description || item.descrizione || item.name || item.serial || `Device ${item.id || ''}`,
       type: item.type || item.tipologia || '',
       status: item.enabled === '1' || item.status === 'online' || item.state === 'online' ? 'online' : 'offline',
-      position: item.position || item.posizione || item.device_place || '',
+      device_place: item.device_place || item.description || '', 
+      position: item.position || item.posizione || '',
       lastConnection: item.timestamp_server || item.updated || '—',
     }));
   } catch (err) {

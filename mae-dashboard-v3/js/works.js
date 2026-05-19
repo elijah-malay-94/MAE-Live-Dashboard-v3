@@ -455,7 +455,7 @@ function renderJobDashboardDeviceRows(list, listKey) {
     const id = String(d.id || '').trim();
     const dot = jobDeviceLedColor(d.last_connection ?? d.lastConnection);
     const line1 = safe(d.type);
-    const line2 = safe(d.position || d.devicePlace || d.position_name || d.serial);
+    const line2 = safe(d.device_place || d.description || d.serial);
     const line3 = safe(d.serial || id);
     return `
     <div class="device-item" data-job-device-list="${listKey}" data-device-id="${escapeHtml(id)}" role="button" tabindex="0"

@@ -38,7 +38,7 @@ function renderDeviceList() {
       <div class="device-dot" style="background:${ledColorFromLastConnection(d.last_connection)}"></div>
       <div class="device-info">
         <div class="device-serial">${safe(d.type)}</div>
-        <div class="device-name">${safe(d.position || d.devicePlace || d.position_name || d.serial)}</div>
+        <div class="device-name">${safe(d.device_place || d.description || d.serial)}</div>
         <div class="device-serial">${safe(d.serial || d.id)}</div>
       </div>
     </div>
@@ -184,8 +184,9 @@ function renderDeviceInfo() {
   };
   document.getElementById('deviceInfoStatus').style = `background:${ledColorFromLastConnection(d.last_connection)}`;
   document.getElementById('deviceInfoList').innerHTML = `
-    <div class="info-row"><span class="info-key">${tr('deviceInfo.name','Name')}</span><span class="info-val">${d.name}</span></div>
-    <div class="info-row"><span class="info-key">${tr('deviceInfo.serialNo','Serial No.')}</span><span class="info-val">${d.serial || d.id}</span></div>
+    <!--div class="info-row"><span class="info-key">${tr('deviceInfo.name','Name')}</span><span class="info-val info-val--upper">${d.description}</span></div-->
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.position','Position')}</span><span class="info-val info-val--upper">${d.device_place || '—'}</span></div>
+    <div class="info-row"><span class="info-key">${tr('deviceInfo.serialNo','Serial No.')}</span><span class="info-val">${d.serial}</span></div>
     <div class="info-row"><span class="info-key">${tr('deviceInfo.typology','Typology')}</span><span class="info-val info-val--upper">${d.type}</span></div>
     <div class="info-row"><span class="info-key">${tr('deviceInfo.lastConnection','Last connection')}</span><span class="info-val">${d.lastConnection || '—'}</span></div>
     <div class="info-row"><span class="info-key">${tr('deviceInfo.signal','Signal')}</span><span class="info-val"><span class="badge" style="background:color-mix(in srgb, ${signalColor} 16%, transparent); border:1px solid color-mix(in srgb, ${signalColor} 38%, transparent); color:${signalColor};">● ${d.signal} / 4</span></span></div>
@@ -195,8 +196,7 @@ function renderDeviceInfo() {
     <div class="info-row">
       <span class="info-key">${tr('deviceInfo.location','Location')}</span>
       <span class="info-val">${d.location || d.city || '—'}</span>
-    </div>
-    <div class="info-row"><span class="info-key">${tr('deviceInfo.position','Position')}</span><span class="info-val">${d.position || '—'}</span></div>
+    </div>    
     <div class="info-row"><span class="info-key">${tr('deviceInfo.coordinates','Coordinates')}</span><span class="info-val" style="font-size:10px;color:var(--muted2);">${(d.lat||0).toFixed(4)}°, ${(d.lng||0).toFixed(4)}°</span></div>
   `;
   renderMiniMapPreview();
