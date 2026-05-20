@@ -219,19 +219,21 @@
 <input data-i18n-placeholder="job.searchPlaceholder" id="jobLocationSearch" placeholder="Search address or place" type="search"/>
 <button class="btn job-location-search-btn" data-i18n="job.search" id="jobLocationSearchBtn" type="button">Search</button>
 </div>
-<div class="job-location-results" id="jobLocationResults"></div>
+<div class="job-location-results" id="jobLocationResults" style="display:none;"></div>
 </div>
-<div class="job-field">
+<div style="display:flex;gap:12px;">
+<div class="job-field" style="flex:1;">
 <label data-i18n="job.latitude" for="jobLatitude">Latitude</label>
 <input data-i18n-placeholder="job.latitudePlaceholder" id="jobLatitude" placeholder="Latitude" step="any" type="number"/>
 </div>
-<div class="job-field">
+<div class="job-field" style="flex:1;">
 <label data-i18n="job.longitude" for="jobLongitude">Longitude</label>
 <input data-i18n-placeholder="job.longitudePlaceholder" id="jobLongitude" placeholder="Longitude" step="any" type="number"/>
 </div>
-<div class="job-field">
+<div class="job-field" style="flex:1;">
 <label data-i18n="job.altitude" for="jobAltitude">Altitude</label>
 <input data-i18n-placeholder="job.altitudePlaceholder" id="jobAltitude" placeholder="Altitude" step="any" type="number"/>
+</div>
 </div>
 </div>
 <div class="job-devices-grid" id="jobDevicesSection">

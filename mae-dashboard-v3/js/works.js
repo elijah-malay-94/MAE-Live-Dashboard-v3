@@ -726,9 +726,11 @@ async function searchJobLocation() {
   const results = document.getElementById('jobLocationResults');
   if (!results) return;
   if (!query) {
-    results.innerHTML = '<div style="color:var(--muted);font-size:13px;">Enter a search query.</div>';
+    results.innerHTML = '';
+    results.style.display = 'none';
     return;
   }
+  results.style.display = '';
   results.innerHTML = '<div style="color:var(--muted);font-size:13px;">Searching…</div>';
   try {
     const data = await maeGeocodeQuery(query, 6);
@@ -757,7 +759,7 @@ async function selectJobLocation(displayName, lat, lon) {
   getJobEditorField('jobLatitude').value = String(lat || '').trim();
   getJobEditorField('jobLongitude').value = String(lon || '').trim();
   const locResults = document.getElementById('jobLocationResults');
-  if (locResults) locResults.innerHTML = '';
+  if (locResults) { locResults.innerHTML = ''; locResults.style.display = 'none'; }
   try {
     const elevationUrl = `https://api.open-elevation.com/api/v1/lookup?locations=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
     const response = await fetch(elevationUrl);
