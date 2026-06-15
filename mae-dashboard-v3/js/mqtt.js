@@ -336,13 +336,24 @@ function renderMqttSchedules() {
     return;
   }
 
+  const typeLabel = raw => {
+    const k = String(raw || '').trim().toLowerCase();
+    if (k === 'sch') return 'Schedule';
+    if (k === 'cir') return 'Circular';
+    if (k === 'evt') return 'Event';
+    if (k === 'day') return 'Daily';
+    return raw || '—';
+  };
+
   const rows = mqttSchedules.map(s => {
     const safeName = _mqttEscHtml(s.name || '—');
     const safeTs   = _mqttEscHtml(s.timestamp || '—');
+    const safeType = _mqttEscHtml(typeLabel(s.type));
     const nameAttr = _mqttEscHtml(s.name || '');
     return `<div class="mqtt-sched-row">
       <span class="td" style="font-size:11px;">${safeName}</span>
       <span class="td" style="font-size:10px;color:var(--muted2);">${safeTs}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${safeType}</span>
       <span class="td" style="gap:6px;">
         <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="viewMqttSchedule('${nameAttr}')">View</button>
         <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="downloadMqttSchedule('${nameAttr}')">Download</button>
@@ -352,8 +363,9 @@ function renderMqttSchedules() {
 
   el.innerHTML = `<div class="mqtt-sched-table">
     <div class="mqtt-sched-head">
-      <span class="th">File</span>
-      <span class="th">Date</span>
+      <span class="th">Name</span>
+      <span class="th">Timestamp</span>
+      <span class="th">Type</span>
       <span class="th">Actions</span>
     </div>
     ${rows}

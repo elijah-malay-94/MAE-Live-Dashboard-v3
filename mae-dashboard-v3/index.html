@@ -386,25 +386,8 @@
 <div class="api-hint" id="apiHintMqtt" style="display:none;margin-bottom:12px;border-radius:10px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--border);"></div>
 <div class="api-hint api-hint--warning" id="deviceTimeHintMqtt" style="display:none;margin-bottom:12px;"></div>
 <div class="mqtt-grid">
-  <!-- LEFT: Device Info + Power Supply -->
+  <!-- LEFT: Device Status + Schedules -->
   <div class="mqtt-col-left">
-    <div class="card">
-      <div class="card-label" style="margin-bottom:14px;">
-        <span class="kpi-dot" id="mqttDeviceInfoStatus" style="background:var(--muted)"></span>
-        <span>Device Info</span>
-      </div>
-      <div class="info-list" id="mqttDeviceInfoList"></div>
-    </div>
-    <div class="card">
-      <div class="card-label" style="margin-bottom:14px;">
-        <span class="kpi-dot" id="mqttPowerStatusDot" style="background:var(--muted)"></span>
-        <span>Power Supply</span>
-      </div>
-      <div class="info-list" id="mqttPowerInfoList"></div>
-    </div>
-  </div>
-  <!-- RIGHT: Device Status + Schedules -->
-  <div class="mqtt-col-right">
     <div class="card">
       <div class="card-header">
         <span class="card-title">Device Status</span>
@@ -427,6 +410,23 @@
         </button>
       </div>
       <div id="mqttSchedulesList"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
+    </div>
+  </div>
+  <!-- RIGHT: Device Info + Power Supply -->
+  <div class="mqtt-col-right">
+    <div class="card">
+      <div class="card-label" style="margin-bottom:14px;">
+        <span class="kpi-dot" id="mqttDeviceInfoStatus" style="background:var(--muted)"></span>
+        <span>Device Info</span>
+      </div>
+      <div class="info-list" id="mqttDeviceInfoList"></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:14px;">
+        <span class="kpi-dot" id="mqttPowerStatusDot" style="background:var(--muted)"></span>
+        <span>Power Supply</span>
+      </div>
+      <div class="info-list" id="mqttPowerInfoList"></div>
     </div>
   </div>
 </div>
