@@ -2341,6 +2341,34 @@
 </div>
 </div>
 </div>
+<!-- ═══════════════════════ MQTT SCHEDULE EDIT MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="mqttSchedEditOverlay" onclick="if(event.target===this)closeMqttScheduleEdit()">
+<div class="modal" style="width:380px;">
+  <div class="modal-title" style="margin-bottom:20px;">Edit Schedule</div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="files-filter-item">
+      <label for="mqttSchedStart">Start date</label>
+      <input id="mqttSchedStart" type="date"/>
+    </div>
+    <div class="files-filter-item">
+      <label for="mqttSchedEnd">End date</label>
+      <input id="mqttSchedEnd" type="date"/>
+    </div>
+    <div class="files-filter-item">
+      <label for="mqttSchedTime">Time</label>
+      <input id="mqttSchedTime" type="time"/>
+    </div>
+    <div class="files-filter-item">
+      <label for="mqttSchedDays">Days</label>
+      <input id="mqttSchedDays" type="text" placeholder="e.g. Monday, Friday"/>
+    </div>
+  </div>
+  <div class="modal-actions" style="margin-top:24px;">
+    <button class="btn" onclick="closeMqttScheduleEdit()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveMqttScheduleEdit()">Ok</button>
+  </div>
+</div>
+</div>
 <script src="js/i18n.js"></script>
 <script src="js/theme.js"></script>
 <script>

@@ -350,8 +350,11 @@ function renderMqttSchedules() {
         <button class="btn" style="padding:3px 10px;font-size:10px;background:color-mix(in srgb,${statusColor} 16%,transparent);border:1px solid color-mix(in srgb,${statusColor} 38%,transparent);color:${statusColor};"
           onclick="mqttToggleSchedule(${nameAttr}, ${!active})">${statusLabel}</button>
       </span>
-      <span class="td">
+      <span class="td" style="gap:4px;">
         <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="viewMqttSchedule(${nameAttr})">Lista file</button>
+        <button class="btn" style="padding:3px 7px;font-size:10px;" title="Edit schedule" onclick="openMqttScheduleEdit(${nameAttr})">
+          <svg fill="none" height="11" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="11"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </button>
       </span>
     </div>`;
   }).join('');
@@ -382,6 +385,82 @@ async function mqttToggleSchedule(name, activate) {
       method: 'PUT', body: JSON.stringify({ active: activate }),
     });
     showMqttHint('success', `Schedule ${activate ? 'activated' : 'deactivated'}.`);
+    await loadMqttSchedules();
+  } catch (err) {
+    showMqttHint('error', `Could not update schedule: ${err?.message || err}`);
+  }
+}
+
+// ── Schedule edit modal ───────────────────────────────────────────────────────
+
+let _mqttSchedEditName = null;
+
+function openMqttScheduleEdit(name) {
+  const sched = mqttSchedules.find(s => s.name === name);
+  if (!sched) return;
+  _mqttSchedEditName = name;
+
+  const toInputDate = str => {
+    if (!str || str === '—') return '';
+    const p = str.split('/');
+    return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : str;
+  };
+
+  document.getElementById('mqttSchedStart').value = toInputDate(sched.start);
+  document.getElementById('mqttSchedEnd').value   = toInputDate(sched.end);
+  document.getElementById('mqttSchedTime').value  = sched.time || '';
+  document.getElementById('mqttSchedDays').value  = sched.days || '';
+
+  document.getElementById('mqttSchedEditOverlay').classList.add('open');
+}
+
+function closeMqttScheduleEdit() {
+  document.getElementById('mqttSchedEditOverlay').classList.remove('open');
+  _mqttSchedEditName = null;
+}
+
+async function saveMqttScheduleEdit() {
+  const sched = mqttSchedules.find(s => s.name === _mqttSchedEditName);
+  if (!sched) return;
+
+  const startVal = document.getElementById('mqttSchedStart').value;
+  const endVal   = document.getElementById('mqttSchedEnd').value;
+  const timeVal  = document.getElementById('mqttSchedTime').value;
+  const daysVal  = document.getElementById('mqttSchedDays').value;
+
+  const toDisplay = str => {
+    if (!str) return '';
+    const p = str.split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : str;
+  };
+
+  const payload = {
+    name:    sched.name,
+    enabled: sched.active,
+    start:   startVal,
+    end:     endVal,
+    time:    timeVal,
+    days:    daysVal,
+  };
+
+  if (typeof isMockMode === 'function' && isMockMode()) {
+    sched.start = toDisplay(startVal);
+    sched.end   = toDisplay(endVal);
+    sched.time  = timeVal;
+    sched.days  = daysVal;
+    renderMqttSchedules();
+    closeMqttScheduleEdit();
+    showMqttHint('success', 'Schedule updated.');
+    return;
+  }
+
+  try {
+    await apiFetch(`/api/v1/devices/${encodeURIComponent(activeDevice.id)}/schedules/${encodeURIComponent(sched.name)}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    showMqttHint('success', 'Schedule updated.');
+    closeMqttScheduleEdit();
     await loadMqttSchedules();
   } catch (err) {
     showMqttHint('error', `Could not update schedule: ${err?.message || err}`);
