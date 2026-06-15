@@ -171,25 +171,38 @@ function renderMqttPowerSupply() {
   const listEl = document.getElementById('mqttPowerInfoList');
   if (!listEl) return;
 
-  const fmtV = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? `${n.toFixed(2)} V` : '—'; };
-  const fmtC = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? `${n.toFixed(1)} °C` : '—'; };
-
-  const inputOk = d?.input_status === true || d?.input_status === 1 || String(d?.input_status).toLowerCase() === 'true' || d?.input_status === '1';
-  const inputColor = inputOk ? 'var(--green)' : 'var(--red)';
-  const inputLabel = inputOk ? 'ON' : 'OFF';
-
   const dotEl = document.getElementById('mqttPowerStatusDot');
   if (dotEl) dotEl.style.background = d ? 'var(--green)' : 'var(--muted)';
 
-  listEl.innerHTML = d ? `
-    <div class="info-row"><span class="info-key">Battery Int (V)</span><span class="info-val">${fmtV(d.battery_int)}</span></div>
-    <div class="info-row"><span class="info-key">Battery Ext (V)</span><span class="info-val">${fmtV(d.battery_ext)}</span></div>
-    <div class="info-row"><span class="info-key">Temperature (°C)</span><span class="info-val">${fmtC(d.temperature)}</span></div>
-    <div class="info-row"><span class="info-key">Input Voltage (V)</span><span class="info-val">${fmtV(d.input)}</span></div>
-    <div class="info-row"><span class="info-key">Input Status</span><span class="info-val">
-      <span class="badge" style="background:color-mix(in srgb,${inputColor} 16%,transparent);border:1px solid color-mix(in srgb,${inputColor} 38%,transparent);color:${inputColor};">● ${inputLabel}</span>
-    </span></div>
-  ` : '<div class="info-row"><span class="info-key" style="color:var(--muted)">No diagnostics data</span></div>';
+  if (!d) {
+    listEl.innerHTML = '<div class="info-row"><span class="info-key" style="color:var(--muted)">No diagnostics data</span></div>';
+    return;
+  }
+
+  const fmtV = v => { const n = parseFloat(v); return Number.isFinite(n) ? `${n.toFixed(2)} V` : '—'; };
+  const fmtC = v => { const n = parseFloat(v); return Number.isFinite(n) ? `${n.toFixed(1)} °C` : '—'; };
+  const inputOk = d.input_status === true || d.input_status === 1 || String(d.input_status).toLowerCase() === 'true' || d.input_status === '1';
+  const inputColor = inputOk ? 'var(--green)' : 'var(--red)';
+
+  listEl.innerHTML = `
+    <div class="mqtt-diag-grid">
+      <div class="mqtt-diag-col">
+        <div class="mqtt-diag-head">PARAMETRI</div>
+        <div class="info-row"><span class="info-key">Battery int</span><span class="info-val">${fmtV(d.battery_int)}</span></div>
+        <div class="info-row"><span class="info-key">Battery ext</span><span class="info-val">${fmtV(d.battery_ext)}</span></div>
+        <div class="info-row"><span class="info-key">Temperature</span><span class="info-val">${fmtC(d.temperature)}</span></div>
+        <div class="info-row"><span class="info-key">Input</span><span class="info-val">${fmtV(d.input)}</span></div>
+        <div class="info-row"><span class="info-key">Input status</span><span class="info-val" style="font-weight:600;color:${inputColor};">${inputOk ? 'true' : 'false'}</span></div>
+      </div>
+      <div class="mqtt-diag-col">
+        <div class="mqtt-diag-head">DETTAGLI</div>
+        <div class="info-row"><span class="info-key">Last update</span><span class="info-val">${_mqttEscHtml(d.last_update || '—')}</span></div>
+        <div class="info-row"><span class="info-key">Topic</span><span class="info-val" style="font-size:10px;word-break:break-all;">${_mqttEscHtml(d.topic || '—')}</span></div>
+        <div class="info-row"><span class="info-key">Result</span><span class="info-val">${d.result ?? '—'}</span></div>
+        <div class="info-row"><span class="info-key">Message</span><span class="info-val">${_mqttEscHtml(d.message || '—')}</span></div>
+      </div>
+    </div>
+  `;
 }
 
 // ── Device Status ─────────────────────────────────────────────────────────────
@@ -226,44 +239,33 @@ function renderMqttStatus() {
   const el = document.getElementById('mqttStatusContent');
   if (!el) return;
 
-  const BOOL_FIELDS = [
-    { key: 'gps_lock',          label: 'GPS Lock' },
-    { key: 'sd_card_ok',        label: 'SD Card' },
-    { key: 'network_connected', label: 'Network' },
-    { key: 'accelerometer_ok',  label: 'Accelerometer' },
-    { key: 'rtc_sync',          label: 'RTC Sync' },
-    { key: 'data_upload_ok',    label: 'Data Upload' },
-  ];
-
   if (!s) {
     el.innerHTML = '<div style="color:var(--muted);font-size:12px;">No status data</div>';
     _updateMonitoringBtn(null);
     return;
   }
 
-  const isBoolTrue = (v) => v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true';
-
-  const boolCards = BOOL_FIELDS.map(f => {
-    const val = isBoolTrue(s[f.key]);
-    const color = val ? 'var(--green)' : 'var(--red)';
-    const label = val ? 'OK' : 'FAIL';
-    return `<div class="mqtt-bool-card" style="border-color:color-mix(in srgb,${color} 35%,transparent);">
-      <div class="mqtt-bool-label">${f.label}</div>
-      <div class="mqtt-bool-value"><span class="badge" style="background:color-mix(in srgb,${color} 16%,transparent);border:1px solid color-mix(in srgb,${color} 38%,transparent);color:${color};">● ${label}</span></div>
-    </div>`;
-  }).join('');
-
-  const progress = Math.min(100, Math.max(0, Number(s.acquisition_progress) || 0));
+  const isBool = v => v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true';
+  const boolVal   = v => isBool(v) ? 'true' : 'false';
+  const boolColor = v => isBool(v) ? 'var(--green)' : 'var(--red)';
+  const progress  = Math.min(100, Math.max(0, Number(s.acquisition_progress) || 0));
 
   el.innerHTML = `
-    <div class="mqtt-bool-grid">${boolCards}</div>
-    <div class="mqtt-progress-section">
-      <div class="mqtt-progress-label">
-        <span>Acquisition Progress</span>
-        <span>${progress}%</span>
+    <div class="mqtt-diag-grid">
+      <div class="mqtt-diag-col">
+        <div class="mqtt-diag-head">STATUS</div>
+        <div class="info-row"><span class="info-key">Device online</span><span class="info-val" style="font-weight:600;color:${boolColor(s.device_online)};">${boolVal(s.device_online)}</span></div>
+        <div class="info-row"><span class="info-key">Monitoring active</span><span class="info-val" style="font-weight:600;color:${boolColor(s.monitoring_active)};">${boolVal(s.monitoring_active)}</span></div>
+        <div class="info-row"><span class="info-key">Acquisition running</span><span class="info-val" style="font-weight:600;color:${boolColor(s.acquisition_running)};">${boolVal(s.acquisition_running)}</span></div>
+        <div class="info-row"><span class="info-key">Acquisition progress</span><span class="info-val">${progress}%</span></div>
+        <div class="info-row"><span class="info-key">Estimated end</span><span class="info-val">${_mqttEscHtml(s.estimated_end || '—')}</span></div>
       </div>
-      <div class="mqtt-progress-track">
-        <div class="mqtt-progress-fill" style="width:${progress}%"></div>
+      <div class="mqtt-diag-col">
+        <div class="mqtt-diag-head">RESULT</div>
+        <div class="info-row"><span class="info-key">Result</span><span class="info-val">${s.result ?? '—'}</span></div>
+        <div class="info-row"><span class="info-key">Message</span><span class="info-val">${_mqttEscHtml(s.message || '—')}</span></div>
+        <div class="info-row"><span class="info-key">Last update</span><span class="info-val">${_mqttEscHtml(s.last_update || '—')}</span></div>
+        <div class="info-row"><span class="info-key">Topic</span><span class="info-val" style="font-size:10px;word-break:break-all;">${_mqttEscHtml(s.topic || '—')}</span></div>
       </div>
     </div>
   `;
@@ -272,20 +274,14 @@ function renderMqttStatus() {
 }
 
 function _updateMonitoringBtn(isActive) {
-  const wrap = document.getElementById('mqttMonitoringBtnWrap');
   const btn = document.getElementById('mqttMonitoringBtn');
-  if (!wrap || !btn) return;
-
-  if (isActive === null || isActive === undefined) {
-    wrap.style.display = 'none';
-    return;
-  }
-
-  wrap.style.display = 'block';
+  if (!btn) return;
+  if (isActive === null || isActive === undefined) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
   const active = isActive === true || isActive === 1 || isActive === '1' || String(isActive).toLowerCase() === 'true';
-  btn.textContent = active ? 'Disable Monitoring' : 'Enable Monitoring';
-  btn.className = active ? 'btn btn-danger' : 'btn btn-primary';
-  btn.onclick = () => _setMqttMonitoring(!active);
+  btn.textContent = active ? 'Set Status Disattivo' : 'Set Status Attivo';
+  btn.className   = active ? 'btn btn-danger' : 'btn btn-primary';
+  btn.onclick     = () => _setMqttMonitoring(!active);
 }
 
 async function _setMqttMonitoring(enable) {
@@ -336,40 +332,60 @@ function renderMqttSchedules() {
     return;
   }
 
-  const typeLabel = raw => {
-    const k = String(raw || '').trim().toLowerCase();
-    if (k === 'sch') return 'Schedule';
-    if (k === 'cir') return 'Circular';
-    if (k === 'evt') return 'Event';
-    if (k === 'day') return 'Daily';
-    return raw || '—';
-  };
+  const isActive = s => s.active === true || s.active === 1 || s.active === '1' || String(s.active).toLowerCase() === 'true';
 
   const rows = mqttSchedules.map(s => {
-    const safeName = _mqttEscHtml(s.name || '—');
-    const safeTs   = _mqttEscHtml(s.timestamp || '—');
-    const safeType = _mqttEscHtml(typeLabel(s.type));
-    const nameAttr = _mqttEscHtml(s.name || '');
+    const active       = isActive(s);
+    const statusColor  = active ? 'var(--green)' : 'var(--red)';
+    const statusLabel  = active ? 'Disattiva' : 'Attiva';
+    const nameAttr     = JSON.stringify(s.name || '').replace(/"/g, '&quot;');
     return `<div class="mqtt-sched-row">
-      <span class="td" style="font-size:11px;">${safeName}</span>
-      <span class="td" style="font-size:10px;color:var(--muted2);">${safeTs}</span>
-      <span class="td" style="font-size:10px;color:var(--muted2);">${safeType}</span>
-      <span class="td" style="gap:6px;">
-        <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="viewMqttSchedule('${nameAttr}')">View</button>
-        <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="downloadMqttSchedule('${nameAttr}')">Download</button>
+      <span class="td" style="font-size:11px;color:var(--accent);">${_mqttEscHtml(s.name || '—')}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${_mqttEscHtml(s.start || '—')}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${_mqttEscHtml(s.end || '—')}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${_mqttEscHtml(s.time || '—')}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${_mqttEscHtml(s.days || '—')}</span>
+      <span class="td" style="font-size:10px;color:var(--muted2);">${_mqttEscHtml(s.next_event || '—')}</span>
+      <span class="td">
+        <button class="btn" style="padding:3px 10px;font-size:10px;background:color-mix(in srgb,${statusColor} 16%,transparent);border:1px solid color-mix(in srgb,${statusColor} 38%,transparent);color:${statusColor};"
+          onclick="mqttToggleSchedule(${nameAttr}, ${!active})">${statusLabel}</button>
+      </span>
+      <span class="td">
+        <button class="btn" style="padding:3px 8px;font-size:10px;" onclick="viewMqttSchedule(${nameAttr})">Lista file</button>
       </span>
     </div>`;
   }).join('');
 
   el.innerHTML = `<div class="mqtt-sched-table">
     <div class="mqtt-sched-head">
-      <span class="th">Name</span>
-      <span class="th">Timestamp</span>
-      <span class="th">Type</span>
-      <span class="th">Actions</span>
+      <span class="th">Nome</span>
+      <span class="th">Start</span>
+      <span class="th">End</span>
+      <span class="th">Time</span>
+      <span class="th">Giorni</span>
+      <span class="th">Prossimo evento</span>
+      <span class="th">Stato</span>
+      <span class="th"></span>
     </div>
     ${rows}
   </div>`;
+}
+
+async function mqttToggleSchedule(name, activate) {
+  if (typeof isMockMode === 'function' && isMockMode()) {
+    const idx = mqttSchedules.findIndex(s => s.name === name);
+    if (idx >= 0) { mqttSchedules[idx].active = activate; renderMqttSchedules(); }
+    return;
+  }
+  try {
+    await apiFetch(`/api/v1/devices/${encodeURIComponent(activeDevice.id)}/schedules/${encodeURIComponent(name)}`, {
+      method: 'PUT', body: JSON.stringify({ active: activate }),
+    });
+    showMqttHint('success', `Schedule ${activate ? 'activated' : 'deactivated'}.`);
+    await loadMqttSchedules();
+  } catch (err) {
+    showMqttHint('error', `Could not update schedule: ${err?.message || err}`);
+  }
 }
 
 function _mqttEscHtml(str) {

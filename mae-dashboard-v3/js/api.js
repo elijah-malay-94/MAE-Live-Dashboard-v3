@@ -1729,15 +1729,23 @@ function getMockWorksList(customerId) {
 
 function getMockMqttStatus(deviceId) {
   const rng = _mulberry32(_seedFromStrings('mqtt-status', deviceId));
+  const pad2 = n => String(n).padStart(2, '0');
+  const now = new Date();
+  const nowStr = `${now.toLocaleDateString('it-IT')}, ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
+  const acqRunning = rng() > 0.5;
+  const endMin = acqRunning ? Math.floor(rng() * 120) + 5 : 0;
+  const endDate = acqRunning ? new Date(now.getTime() + endMin * 60000) : null;
+  const endStr = endDate ? `${endDate.toLocaleDateString('it-IT')}, ${pad2(endDate.getHours())}:${pad2(endDate.getMinutes())}:${pad2(endDate.getSeconds())}` : '—';
   return {
-    monitoring_active: rng() > 0.3,
+    device_online:        rng() > 0.1,
+    monitoring_active:    rng() > 0.3,
+    acquisition_running:  acqRunning,
     acquisition_progress: Math.floor(rng() * 100),
-    gps_lock: rng() > 0.2,
-    sd_card_ok: rng() > 0.05,
-    network_connected: rng() > 0.15,
-    accelerometer_ok: rng() > 0.1,
-    rtc_sync: rng() > 0.25,
-    data_upload_ok: rng() > 0.3,
+    estimated_end:        endStr,
+    result:               0,
+    message:              '—',
+    last_update:          nowStr,
+    topic:                `maeinstruments/gms/${deviceId}/status`,
   };
 }
 
@@ -1765,13 +1773,20 @@ async function fetchMqttStatus(deviceId, workId = getActiveWorkId()) {
 
 function getMockMqttDiagnostics(deviceId) {
   const rng = _mulberry32(_seedFromStrings('mqtt-diag', deviceId));
+  const pad2 = n => String(n).padStart(2, '0');
+  const now = new Date();
+  const nowStr = `${now.toLocaleDateString('it-IT')}, ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
   const inputConnected = rng() > 0.3;
   return {
-    battery_int: (3.2 + rng() * 0.8).toFixed(2),
-    battery_ext: (11.5 + rng() * 1.5).toFixed(2),
-    temperature: (20 + rng() * 15).toFixed(1),
-    input: inputConnected ? (11.8 + rng() * 0.4).toFixed(2) : '0.00',
+    battery_int:  (3.2 + rng() * 0.8).toFixed(2),
+    battery_ext:  (11.5 + rng() * 1.5).toFixed(2),
+    temperature:  (20 + rng() * 15).toFixed(1),
+    input:        inputConnected ? (11.8 + rng() * 0.4).toFixed(2) : '0.00',
     input_status: inputConnected,
+    last_update:  nowStr,
+    topic:        `maeinstruments/gms/${deviceId}/diagnostics`,
+    result:       0,
+    message:      '—',
   };
 }
 
@@ -1797,12 +1812,29 @@ async function fetchMqttDiagnostics(deviceId, workId = getActiveWorkId()) {
 
 function getMockMqttSchedules(deviceId) {
   const rng = _mulberry32(_seedFromStrings('mqtt-sched', deviceId));
-  const count = 2 + Math.floor(rng() * 4);
+  const count = 4 + Math.floor(rng() * 5);
   const pad2 = n => String(n).padStart(2, '0');
+  const fmtDate = d => `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+  const days = 'Lun, Mar, Mer, Gio, Ven, Sab, Dom';
+  const now = new Date();
   const records = Array.from({ length: count }, (_, i) => {
-    const ts = new Date(Date.now() - Math.floor(rng() * 30) * 24 * 3600 * 1000);
-    const iso = `${ts.getFullYear()}-${pad2(ts.getMonth()+1)}-${pad2(ts.getDate())} ${pad2(ts.getHours())}:${pad2(ts.getMinutes())}:${pad2(ts.getSeconds())}`;
-    return { name: `schedule_${i + 1}.sch`, timestamp: iso, type: 'sch' };
+    const startTs = new Date(now.getTime() - Math.floor(rng() * 1000) * 24 * 3600 * 1000);
+    const endTs   = new Date(startTs.getTime() + Math.floor(rng() * 1460) * 24 * 3600 * 1000);
+    const active  = endTs > now && rng() > 0.3;
+    const h = Math.floor(rng() * 14) + 7;
+    const m = Math.floor(rng() * 60);
+    const nextEvent = active
+      ? `${now.toLocaleDateString('it-IT')}, ${pad2(h)}:${pad2(m)}:00`
+      : '—';
+    return {
+      name:        `schedule_${i + 1}`,
+      start:       fmtDate(startTs),
+      end:         fmtDate(endTs),
+      time:        `${pad2(h)}:${pad2(m)}`,
+      days,
+      next_event:  nextEvent,
+      active,
+    };
   });
   return { records };
 }

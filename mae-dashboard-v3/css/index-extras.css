@@ -244,3 +244,73 @@ html[data-theme="dark"] #themeToggleBtn [data-theme-icon="moon"] {
 #eventDetailModal #eventDetailContent {
   margin-bottom: 16px;
 }
+
+/* ── Sidebar collapse ── */
+.sidebar {
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+.sidebar-collapse-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 12px 2px;
+}
+
+.sidebar-collapse-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted2);
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* Default (expanded): arrow visible, hamburger hidden */
+.scb-icon--hamburger { display: none; }
+.scb-icon--arrow     { display: block; }
+
+/* Collapsed: hamburger visible, arrow hidden; center the button */
+.sidebar--collapsed .scb-icon--hamburger { display: block; }
+.sidebar--collapsed .scb-icon--arrow     { display: none; }
+.sidebar--collapsed .sidebar-collapse-wrap { justify-content: center; padding: 6px 0 2px; }
+
+.sidebar--collapsed {
+  width: 56px !important;
+}
+
+.sidebar--collapsed .sidebar-caption,
+.sidebar--collapsed .sidebar-logo-text,
+.sidebar--collapsed .nav-section,
+.sidebar--collapsed .nav-item span,
+.sidebar--collapsed .device-list {
+  display: none !important;
+}
+
+.sidebar--collapsed .sidebar-logo {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  padding: 0 0 18px;
+  justify-items: center;
+}
+
+.sidebar--collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar--collapsed .alert-count-badge {
+  display: none !important;
+}

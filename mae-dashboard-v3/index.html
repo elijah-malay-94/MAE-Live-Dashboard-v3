@@ -52,13 +52,19 @@
 </div>
 <div class="app">
 <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
-<nav class="sidebar">
+<nav class="sidebar" id="appSidebar">
 <div class="sidebar-logo">
 <div class="logo-stack">
 <div class="logo-mark logo-mark--img"><img alt="MAE" class="app-logo" src="images/mae-logo.png"/></div>
 </div>
 <div class="sidebar-caption">ADVANCED GEOPHYSICS INSTRUMENTS</div>
 <div class="sidebar-logo-text">DataLogger<small>MONITOR v2</small></div>
+</div>
+<div class="sidebar-collapse-wrap">
+  <button class="sidebar-collapse-btn" onclick="toggleSidebar()" title="Collapse sidebar">
+    <svg class="scb-icon--arrow" fill="none" height="13" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="13"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <svg class="scb-icon--hamburger" fill="none" height="13" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" width="13"><line x1="3" x2="21" y1="6" y2="6"></line><line x1="3" x2="21" y1="12" y2="12"></line><line x1="3" x2="21" y1="18" y2="18"></line></svg>
+  </button>
 </div>
 <div class="nav-section" data-i18n="nav.navigation">Navigation</div>
 <a class="nav-item" href="index.html?page=dashboard" id="navDashboard">
@@ -386,33 +392,44 @@
 <div class="api-hint" id="apiHintMqtt" style="display:none;margin-bottom:12px;border-radius:10px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--border);"></div>
 <div class="api-hint api-hint--warning" id="deviceTimeHintMqtt" style="display:none;margin-bottom:12px;"></div>
 <div class="mqtt-grid">
-  <!-- LEFT: Device Status + Schedules -->
+  <!-- LEFT: Diagnostica + Stato dispositivo + Comandi + Schedules -->
   <div class="mqtt-col-left">
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Device Status</span>
+        <div class="card-label">
+          <span class="kpi-dot" id="mqttPowerStatusDot" style="background:var(--muted)"></span>
+          <span class="card-title">Diagnostica</span>
+        </div>
+        <button class="btn" onclick="loadMqttDiagnostics()">
+          <svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span class="mqtt-btn-label">Refresh</span>
+        </button>
+      </div>
+      <div id="mqttPowerInfoList"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Stato dispositivo</span>
         <button class="btn" id="mqttStatusRefreshBtn" onclick="loadMqttStatus()">
           <svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
           <span class="mqtt-btn-label">Refresh</span>
         </button>
       </div>
       <div id="mqttStatusContent"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
-      <div id="mqttMonitoringBtnWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <button class="btn btn-primary" id="mqttMonitoringBtn" onclick="">Enable Monitoring</button>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;">Comandi</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="mqttMonitoringBtn" style="display:none;">Set Status Disattivo</button>
+        <button class="btn" id="mqttSchedulesRefreshBtn" onclick="loadMqttSchedules()">Get Schedules</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Schedules</span>
-        <button class="btn" id="mqttSchedulesRefreshBtn" onclick="loadMqttSchedules()">
-          <svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-          <span class="mqtt-btn-label">Refresh</span>
-        </button>
-      </div>
+      <div class="card-title" style="margin-bottom:14px;">Schedules</div>
       <div id="mqttSchedulesList"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
     </div>
   </div>
-  <!-- RIGHT: Device Info + Power Supply -->
+  <!-- RIGHT: Device Info -->
   <div class="mqtt-col-right">
     <div class="card">
       <div class="card-label" style="margin-bottom:14px;">
@@ -420,13 +437,6 @@
         <span>Device Info</span>
       </div>
       <div class="info-list" id="mqttDeviceInfoList"></div>
-    </div>
-    <div class="card">
-      <div class="card-label" style="margin-bottom:14px;">
-        <span class="kpi-dot" id="mqttPowerStatusDot" style="background:var(--muted)"></span>
-        <span>Power Supply</span>
-      </div>
-      <div class="info-list" id="mqttPowerInfoList"></div>
     </div>
   </div>
 </div>
@@ -2341,6 +2351,22 @@ function getCurrentPage() {
     return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt') ? p : 'dashboard';
   } catch (e) { return 'dashboard'; }
 }
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('appSidebar');
+  if (!sidebar) return;
+  const collapsed = sidebar.classList.toggle('sidebar--collapsed');
+  try { localStorage.setItem('mae_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+}
+
+(function() {
+  try {
+    if (localStorage.getItem('mae_sidebar_collapsed') === '1') {
+      const s = document.getElementById('appSidebar');
+      if (s) s.classList.add('sidebar--collapsed');
+    }
+  } catch (e) {}
+})();
 
 function setActiveNav(page) {
   const dash = document.getElementById('navDashboard');
