@@ -89,8 +89,40 @@ function clearDataViews(message = 'No data') {
 }
 
 async function switchDevice(id) {
-  activeDevice = allDevices.find(d => d.id === id);
-  if (!activeDevice) return;
+  const target = allDevices.find(d => d.id === id);
+  if (!target) return;
+
+  const currentPage = (() => {
+    try {
+      const p = (new URLSearchParams(window.location.search || '').get('page') || '').toLowerCase().trim();
+      return p || 'dashboard';
+    } catch (e) { return 'dashboard'; }
+  })();
+
+  const isRemote = (typeof deviceIsRemoteControl === 'function') && deviceIsRemoteControl(target);
+  const buildUrl = (page) => {
+    const qp = new URLSearchParams(window.location.search || '');
+    const next = new URLSearchParams();
+    next.set('page', page);
+    ['mock', 'proxy', 'work_id'].forEach(k => { const v = qp.get(k); if (v) next.set(k, v); });
+    return `index.html?${next.toString()}`;
+  };
+
+  if (isRemote && currentPage !== 'dashboard_mqtt') {
+    try { localStorage.setItem('mae_dashboard_active_device', id); } catch (e) {}
+    window.location.href = buildUrl('dashboard_mqtt');
+    return;
+  }
+  if (!isRemote && currentPage === 'dashboard_mqtt') {
+    try { localStorage.setItem('mae_dashboard_active_device', id); } catch (e) {}
+    window.location.href = buildUrl('dashboard');
+    return;
+  }
+  if (isRemote && currentPage === 'dashboard_mqtt') {
+    if (typeof mqttSwitchDevice === 'function') { await mqttSwitchDevice(id); return; }
+  }
+
+  activeDevice = target;
   try { localStorage.setItem('mae_dashboard_active_device', id); } catch(e) { /* ignore */ }
   activeChannelHeaders = null; // reset — will be populated by the next fetchData() call
 

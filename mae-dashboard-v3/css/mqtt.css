@@ -1,0 +1,134 @@
+/* ================================================================
+   mqtt.css — MQTT Remote Control Device Dashboard styles
+   ================================================================ */
+
+#mqttDashboardPage { padding: 0; }
+
+.mqtt-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+.mqtt-col-left,
+.mqtt-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Bool status cards grid ── */
+.mqtt-bool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.mqtt-bool-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mqtt-bool-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mqtt-bool-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── Acquisition progress bar ── */
+.mqtt-progress-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.mqtt-progress-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mqtt-progress-track {
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.mqtt-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ── Schedule table ── */
+.mqtt-sched-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.mqtt-sched-head {
+  display: grid;
+  grid-template-columns: 1fr 160px 190px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.mqtt-sched-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 190px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+
+.mqtt-sched-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Refresh button label ── */
+.mqtt-btn-label {
+  font-size: 11px;
+}
+
+/* ── btn-danger (not in base.css) ── */
+.btn-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .mqtt-grid {
+    grid-template-columns: 1fr;
+  }
+}

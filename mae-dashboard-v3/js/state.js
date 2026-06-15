@@ -81,7 +81,7 @@ function updateDashboardAuthButton() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
@@ -131,7 +131,7 @@ async function init() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
@@ -139,6 +139,21 @@ async function init() {
   console.log('%c[init] Starting app init()', 'color:#2563eb;font-weight:700', { page });
   // If on works or job page, let the dedicated page controllers handle it.
   if (page === 'works' || page === 'job') {
+    return;
+  }
+
+  // MQTT/Remote Control dashboard
+  if (page === 'dashboard_mqtt') {
+    await ensureAuth();
+    const mqttName = getUserName();
+    const mqttUsernameEl = document.getElementById('topbarUsername');
+    if (mqttUsernameEl) mqttUsernameEl.textContent = mqttName || '';
+    const mqttToken = loadAuthTokenFromStorage();
+    updateDashboardAuthButton();
+    if (!mqttToken) { window.location.href = 'index.html?page=works'; return; }
+    const mqttWorkId = (typeof getActiveWorkId === 'function') ? getActiveWorkId() : '';
+    if (!String(mqttWorkId || '').trim()) { window.location.href = 'index.html?page=works'; return; }
+    if (typeof initMqttDashboard === 'function') await initMqttDashboard();
     return;
   }
 

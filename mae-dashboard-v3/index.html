@@ -17,6 +17,7 @@
 <link href="css/index-extras.css" rel="stylesheet"/>    
 <link href="css/handbook.css" rel="stylesheet"/>
 <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+<link href="css/mqtt.css" rel="stylesheet"/>
 </head>
 <body>
 <!-- ═══════════════════════ LOGIN MODAL ═══════════════════════ -->
@@ -379,6 +380,62 @@
 </div>
 </div>
 </div><!-- /#dashboardPage -->
+
+<!-- ═══════════════════════ MQTT DASHBOARD PAGE ═══════════════════════ -->
+<div id="mqttDashboardPage" style="display:none;">
+<div class="api-hint" id="apiHintMqtt" style="display:none;margin-bottom:12px;border-radius:10px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:12px;border:1px solid var(--border);"></div>
+<div class="api-hint api-hint--warning" id="deviceTimeHintMqtt" style="display:none;margin-bottom:12px;"></div>
+<div class="mqtt-grid">
+  <!-- LEFT: Device Info + Power Supply -->
+  <div class="mqtt-col-left">
+    <div class="card">
+      <div class="card-label" style="margin-bottom:14px;">
+        <span class="kpi-dot" id="mqttDeviceInfoStatus" style="background:var(--muted)"></span>
+        <span>Device Info</span>
+      </div>
+      <div class="info-list" id="mqttDeviceInfoList"></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:14px;">
+        <span class="kpi-dot" id="mqttPowerStatusDot" style="background:var(--muted)"></span>
+        <span>Power Supply</span>
+      </div>
+      <div class="info-list" id="mqttPowerInfoList"></div>
+    </div>
+  </div>
+  <!-- RIGHT: Device Status + Schedules -->
+  <div class="mqtt-col-right">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Device Status</span>
+        <button class="btn" id="mqttStatusRefreshBtn" onclick="loadMqttStatus()">
+          <svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span class="mqtt-btn-label">Refresh</span>
+        </button>
+      </div>
+      <div id="mqttStatusContent"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
+      <div id="mqttMonitoringBtnWrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <button class="btn btn-primary" id="mqttMonitoringBtn" onclick="">Enable Monitoring</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Schedules</span>
+        <button class="btn" id="mqttSchedulesRefreshBtn" onclick="loadMqttSchedules()">
+          <svg fill="none" height="13" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="13"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          <span class="mqtt-btn-label">Refresh</span>
+        </button>
+      </div>
+      <div id="mqttSchedulesList"><div style="color:var(--muted);font-size:12px;">Loading…</div></div>
+    </div>
+  </div>
+</div>
+<div class="footer">
+  <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="mqttFooterDate"></span></div>
+  <div class="footer-chips"><div class="footer-chip">ETWEB · Remote Control</div></div>
+</div>
+</div><!-- /#mqttDashboardPage -->
+
 </main>
 <!-- ═══════════════════════ HANDBOOK ═══════════════════════ -->
 <div class="handbook-page" id="handbookPage">
@@ -2281,14 +2338,14 @@ function getCurrentPage() {
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
-    return (p === 'works' || p === 'dashboard' || p === 'job') ? p : 'dashboard';
+    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt') ? p : 'dashboard';
   } catch (e) { return 'dashboard'; }
 }
 
 function setActiveNav(page) {
   const dash = document.getElementById('navDashboard');
   const works = document.getElementById('navWorks');
-  if (dash) dash.classList.toggle('active', page === 'dashboard');
+  if (dash) dash.classList.toggle('active', page === 'dashboard' || page === 'dashboard_mqtt');
   if (works) works.classList.toggle('active', page === 'works');
 }
 
@@ -2297,9 +2354,11 @@ function togglePages() {
   const dash = document.getElementById('dashboardPage');
   const works = document.getElementById('worksPage');
   const job = document.getElementById('jobPage');
+  const mqtt = document.getElementById('mqttDashboardPage');
   if (dash) dash.style.display = page === 'dashboard' ? 'block' : 'none';
   if (works) works.style.display = page === 'works' ? 'block' : 'none';
   if (job) job.style.display = page === 'job' ? 'block' : 'none';
+  if (mqtt) mqtt.style.display = page === 'dashboard_mqtt' ? 'block' : 'none';
   setActiveNav(page);
 
   const navDash = document.getElementById('navDashboard');
@@ -2329,7 +2388,7 @@ function togglePages() {
     showEl(navDash, false);
     showEl(navWorks, true);
     showEl(navAlerts, true);
-    showEl(navExport, true);
+    showEl(navExport, page === 'dashboard');
     showEl(navSettings, false);
     showEl(navManual, true);
     try {
@@ -2346,7 +2405,7 @@ function togglePages() {
     } catch (e) {}
   }
 
-  if (page === 'dashboard') {
+  if (page === 'dashboard' || page === 'dashboard_mqtt') {
     try { localStorage.setItem('mae_last_dashboard_url', window.location.href); } catch (e) {}
   }
 
@@ -2377,10 +2436,10 @@ function togglePages() {
   }
 
   const dashControls = document.getElementById('dashboardTopbarControls');
-  if (dashControls) dashControls.style.display = (page === 'dashboard') ? 'flex' : 'none';
+  if (dashControls) dashControls.style.display = (page === 'dashboard' || page === 'dashboard_mqtt') ? 'flex' : 'none';
 
   const sidebarDevices = document.getElementById('sidebarDevices');
-  if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard') ? '' : 'none';
+  if (sidebarDevices) sidebarDevices.style.display = (page === 'dashboard' || page === 'dashboard_mqtt') ? '' : 'none';
 
   if (window.MAE_I18N?.applyLanguage) {
     try { window.MAE_I18N.applyLanguage(window.MAE_I18N.getLanguage()); } catch (e) {}
@@ -2400,6 +2459,7 @@ if (document.readyState !== 'loading') togglePages();
 <script src="js/state.js"></script>
 <script src="js/render.js"></script>
 <script src="js/works.js"></script>
+<script src="js/mqtt.js"></script>
 <script src="js/modals.js"></script>
 </body>
 </html>

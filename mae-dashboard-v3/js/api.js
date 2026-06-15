@@ -1001,6 +1001,12 @@ async function fetchDevicesData(customerId, workId = getActiveWorkId()) {
         ip_public:   item.ip_public  ?? '',
         port_public: item.port_public ?? '',
         device_place: devicePlace,
+        HasRemoteControl:
+          item.HasRemoteControl ??
+          item.has_remote_control ??
+          item.hasRemoteControl ??
+          item.remote_control ??
+          false,
       };
     }).sort(function (a, b) {
       const ta = a?.last_diagnostic ? new Date(String(a.last_diagnostic).replace(' ', 'T')).getTime() : 0;
@@ -1717,6 +1723,144 @@ function getMockWorksList(customerId) {
     { id: '102', description: 'Work 102 — Demo Site B', location: 'Torino', active: false, deviceCount: 1, raw: { id: '102' } },
     { id: '103', description: 'Work 103 — Demo Site C', location: 'Roma',   active: true,  deviceCount: 5, raw: { id: '103' } },
   ];
+}
+
+// ═══════════════════════ API: MQTT / REMOTE CONTROL ═══════════════════════
+
+function getMockMqttStatus(deviceId) {
+  const rng = _mulberry32(_seedFromStrings('mqtt-status', deviceId));
+  return {
+    monitoring_active: rng() > 0.3,
+    acquisition_progress: Math.floor(rng() * 100),
+    gps_lock: rng() > 0.2,
+    sd_card_ok: rng() > 0.05,
+    network_connected: rng() > 0.15,
+    accelerometer_ok: rng() > 0.1,
+    rtc_sync: rng() > 0.25,
+    data_upload_ok: rng() > 0.3,
+  };
+}
+
+async function fetchMqttStatus(deviceId, workId = getActiveWorkId()) {
+  if (isMockMode()) return getMockMqttStatus(deviceId);
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const candidates = [
+    ...(wid ? [
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/status`,
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/mqtt/status`,
+    ] : []),
+    `/api/v1/devices/${did}/status`,
+    `/api/v1/devices/${did}/mqtt/status`,
+  ];
+  let lastErr = null;
+  for (const path of candidates) {
+    try {
+      const data = await apiFetch(path);
+      if (data && typeof data === 'object') return data;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('MQTT status endpoint not available');
+}
+
+function getMockMqttDiagnostics(deviceId) {
+  const rng = _mulberry32(_seedFromStrings('mqtt-diag', deviceId));
+  const inputConnected = rng() > 0.3;
+  return {
+    battery_int: (3.2 + rng() * 0.8).toFixed(2),
+    battery_ext: (11.5 + rng() * 1.5).toFixed(2),
+    temperature: (20 + rng() * 15).toFixed(1),
+    input: inputConnected ? (11.8 + rng() * 0.4).toFixed(2) : '0.00',
+    input_status: inputConnected,
+  };
+}
+
+async function fetchMqttDiagnostics(deviceId, workId = getActiveWorkId()) {
+  if (isMockMode()) return getMockMqttDiagnostics(deviceId);
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const candidates = [
+    ...(wid ? [
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/diagnostics`,
+    ] : []),
+    `/api/v1/devices/${did}/diagnostics`,
+  ];
+  let lastErr = null;
+  for (const path of candidates) {
+    try {
+      const data = await apiFetch(path);
+      if (data && typeof data === 'object') return data;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('MQTT diagnostics endpoint not available');
+}
+
+function getMockMqttSchedules(deviceId) {
+  const rng = _mulberry32(_seedFromStrings('mqtt-sched', deviceId));
+  const count = 2 + Math.floor(rng() * 4);
+  const pad2 = n => String(n).padStart(2, '0');
+  const records = Array.from({ length: count }, (_, i) => {
+    const ts = new Date(Date.now() - Math.floor(rng() * 30) * 24 * 3600 * 1000);
+    const iso = `${ts.getFullYear()}-${pad2(ts.getMonth()+1)}-${pad2(ts.getDate())} ${pad2(ts.getHours())}:${pad2(ts.getMinutes())}:${pad2(ts.getSeconds())}`;
+    return { name: `schedule_${i + 1}.sch`, timestamp: iso, type: 'sch' };
+  });
+  return { records };
+}
+
+async function fetchMqttSchedules(deviceId, workId = getActiveWorkId()) {
+  if (isMockMode()) return getMockMqttSchedules(deviceId);
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const today = new Date().toISOString().slice(0, 10);
+  const candidates = [
+    ...(wid ? [
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/schedules`,
+    ] : []),
+    `/api/v1/devices/${did}/schedules`,
+  ];
+  let lastErr = null;
+  for (const path of candidates) {
+    try {
+      const data = await apiFetch(path);
+      if (data && typeof data === 'object') {
+        const records = Array.isArray(data.records) ? data.records : (Array.isArray(data) ? data : []);
+        return { records };
+      }
+    } catch (e) { lastErr = e; }
+  }
+  // Fallback: use file list filtered to schedule type
+  try {
+    const result = await fetchDeviceFiles(deviceId, { from: '2020-01-01', to: today, limit: 100, offset: 0 }, workId);
+    const records = (result?.records || []).filter(r => String(r.type || '').toLowerCase() === 'sch' || String(r.name || '').toLowerCase().endsWith('.sch'));
+    return { records };
+  } catch (e) { lastErr = e; }
+  throw lastErr || new Error('MQTT schedules endpoint not available');
+}
+
+async function setDeviceMqttMonitoring(deviceId, enable, workId = getActiveWorkId()) {
+  if (isMockMode()) {
+    console.log(`[mock] setDeviceMqttMonitoring(${deviceId}, ${enable})`);
+    return { status: 0, message: '' };
+  }
+  const wid = String(workId || '').trim();
+  const did = encodeURIComponent(deviceId);
+  const action = enable ? 'start' : 'stop';
+  const candidates = [
+    ...(wid ? [
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/monitoring/${action}`,
+      `/api/v1/works/${encodeURIComponent(wid)}/devices/${did}/mqtt/${action}`,
+    ] : []),
+    `/api/v1/devices/${did}/monitoring/${action}`,
+    `/api/v1/devices/${did}/mqtt/${action}`,
+  ];
+  let lastErr = null;
+  for (const path of candidates) {
+    try {
+      const result = await apiFetchWithHeaders(path, { method: 'PUT' });
+      return result?.data ?? result;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Monitoring control endpoint not available');
 }
 
 async function fetchWorks(customerId) {
