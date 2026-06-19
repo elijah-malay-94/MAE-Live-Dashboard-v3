@@ -18,6 +18,7 @@
 <link href="css/handbook.css" rel="stylesheet"/>
 <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 <link href="css/mqtt.css" rel="stylesheet"/>
+<link href="css/user-management.css" rel="stylesheet"/>
 </head>
 <body>
 <!-- ═══════════════════════ LOGIN MODAL ═══════════════════════ -->
@@ -74,6 +75,10 @@
 <a class="nav-item" href="#" id="navWorks" onclick="navigateToWorks(event)">
 <svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"></path><circle cx="12" cy="9" r="2"></circle></svg>
 <span data-i18n="nav.works">Works</span>
+</a>
+<a class="nav-item" href="index.html?page=user_management" id="navUserManagement">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+<span data-i18n="nav.userManagement">User Management</span>
 </a>
 <div class="nav-item" id="navAlerts" onclick="openAlarmsPanel()">
 <svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -445,6 +450,183 @@
   <div class="footer-chips"><div class="footer-chip">ETWEB · Remote Control</div></div>
 </div>
 </div><!-- /#mqttDashboardPage -->
+
+<!-- ═══════════════════════ USER MANAGEMENT PAGE ═══════════════════════ -->
+<div id="userManagementPage" style="display:none;">
+<div class="api-hint" id="apiHintUserMgmt" style="display:none;"></div>
+
+<!-- Stats Row -->
+<div class="um-stats-grid">
+  <div class="um-stat-card">
+    <div class="um-stat-label">Total Authorizations</div>
+    <div class="um-stat-value" id="umStatTotal">0</div>
+    <div class="um-stat-sub" id="umStatTotalSub">0 created by this account</div>
+  </div>
+  <div class="um-stat-card">
+    <div class="um-stat-label">User Authorizations</div>
+    <div class="um-stat-value" id="umStatUsers">0</div>
+    <div class="um-stat-sub" id="umStatUsersSub">0 users linked to profiles</div>
+  </div>
+  <div class="um-stat-card">
+    <div class="um-stat-label">Token Authorizations</div>
+    <div class="um-stat-value" id="umStatTokens">0</div>
+    <div class="um-stat-sub" id="umStatTokensSub">0 tokens API access keys</div>
+  </div>
+  <div class="um-stat-card">
+    <div class="um-stat-label">Enabled</div>
+    <div class="um-stat-value" id="umStatEnabled">0</div>
+    <div class="um-stat-sub" id="umStatEnabledSub">0 active / 0 disabled</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="um-tabs">
+  <button class="um-tab active" data-tab="create" onclick="umSwitchTab('create')">Create Authorization</button>
+  <button class="um-tab" data-tab="manage" onclick="umSwitchTab('manage')">Manage Authorizations</button>
+</div>
+
+<!-- CREATE TAB -->
+<div class="um-tab-panel active" data-tab-panel="create">
+
+  <!-- Section 1: New User Authorization -->
+  <div class="um-section">
+    <div class="um-section-header">
+      <div class="um-section-title">New User Authorization</div>
+      <span class="um-badge um-badge--user">User + Profile</span>
+    </div>
+    <div class="um-form-grid um-form-grid--3">
+      <div class="um-field">
+        <label for="umUserAuthJob">Job</label>
+        <select id="umUserAuthJob">
+          <option value="">— Select Job —</option>
+        </select>
+      </div>
+      <div class="um-field">
+        <label for="umUserAuthProfile">Profile</label>
+        <select id="umUserAuthProfile">
+          <option value="">— Select Profile —</option>
+          <option value="Viewer">Viewer</option>
+          <option value="Operator">Operator</option>
+          <option value="Read-Only">Read-Only</option>
+          <option value="Administrator">Administrator</option>
+        </select>
+      </div>
+      <div class="um-field">
+        <label for="umUserAuthEmail">User Email</label>
+        <input type="email" id="umUserAuthEmail" placeholder="user@example.com"/>
+      </div>
+    </div>
+    <div class="um-form-grid um-form-grid--2-btn" style="margin-top:12px;">
+      <div class="um-field">
+        <label for="umUserAuthStart">Start Date</label>
+        <input type="date" id="umUserAuthStart"/>
+      </div>
+      <div class="um-field">
+        <label for="umUserAuthEnd">End Date</label>
+        <input type="date" id="umUserAuthEnd"/>
+      </div>
+      <div class="um-field" style="justify-content:flex-end;">
+        <label style="visibility:hidden;">Action</label>
+        <button class="btn btn-primary um-btn-full" onclick="umCreateUserAuth()">+ Create User Auth</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Separator -->
+  <div class="um-separator">— or create a token authorization —</div>
+
+  <!-- Section 2: New Token Authorization -->
+  <div class="um-section">
+    <div class="um-section-header">
+      <div class="um-section-title">New Token Authorization</div>
+      <span class="um-badge um-badge--token">Token Access</span>
+    </div>
+    <div class="um-form-grid um-form-grid--2">
+      <div class="um-field">
+        <label for="umTokenAuthJob">Job</label>
+        <select id="umTokenAuthJob">
+          <option value="">— Select Job —</option>
+        </select>
+      </div>
+      <div class="um-field">
+        <label for="umTokenAuthName">Token Name</label>
+        <input type="text" id="umTokenAuthName" placeholder="e.g. api-client-key-01"/>
+      </div>
+    </div>
+    <div class="um-form-grid um-form-grid--2-btn" style="margin-top:12px;">
+      <div class="um-field">
+        <label for="umTokenAuthStart">Start Date</label>
+        <input type="date" id="umTokenAuthStart"/>
+      </div>
+      <div class="um-field">
+        <label for="umTokenAuthEnd">End Date</label>
+        <input type="date" id="umTokenAuthEnd"/>
+      </div>
+      <div class="um-field" style="justify-content:flex-end;">
+        <label style="visibility:hidden;">Action</label>
+        <button class="btn btn-primary um-btn-full" onclick="umCreateTokenAuth()">+ Create Token Auth</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /create tab panel -->
+
+<!-- MANAGE TAB -->
+<div class="um-tab-panel" data-tab-panel="manage">
+  <div class="um-section">
+    <div class="um-section-title" style="margin-bottom:14px;">Authorization List</div>
+
+    <!-- Filters -->
+    <div class="um-list-filters">
+      <input type="text" placeholder="Search by job, user, token, profile…" oninput="umSetFilterSearch(this.value)"/>
+      <select onchange="umSetFilterType(this.value)">
+        <option value="">All types</option>
+        <option value="user">User</option>
+        <option value="token">Token</option>
+      </select>
+      <select onchange="umSetFilterStatus(this.value)">
+        <option value="">All status</option>
+        <option value="enabled">Enabled</option>
+        <option value="disabled">Disabled</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="um-table-wrap">
+      <table class="um-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Job</th>
+            <th>User / Token</th>
+            <th>Profile</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Enabled</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="umTableBody">
+          <tr><td colspan="8" class="um-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="um-pagination">
+      <span class="um-pagination-info" id="umPaginationInfo">0 records shown · 0 total</span>
+      <div id="umPaginationPages" style="display:flex;gap:4px;"></div>
+    </div>
+  </div>
+</div><!-- /manage tab panel -->
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="umFooterDate"></span></div>
+  <div class="footer-chips"><div class="footer-chip">User Management</div></div>
+</div>
+
+</div><!-- /#userManagementPage -->
 
 </main>
 <!-- ═══════════════════════ HANDBOOK ═══════════════════════ -->
@@ -2369,6 +2551,67 @@
   </div>
 </div>
 </div>
+<!-- ═══════════════════════ USER MANAGEMENT — EDIT MODAL ═══════════════════════ -->
+<div class="modal-overlay" id="umEditOverlay" onclick="if(event.target===this)umCloseEdit()">
+<div class="modal" style="width:420px;">
+  <div class="modal-title" id="umEditTitle" style="margin-bottom:16px;">Edit Authorization</div>
+  <!-- Info bar -->
+  <div class="um-edit-info" id="umEditInfo">Editing: — · Job: —</div>
+
+  <!-- USER EDIT PANEL -->
+  <div id="umEditUserPanel">
+    <div class="um-edit-toggle-row">
+      <span class="um-edit-toggle-label">Enabled</span>
+      <label class="um-toggle">
+        <input type="checkbox" id="umEditEnabled"/>
+        <span class="um-toggle-track"></span>
+        <span class="um-toggle-thumb"></span>
+      </label>
+    </div>
+    <div class="um-edit-dates">
+      <div class="um-field">
+        <label for="umEditStart">Start Date</label>
+        <input type="date" id="umEditStart"/>
+      </div>
+      <div class="um-field">
+        <label for="umEditEnd">End Date</label>
+        <input type="date" id="umEditEnd"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN EDIT PANEL -->
+  <div id="umEditTokenPanel" style="display:none;">
+    <div class="um-field" style="margin-bottom:14px;">
+      <label for="umEditTokenName">Token Name</label>
+      <input type="text" id="umEditTokenName" placeholder="token-name"/>
+    </div>
+    <div class="um-edit-toggle-row">
+      <span class="um-edit-toggle-label">Enabled</span>
+      <label class="um-toggle">
+        <input type="checkbox" id="umEditTokenEnabled"/>
+        <span class="um-toggle-track"></span>
+        <span class="um-toggle-thumb"></span>
+      </label>
+    </div>
+    <div class="um-edit-dates">
+      <div class="um-field">
+        <label for="umEditTokenStart">Start Date</label>
+        <input type="date" id="umEditTokenStart"/>
+      </div>
+      <div class="um-field">
+        <label for="umEditTokenEnd">End Date</label>
+        <input type="date" id="umEditTokenEnd"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-actions" style="margin-top:20px;">
+    <button class="btn" onclick="umCloseEdit()">Cancel</button>
+    <button class="btn btn-primary" onclick="umSaveEdit()">Save Changes</button>
+  </div>
+</div>
+</div>
 <script src="js/i18n.js"></script>
 <script src="js/theme.js"></script>
 <script>
@@ -2376,7 +2619,7 @@ function getCurrentPage() {
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
-    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt') ? p : 'dashboard';
+    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management') ? p : 'dashboard';
   } catch (e) { return 'dashboard'; }
 }
 
@@ -2397,30 +2640,35 @@ function toggleSidebar() {
 })();
 
 function setActiveNav(page) {
-  const dash = document.getElementById('navDashboard');
-  const works = document.getElementById('navWorks');
-  if (dash) dash.classList.toggle('active', page === 'dashboard' || page === 'dashboard_mqtt');
-  if (works) works.classList.toggle('active', page === 'works');
+  const dash    = document.getElementById('navDashboard');
+  const works   = document.getElementById('navWorks');
+  const userMgmt = document.getElementById('navUserManagement');
+  if (dash)     dash.classList.toggle('active',    page === 'dashboard' || page === 'dashboard_mqtt');
+  if (works)    works.classList.toggle('active',   page === 'works');
+  if (userMgmt) userMgmt.classList.toggle('active', page === 'user_management');
 }
 
 function togglePages() {
   const page = getCurrentPage();
-  const dash = document.getElementById('dashboardPage');
-  const works = document.getElementById('worksPage');
-  const job = document.getElementById('jobPage');
-  const mqtt = document.getElementById('mqttDashboardPage');
-  if (dash) dash.style.display = page === 'dashboard' ? 'block' : 'none';
-  if (works) works.style.display = page === 'works' ? 'block' : 'none';
-  if (job) job.style.display = page === 'job' ? 'block' : 'none';
-  if (mqtt) mqtt.style.display = page === 'dashboard_mqtt' ? 'block' : 'none';
+  const dash   = document.getElementById('dashboardPage');
+  const works  = document.getElementById('worksPage');
+  const job    = document.getElementById('jobPage');
+  const mqtt   = document.getElementById('mqttDashboardPage');
+  const umPage = document.getElementById('userManagementPage');
+  if (dash)   dash.style.display   = page === 'dashboard'        ? 'block' : 'none';
+  if (works)  works.style.display  = page === 'works'            ? 'block' : 'none';
+  if (job)    job.style.display    = page === 'job'              ? 'block' : 'none';
+  if (mqtt)   mqtt.style.display   = page === 'dashboard_mqtt'   ? 'block' : 'none';
+  if (umPage) umPage.style.display = page === 'user_management'  ? 'block' : 'none';
   setActiveNav(page);
 
-  const navDash = document.getElementById('navDashboard');
-  const navWorks = document.getElementById('navWorks');
-  const navAlerts = document.getElementById('navAlerts');
-  const navExport = document.getElementById('navExport');
+  const navDash    = document.getElementById('navDashboard');
+  const navWorks   = document.getElementById('navWorks');
+  const navAlerts  = document.getElementById('navAlerts');
+  const navExport  = document.getElementById('navExport');
   const navSettings = document.getElementById('navSettings');
-  const navManual = document.getElementById('navManual');
+  const navManual  = document.getElementById('navManual');
+  const navUserMgmt = document.getElementById('navUserManagement');
 
   const showEl = (el, show) => { if (el) el.style.display = show ? '' : 'none'; };
 
@@ -2431,6 +2679,7 @@ function togglePages() {
     showEl(navExport, false);
     showEl(navSettings, false);
     showEl(navManual, true);
+    showEl(navUserMgmt, false);
   } else if (page === 'works') {
     showEl(navDash, false);
     showEl(navWorks, false);
@@ -2438,6 +2687,15 @@ function togglePages() {
     showEl(navExport, false);
     showEl(navSettings, false);
     showEl(navManual, true);
+    showEl(navUserMgmt, false);
+  } else if (page === 'user_management') {
+    showEl(navDash, true);
+    showEl(navWorks, true);
+    showEl(navAlerts, false);
+    showEl(navExport, false);
+    showEl(navSettings, false);
+    showEl(navManual, true);
+    showEl(navUserMgmt, true);
   } else {
     showEl(navDash, false);
     showEl(navWorks, true);
@@ -2445,6 +2703,7 @@ function togglePages() {
     showEl(navExport, page === 'dashboard');
     showEl(navSettings, false);
     showEl(navManual, true);
+    showEl(navUserMgmt, true);
     try {
       const navSection = document.querySelector('.sidebar .nav-section');
       if (navSection) {
@@ -2473,6 +2732,9 @@ function togglePages() {
     } else if (page === 'job') {
       titleEl.setAttribute('data-i18n', 'page.job');
       titleEl.textContent = tr('page.job', 'WORK MANAGEMENT');
+    } else if (page === 'user_management') {
+      titleEl.removeAttribute('data-i18n');
+      titleEl.textContent = tr('nav.userManagement', 'User Management');
     } else {
       titleEl.setAttribute('data-i18n', 'page.liveDashboard');
       titleEl.textContent = tr('page.liveDashboard', 'Live Dashboard');
@@ -2483,6 +2745,8 @@ function togglePages() {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
     } else if (page === 'job') {
       subEl.textContent = tr('page.jobSubtitle', 'Create or edit a work, then manage devices.');
+    } else if (page === 'user_management') {
+      subEl.textContent = 'Manage user and token authorizations for your works';
     } else {
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
       else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';
@@ -2514,6 +2778,7 @@ if (document.readyState !== 'loading') togglePages();
 <script src="js/render.js"></script>
 <script src="js/works.js"></script>
 <script src="js/mqtt.js"></script>
+<script src="js/user-management.js"></script>
 <script src="js/modals.js"></script>
 </body>
 </html>

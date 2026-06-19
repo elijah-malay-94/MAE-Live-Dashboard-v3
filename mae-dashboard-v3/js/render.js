@@ -108,6 +108,9 @@ async function switchDevice(id) {
     return `index.html?${next.toString()}`;
   };
 
+  // user_management page: do not redirect on device click
+  if (currentPage === 'user_management') return;
+
   if (isRemote && currentPage !== 'dashboard_mqtt') {
     try { localStorage.setItem('mae_dashboard_active_device', id); } catch (e) {}
     window.location.href = buildUrl('dashboard_mqtt');

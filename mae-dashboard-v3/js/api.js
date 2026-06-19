@@ -1984,3 +1984,40 @@ async function fetchWorks(customerId) {
     return [];
   }
 }
+
+// ═══════════════════════ API: AUTHORIZATIONS ═══════════════════════
+function getMockAuthorizations(userId) {
+  return [
+    { id: 1, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user: 'marco.rossi@example.it',    profile: 'Viewer',     start: '2026-01-10', end: '2026-12-31', enabled: true  },
+    { id: 2, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user: 'giulia.bianchi@corp.com',   profile: 'Operator',   start: '2026-03-01', end: '2026-09-30', enabled: true  },
+    { id: 3, type: 'user',  job: 'MONITORING-B',  jobId: '102', user: 'luca.ferrari@geo.it',       profile: 'Read-Only',  start: '2026-02-15', end: '2026-06-30', enabled: false },
+    { id: 4, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'api-client-dashboard',     profile: null,         start: '2026-04-01', end: '2026-12-31', enabled: true  },
+    { id: 5, type: 'token', job: 'CANTIERE-NORD', jobId: '101', token: 'iot-sensor-relay-01',      profile: null,         start: '2026-01-20', end: '2027-01-20', enabled: true  },
+    { id: 6, type: 'token', job: 'MONITORING-B',  jobId: '102', token: 'ext-reporting-tool',       profile: null,         start: '2026-05-01', end: '2026-08-01', enabled: false },
+    { id: 7, type: 'user',  job: 'SURVEY-FROS',   jobId: '103', user: 'anna.verdi@survey.it',      profile: 'Read-Only',  start: '2026-03-10', end: '2026-11-30', enabled: true  },
+    { id: 8, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'mobile-app-token',         profile: null,         start: '2026-06-01', end: '2026-12-31', enabled: true  },
+  ];
+}
+
+async function fetchAuthorizations(userId) {
+  if (isMockMode()) return getMockAuthorizations(userId);
+  try {
+    const data = await apiFetch(`/api/v1/users/${encodeURIComponent(userId)}/authorizations`);
+    return Array.isArray(data) ? data : (data?.records || []);
+  } catch (e) { return getMockAuthorizations(userId); }
+}
+
+async function createAuthorization(payload) {
+  if (isMockMode()) return { id: Date.now(), ...payload };
+  return apiFetch('/api/v1/authorizations', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+async function updateAuthorization(id, payload) {
+  if (isMockMode()) return { id, ...payload };
+  return apiFetch(`/api/v1/authorizations/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+async function deleteAuthorization(id) {
+  if (isMockMode()) return true;
+  return apiFetch(`/api/v1/authorizations/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
