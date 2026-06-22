@@ -2015,7 +2015,7 @@ function getMockAuthorizations() {
 async function fetchAuthorizations() {
   if (isMockMode()) return getMockAuthorizations();
   const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
-  if (works.length === 0) return [];
+  if (works.length === 0) return getMockAuthorizations();
   try {
     const results = await Promise.all(
       works.map(w =>
@@ -2028,7 +2028,9 @@ async function fetchAuthorizations() {
           .catch(() => [])
       )
     );
-    return results.flat();
+    const all = results.flat();
+    // If every per-work fetch failed (e.g. CORS in local dev), fall back to mock data
+    return all.length > 0 ? all : getMockAuthorizations();
   } catch (e) { return getMockAuthorizations(); }
 }
 

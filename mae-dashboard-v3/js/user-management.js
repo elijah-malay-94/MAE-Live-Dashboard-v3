@@ -65,7 +65,17 @@ let umFilterSearch    = '';          // keyword applied across job / user / toke
 async function initUserManagement() {
   console.log('%c[UserManagement] init', 'color:#38bdf8;font-weight:700');
 
-  // Populate Work dropdowns from allWorks (loaded by state.js before this runs)
+  // Load works if not already populated (user_management page doesn't go through the
+  // works-page init flow, so allWorks may be empty when landing here directly).
+  if (typeof allWorks === 'undefined' || !Array.isArray(allWorks) || allWorks.length === 0) {
+    const userId = (typeof getUserId === 'function') ? getUserId() : '';
+    if (userId) {
+      try { allWorks = await fetchWorks(userId); } catch (e) { allWorks = []; }
+    }
+    if (!Array.isArray(allWorks)) allWorks = [];
+  }
+
+  // Populate Work dropdowns from allWorks
   umPopulateJobDropdowns();
 
   // Fetch authorizations (aggregated across all works via work-scoped endpoints)
