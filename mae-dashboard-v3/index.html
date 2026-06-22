@@ -458,22 +458,22 @@
 <!-- Stats Row -->
 <div class="um-stats-grid">
   <div class="um-stat-card">
-    <div class="um-stat-label">Total Authorizations</div>
+    <div class="um-stat-label" data-i18n="um.statTotal">Total Authorizations</div>
     <div class="um-stat-value" id="umStatTotal">0</div>
     <div class="um-stat-sub" id="umStatTotalSub">0 created by this account</div>
   </div>
   <div class="um-stat-card">
-    <div class="um-stat-label">User Authorizations</div>
+    <div class="um-stat-label" data-i18n="um.statUsers">User Authorizations</div>
     <div class="um-stat-value" id="umStatUsers">0</div>
     <div class="um-stat-sub" id="umStatUsersSub">0 users linked to profiles</div>
   </div>
   <div class="um-stat-card">
-    <div class="um-stat-label">Token Authorizations</div>
+    <div class="um-stat-label" data-i18n="um.statTokens">Token Authorizations</div>
     <div class="um-stat-value" id="umStatTokens">0</div>
     <div class="um-stat-sub" id="umStatTokensSub">0 tokens API access keys</div>
   </div>
   <div class="um-stat-card">
-    <div class="um-stat-label">Enabled</div>
+    <div class="um-stat-label" data-i18n="um.statEnabled">Enabled</div>
     <div class="um-stat-value" id="umStatEnabled">0</div>
     <div class="um-stat-sub" id="umStatEnabledSub">0 active / 0 disabled</div>
   </div>
@@ -481,8 +481,8 @@
 
 <!-- Tabs -->
 <div class="um-tabs">
-  <button class="um-tab active" data-tab="create" onclick="umSwitchTab('create')">Create Authorization</button>
-  <button class="um-tab" data-tab="manage" onclick="umSwitchTab('manage')">Manage Authorizations</button>
+  <button class="um-tab active" data-tab="create" data-i18n="um.tabCreate" onclick="umSwitchTab('create')">Create Authorization</button>
+  <button class="um-tab" data-tab="manage" data-i18n="um.tabManage" onclick="umSwitchTab('manage')">Manage Authorizations</button>
 </div>
 
 <!-- CREATE TAB -->
@@ -491,18 +491,18 @@
   <!-- Section 1: New User Authorization -->
   <div class="um-section">
     <div class="um-section-header">
-      <div class="um-section-title">New User Authorization</div>
-      <span class="um-badge um-badge--user">User + Profile</span>
+      <div class="um-section-title" data-i18n="um.sectionNewUser">New User Authorization</div>
+      <span class="um-badge um-badge--user" data-i18n="um.badgeUserProfile">User + Profile</span>
     </div>
     <div class="um-form-grid um-form-grid--3">
       <div class="um-field">
-        <label for="umUserAuthJob">Work</label>
+        <label data-i18n="um.fieldWork" for="umUserAuthJob">Work</label>
         <select id="umUserAuthJob">
           <option value="">— Select Work —</option>
         </select>
       </div>
       <div class="um-field">
-        <label for="umUserAuthProfile">Profile</label>
+        <label data-i18n="um.fieldProfile" for="umUserAuthProfile">Profile</label>
         <select id="umUserAuthProfile">
           <option value="">— Select Profile —</option>
           <option value="Viewer">Viewer</option>
@@ -512,59 +512,59 @@
         </select>
       </div>
       <div class="um-field">
-        <label for="umUserAuthEmail">User Email</label>
+        <label data-i18n="um.fieldEmail" for="umUserAuthEmail">User Email</label>
         <input type="email" id="umUserAuthEmail" placeholder="user@example.com"/>
       </div>
     </div>
     <div class="um-form-grid um-form-grid--2-btn" style="margin-top:12px;">
       <div class="um-field">
-        <label for="umUserAuthStart">Start Date</label>
+        <label data-i18n="um.fieldStartDate" for="umUserAuthStart">Start Date</label>
         <input type="date" id="umUserAuthStart"/>
       </div>
       <div class="um-field">
-        <label for="umUserAuthEnd">End Date</label>
+        <label data-i18n="um.fieldEndDate" for="umUserAuthEnd">End Date</label>
         <input type="date" id="umUserAuthEnd"/>
       </div>
       <div class="um-field" style="justify-content:flex-end;">
         <label style="visibility:hidden;">Action</label>
-        <button class="btn btn-primary um-btn-full" onclick="umCreateUserAuth()">+ Create User Auth</button>
+        <button class="btn btn-primary um-btn-full" data-i18n="um.btnCreateUser" onclick="umCreateUserAuth()">+ Create User Auth</button>
       </div>
     </div>
   </div>
 
   <!-- Separator -->
-  <div class="um-separator">— or create a token authorization —</div>
+  <div class="um-separator" data-i18n="um.separator">— or create a token authorization —</div>
 
   <!-- Section 2: New Token Authorization -->
   <div class="um-section">
     <div class="um-section-header">
-      <div class="um-section-title">New Token Authorization</div>
-      <span class="um-badge um-badge--token">Token Access</span>
+      <div class="um-section-title" data-i18n="um.sectionNewToken">New Token Authorization</div>
+      <span class="um-badge um-badge--token" data-i18n="um.badgeTokenAccess">Token Access</span>
     </div>
     <div class="um-form-grid um-form-grid--2">
       <div class="um-field">
-        <label for="umTokenAuthJob">Work</label>
+        <label data-i18n="um.fieldWork" for="umTokenAuthJob">Work</label>
         <select id="umTokenAuthJob">
           <option value="">— Select Work —</option>
         </select>
       </div>
       <div class="um-field">
-        <label for="umTokenAuthName">Token Name</label>
+        <label data-i18n="um.fieldTokenName" for="umTokenAuthName">Token Name</label>
         <input type="text" id="umTokenAuthName" placeholder="e.g. api-client-key-01"/>
       </div>
     </div>
     <div class="um-form-grid um-form-grid--2-btn" style="margin-top:12px;">
       <div class="um-field">
-        <label for="umTokenAuthStart">Start Date</label>
+        <label data-i18n="um.fieldStartDate" for="umTokenAuthStart">Start Date</label>
         <input type="date" id="umTokenAuthStart"/>
       </div>
       <div class="um-field">
-        <label for="umTokenAuthEnd">End Date</label>
+        <label data-i18n="um.fieldEndDate" for="umTokenAuthEnd">End Date</label>
         <input type="date" id="umTokenAuthEnd"/>
       </div>
       <div class="um-field" style="justify-content:flex-end;">
         <label style="visibility:hidden;">Action</label>
-        <button class="btn btn-primary um-btn-full" onclick="umCreateTokenAuth()">+ Create Token Auth</button>
+        <button class="btn btn-primary um-btn-full" data-i18n="um.btnCreateToken" onclick="umCreateTokenAuth()">+ Create Token Auth</button>
       </div>
     </div>
   </div>
@@ -574,20 +574,20 @@
 <!-- MANAGE TAB -->
 <div class="um-tab-panel" data-tab-panel="manage">
   <div class="um-section">
-    <div class="um-section-title" style="margin-bottom:14px;">Authorization List</div>
+    <div class="um-section-title" data-i18n="um.listTitle" style="margin-bottom:14px;">Authorization List</div>
 
     <!-- Filters -->
     <div class="um-list-filters">
-      <input type="text" placeholder="Search by work, user, token, profile…" oninput="umSetFilterSearch(this.value)"/>
+      <input type="text" data-i18n-placeholder="um.searchPlaceholder" placeholder="Search by work, user, token, profile…" oninput="umSetFilterSearch(this.value)"/>
       <select onchange="umSetFilterType(this.value)">
-        <option value="">All types</option>
-        <option value="user">User</option>
-        <option value="token">Token</option>
+        <option value="" data-i18n="um.filterAllTypes">All types</option>
+        <option value="user" data-i18n="um.filterUser">User</option>
+        <option value="token" data-i18n="um.filterToken">Token</option>
       </select>
       <select onchange="umSetFilterStatus(this.value)">
-        <option value="">All status</option>
-        <option value="enabled">Enabled</option>
-        <option value="disabled">Disabled</option>
+        <option value="" data-i18n="um.filterAllStatus">All status</option>
+        <option value="enabled" data-i18n="um.filterEnabled">Enabled</option>
+        <option value="disabled" data-i18n="um.filterDisabled">Disabled</option>
       </select>
     </div>
 
@@ -596,18 +596,18 @@
       <table class="um-table">
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Work</th>
-            <th>User / Token</th>
-            <th>Profile</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Enabled</th>
-            <th>Actions</th>
+            <th data-i18n="um.colType">Type</th>
+            <th data-i18n="um.colWork">Work</th>
+            <th data-i18n="um.colUserToken">User / Token</th>
+            <th data-i18n="um.colProfile">Profile</th>
+            <th data-i18n="um.colStartDate">Start Date</th>
+            <th data-i18n="um.colEndDate">End Date</th>
+            <th data-i18n="um.colEnabled">Enabled</th>
+            <th data-i18n="um.colActions">Actions</th>
           </tr>
         </thead>
         <tbody id="umTableBody">
-          <tr><td colspan="8" class="um-empty">Loading…</td></tr>
+          <tr><td colspan="8" class="um-empty" data-i18n="common.loading">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -623,7 +623,7 @@
 <!-- Footer -->
 <div class="footer">
   <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="umFooterDate"></span></div>
-  <div class="footer-chips"><div class="footer-chip">User Management</div></div>
+  <div class="footer-chips"><div class="footer-chip" data-i18n="um.footerChip">User Management</div></div>
 </div>
 
 </div><!-- /#userManagementPage -->
@@ -2554,14 +2554,14 @@
 <!-- ═══════════════════════ USER MANAGEMENT — EDIT MODAL ═══════════════════════ -->
 <div class="modal-overlay" id="umEditOverlay" onclick="if(event.target===this)umCloseEdit()">
 <div class="modal" style="width:420px;">
-  <div class="modal-title" id="umEditTitle" style="margin-bottom:16px;">Edit Authorization</div>
+  <div class="modal-title" id="umEditTitle" data-i18n="um.editTitle" style="margin-bottom:16px;">Edit Authorization</div>
   <!-- Info bar -->
   <div class="um-edit-info" id="umEditInfo">Editing: — · Work: —</div>
 
   <!-- USER EDIT PANEL -->
   <div id="umEditUserPanel">
     <div class="um-edit-toggle-row">
-      <span class="um-edit-toggle-label">Enabled</span>
+      <span class="um-edit-toggle-label" data-i18n="um.fieldEnabled">Enabled</span>
       <label class="um-toggle">
         <input type="checkbox" id="umEditEnabled"/>
         <span class="um-toggle-track"></span>
@@ -2570,11 +2570,11 @@
     </div>
     <div class="um-edit-dates">
       <div class="um-field">
-        <label for="umEditStart">Start Date</label>
+        <label data-i18n="um.fieldStartDate" for="umEditStart">Start Date</label>
         <input type="date" id="umEditStart"/>
       </div>
       <div class="um-field">
-        <label for="umEditEnd">End Date</label>
+        <label data-i18n="um.fieldEndDate" for="umEditEnd">End Date</label>
         <input type="date" id="umEditEnd"/>
       </div>
     </div>
@@ -2583,11 +2583,11 @@
   <!-- TOKEN EDIT PANEL -->
   <div id="umEditTokenPanel" style="display:none;">
     <div class="um-field" style="margin-bottom:14px;">
-      <label for="umEditTokenName">Token Name</label>
+      <label data-i18n="um.fieldTokenName" for="umEditTokenName">Token Name</label>
       <input type="text" id="umEditTokenName" placeholder="token-name"/>
     </div>
     <div class="um-edit-toggle-row">
-      <span class="um-edit-toggle-label">Enabled</span>
+      <span class="um-edit-toggle-label" data-i18n="um.fieldEnabled">Enabled</span>
       <label class="um-toggle">
         <input type="checkbox" id="umEditTokenEnabled"/>
         <span class="um-toggle-track"></span>
@@ -2596,19 +2596,19 @@
     </div>
     <div class="um-edit-dates">
       <div class="um-field">
-        <label for="umEditTokenStart">Start Date</label>
+        <label data-i18n="um.fieldStartDate" for="umEditTokenStart">Start Date</label>
         <input type="date" id="umEditTokenStart"/>
       </div>
       <div class="um-field">
-        <label for="umEditTokenEnd">End Date</label>
+        <label data-i18n="um.fieldEndDate" for="umEditTokenEnd">End Date</label>
         <input type="date" id="umEditTokenEnd"/>
       </div>
     </div>
   </div>
 
   <div class="modal-actions" style="margin-top:20px;">
-    <button class="btn" onclick="umCloseEdit()">Cancel</button>
-    <button class="btn btn-primary" onclick="umSaveEdit()">Save Changes</button>
+    <button class="btn" data-i18n="common.cancel" onclick="umCloseEdit()">Cancel</button>
+    <button class="btn btn-primary" data-i18n="um.btnSaveChanges" onclick="umSaveEdit()">Save Changes</button>
   </div>
 </div>
 </div>

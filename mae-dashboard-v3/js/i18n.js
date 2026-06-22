@@ -317,6 +317,86 @@
       'job.notLoaded': 'Work not loaded.',
       'job.couldNotDisconnect': 'Could not disconnect device.',
       'job.locationSearchFailed': 'Location search failed.',
+
+      'nav.userManagement': 'User Management',
+
+      'um.statTotal':        'Total Authorizations',
+      'um.statUsers':        'User Authorizations',
+      'um.statTokens':       'Token Authorizations',
+      'um.statEnabled':      'Enabled',
+
+      'um.tabCreate':        'Create Authorization',
+      'um.tabManage':        'Manage Authorizations',
+
+      'um.sectionNewUser':   'New User Authorization',
+      'um.sectionNewToken':  'New Token Authorization',
+      'um.badgeUserProfile': 'User + Profile',
+      'um.badgeTokenAccess': 'Token Access',
+
+      'um.fieldWork':        'Work',
+      'um.fieldProfile':     'Profile',
+      'um.fieldEmail':       'User Email',
+      'um.fieldTokenName':   'Token Name',
+      'um.fieldStartDate':   'Start Date',
+      'um.fieldEndDate':     'End Date',
+      'um.fieldEnabled':     'Enabled',
+      'um.fieldActions':     'Actions',
+
+      'um.btnCreateUser':    '+ Create User Auth',
+      'um.btnCreateToken':   '+ Create Token Auth',
+      'um.btnSaveChanges':   'Save Changes',
+      'um.separator':        '— or create a token authorization —',
+
+      'um.listTitle':         'Authorization List',
+      'um.searchPlaceholder': 'Search by work, user, token, profile…',
+      'um.filterAllTypes':    'All types',
+      'um.filterUser':        'User',
+      'um.filterToken':       'Token',
+      'um.filterAllStatus':   'All status',
+      'um.filterEnabled':     'Enabled',
+      'um.filterDisabled':    'Disabled',
+
+      'um.colType':      'Type',
+      'um.colWork':      'Work',
+      'um.colUserToken': 'User / Token',
+      'um.colProfile':   'Profile',
+      'um.colStartDate': 'Start Date',
+      'um.colEndDate':   'End Date',
+      'um.colEnabled':   'Enabled',
+      'um.colActions':   'Actions',
+
+      'um.empty':          'No authorizations found.',
+      'um.editTitle':      'Edit Authorization',
+      'um.editTitleUser':  'Edit Authorization — User',
+      'um.editTitleToken': 'Edit Authorization — Token',
+      'um.footerChip':     'User Management',
+
+      'um.statTotalSub':   '{total} created by this account',
+      'um.statUsersSub':   '{users} users linked to profiles',
+      'um.statTokensSub':  '{tokens} tokens API access keys',
+      'um.statEnabledSub': '{enabled} active / {disabled} disabled',
+      'um.selectWork':     '— Select Work —',
+      'um.selectProfile':  '— Select Profile —',
+      'um.paginationInfo': '{count} records shown · {total} total',
+      'um.editInfo':       'Editing: {label} · Work: {work}',
+
+      'um.errSelectWork':       'Please select a work.',
+      'um.errSelectProfile':    'Please select a profile.',
+      'um.errEnterEmail':       'Please enter a user email.',
+      'um.errSelectStart':      'Please select a start date.',
+      'um.errSelectEnd':        'Please select an end date.',
+      'um.errEndAfterStart':    'End date must be after start date.',
+      'um.errEnterToken':       'Please enter a token name.',
+      'um.errTokenEmpty':       'Token name cannot be empty.',
+      'um.errCreateFailed':     'Failed to create authorization: {msg}',
+      'um.errUpdateFailed':     'Failed to update: {msg}',
+      'um.errDeleteFailed':     'Failed to delete: {msg}',
+      'um.errSaveFailed':       'Failed to save: {msg}',
+      'um.successCreatedUser':  'User authorization created successfully.',
+      'um.successCreatedToken': 'Token authorization created successfully.',
+      'um.successDeleted':      'Authorization deleted.',
+      'um.successUpdated':      'Authorization updated successfully.',
+      'um.confirmDelete':       'Delete authorization for "{label}"? This cannot be undone.',
     },
     it: {
       'lang.english': 'Inglese',
@@ -627,6 +707,86 @@
       'job.notLoaded': 'Lavoro non caricato.',
       'job.couldNotDisconnect': 'Impossibile scollegare il dispositivo.',
       'job.locationSearchFailed': 'Ricerca posizione fallita.',
+
+      'nav.userManagement': 'Gestione autorizzazioni',
+
+      'um.statTotal':        'Autorizzazioni totali',
+      'um.statUsers':        'Autorizzazioni utente',
+      'um.statTokens':       'Autorizzazioni token',
+      'um.statEnabled':      'Attive',
+
+      'um.tabCreate':        'Crea autorizzazione',
+      'um.tabManage':        'Gestisci autorizzazioni',
+
+      'um.sectionNewUser':   'Nuova autorizzazione utente',
+      'um.sectionNewToken':  'Nuova autorizzazione token',
+      'um.badgeUserProfile': 'Utente + Profilo',
+      'um.badgeTokenAccess': 'Accesso token',
+
+      'um.fieldWork':        'Lavoro',
+      'um.fieldProfile':     'Profilo',
+      'um.fieldEmail':       'Email utente',
+      'um.fieldTokenName':   'Nome token',
+      'um.fieldStartDate':   'Data inizio',
+      'um.fieldEndDate':     'Data fine',
+      'um.fieldEnabled':     'Attivo',
+      'um.fieldActions':     'Azioni',
+
+      'um.btnCreateUser':    '+ Crea auth utente',
+      'um.btnCreateToken':   '+ Crea auth token',
+      'um.btnSaveChanges':   'Salva modifiche',
+      'um.separator':        "— oppure crea un'autorizzazione token —",
+
+      'um.listTitle':         'Lista autorizzazioni',
+      'um.searchPlaceholder': 'Cerca per lavoro, utente, token, profilo…',
+      'um.filterAllTypes':    'Tutti i tipi',
+      'um.filterUser':        'Utente',
+      'um.filterToken':       'Token',
+      'um.filterAllStatus':   'Tutti gli stati',
+      'um.filterEnabled':     'Attive',
+      'um.filterDisabled':    'Disattive',
+
+      'um.colType':      'Tipo',
+      'um.colWork':      'Lavoro',
+      'um.colUserToken': 'Utente / Token',
+      'um.colProfile':   'Profilo',
+      'um.colStartDate': 'Data inizio',
+      'um.colEndDate':   'Data fine',
+      'um.colEnabled':   'Attivo',
+      'um.colActions':   'Azioni',
+
+      'um.empty':          'Nessuna autorizzazione trovata.',
+      'um.editTitle':      'Modifica autorizzazione',
+      'um.editTitleUser':  'Modifica autorizzazione — Utente',
+      'um.editTitleToken': 'Modifica autorizzazione — Token',
+      'um.footerChip':     'Gestione autorizzazioni',
+
+      'um.statTotalSub':   '{total} create da questo account',
+      'um.statUsersSub':   '{users} utenti collegati a profili',
+      'um.statTokensSub':  '{tokens} chiavi di accesso API token',
+      'um.statEnabledSub': '{enabled} attive / {disabled} disattive',
+      'um.selectWork':     '— Seleziona lavoro —',
+      'um.selectProfile':  '— Seleziona profilo —',
+      'um.paginationInfo': '{count} record visualizzati · {total} totale',
+      'um.editInfo':       'Modifica: {label} · Lavoro: {work}',
+
+      'um.errSelectWork':       'Seleziona un lavoro.',
+      'um.errSelectProfile':    'Seleziona un profilo.',
+      'um.errEnterEmail':       "Inserisci l'email dell'utente.",
+      'um.errSelectStart':      'Seleziona una data di inizio.',
+      'um.errSelectEnd':        'Seleziona una data di fine.',
+      'um.errEndAfterStart':    'La data di fine deve essere successiva alla data di inizio.',
+      'um.errEnterToken':       'Inserisci il nome del token.',
+      'um.errTokenEmpty':       'Il nome del token non può essere vuoto.',
+      'um.errCreateFailed':     'Creazione autorizzazione fallita: {msg}',
+      'um.errUpdateFailed':     'Aggiornamento fallito: {msg}',
+      'um.errDeleteFailed':     'Eliminazione fallita: {msg}',
+      'um.errSaveFailed':       'Salvataggio fallito: {msg}',
+      'um.successCreatedUser':  'Autorizzazione utente creata con successo.',
+      'um.successCreatedToken': 'Autorizzazione token creata con successo.',
+      'um.successDeleted':      'Autorizzazione eliminata.',
+      'um.successUpdated':      'Autorizzazione aggiornata con successo.',
+      'um.confirmDelete':       'Eliminare l\'autorizzazione per "{label}"? Non è possibile annullare.',
     },
   };
 
@@ -743,6 +903,19 @@
         if (assocEl && typeof window.renderJobDashboardDeviceRows === 'function') {
           assocEl.innerHTML = window.renderJobDashboardDeviceRows(window._jobAssociatedDevices || [], 'associated');
         }
+      }
+    } catch (e) { /* ignore */ }
+
+    // User Management page: re-render stats and list so dynamic strings update.
+    try {
+      if (typeof window.getCurrentPage === 'function' && window.getCurrentPage() === 'user_management') {
+        if (typeof window.renderUmStats === 'function') window.renderUmStats();
+        if (typeof window.renderUmList  === 'function') window.renderUmList();
+        if (typeof window.umPopulateJobDropdowns === 'function') window.umPopulateJobDropdowns();
+        const titleEl = document.getElementById('pageTitle');
+        const subEl   = document.getElementById('pageSubtitle');
+        if (titleEl) titleEl.textContent = dict?.[lang]?.['nav.userManagement'] ?? 'User Management';
+        if (subEl)   subEl.textContent   = dict?.[lang]?.['um.pageSubtitle'] ?? '';
       }
     } catch (e) { /* ignore */ }
 

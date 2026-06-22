@@ -94,7 +94,7 @@ function umPopulateJobDropdowns() {
   selectors.forEach(sel => {
     if (!sel) return;
     const current = sel.value;
-    sel.innerHTML = '<option value="">— Select Work —</option>' +
+    sel.innerHTML = `<option value="">${window.t ? window.t('um.selectWork') : '— Select Work —'}</option>` +
       works.map(w => `<option value="${_umEsc(String(w.id))}">${_umEsc(String(w.description || w.id))}</option>`).join('');
     // Preserve previously selected value if the dropdown is rebuilt
     if (current) sel.value = current;
@@ -126,15 +126,16 @@ function renderUmStats() {
   const disabled = total - enabled;
 
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const tr  = (key, vars) => (window.tf ? window.tf(key, vars) : key);
 
   set('umStatTotal',      total);
-  set('umStatTotalSub',   `${total} created by this account`);
+  set('umStatTotalSub',   tr('um.statTotalSub',   { total }));
   set('umStatUsers',      users);
-  set('umStatUsersSub',   `${users} users linked to profiles`);
+  set('umStatUsersSub',   tr('um.statUsersSub',   { users }));
   set('umStatTokens',     tokens);
-  set('umStatTokensSub',  `${tokens} tokens API access keys`);
+  set('umStatTokensSub',  tr('um.statTokensSub',  { tokens }));
   set('umStatEnabled',    enabled);
-  set('umStatEnabledSub', `${enabled} active / ${disabled} disabled`);
+  set('umStatEnabledSub', tr('um.statEnabledSub', { enabled, disabled }));
 }
 
 // ── Create User Authorization (requirement 1) ─────────────────────────────────
@@ -155,12 +156,12 @@ async function umCreateUserAuth() {
   const end     = endEl?.value             || '';
 
   // All fields are required — validate before calling the API
-  if (!job)     { _umMsg('error', 'Please select a work.'); return; }
-  if (!profile) { _umMsg('error', 'Please select a profile.'); return; }
-  if (!email)   { _umMsg('error', 'Please enter a user email.'); return; }
-  if (!start)   { _umMsg('error', 'Please select a start date.'); return; }
-  if (!end)     { _umMsg('error', 'Please select an end date.'); return; }
-  if (start > end) { _umMsg('error', 'End date must be after start date.'); return; }
+  if (!job)     { _umMsg('error', window.t ? window.t('um.errSelectWork')    : 'Please select a work.');    return; }
+  if (!profile) { _umMsg('error', window.t ? window.t('um.errSelectProfile') : 'Please select a profile.'); return; }
+  if (!email)   { _umMsg('error', window.t ? window.t('um.errEnterEmail')    : 'Please enter a user email.'); return; }
+  if (!start)   { _umMsg('error', window.t ? window.t('um.errSelectStart')   : 'Please select a start date.'); return; }
+  if (!end)     { _umMsg('error', window.t ? window.t('um.errSelectEnd')     : 'Please select an end date.'); return; }
+  if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
 
   // Resolve the human-readable work description from the selected id
   const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
@@ -192,10 +193,10 @@ async function umCreateUserAuth() {
 
     renderUmStats();
     renderUmList();
-    _umMsg('success', 'User authorization created successfully.');
+    _umMsg('success', window.t ? window.t('um.successCreatedUser') : 'User authorization created successfully.');
     umSwitchTab('manage');   // take the user straight to the list
   } catch (e) {
-    _umMsg('error', `Failed to create authorization: ${e?.message || e}`);
+    _umMsg('error', window.tf ? window.tf('um.errCreateFailed', { msg: e?.message || e }) : `Failed to create authorization: ${e?.message || e}`);
   }
 }
 
@@ -214,11 +215,11 @@ async function umCreateTokenAuth() {
   const start = startEl?.value         || '';
   const end   = endEl?.value           || '';
 
-  if (!job)   { _umMsg('error', 'Please select a work.'); return; }
-  if (!name)  { _umMsg('error', 'Please enter a token name.'); return; }
-  if (!start) { _umMsg('error', 'Please select a start date.'); return; }
-  if (!end)   { _umMsg('error', 'Please select an end date.'); return; }
-  if (start > end) { _umMsg('error', 'End date must be after start date.'); return; }
+  if (!job)   { _umMsg('error', window.t ? window.t('um.errSelectWork')    : 'Please select a work.');    return; }
+  if (!name)  { _umMsg('error', window.t ? window.t('um.errEnterToken')    : 'Please enter a token name.'); return; }
+  if (!start) { _umMsg('error', window.t ? window.t('um.errSelectStart')   : 'Please select a start date.'); return; }
+  if (!end)   { _umMsg('error', window.t ? window.t('um.errSelectEnd')     : 'Please select an end date.'); return; }
+  if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
 
   const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
   const work  = works.find(w => String(w.id) === job);
@@ -246,10 +247,10 @@ async function umCreateTokenAuth() {
 
     renderUmStats();
     renderUmList();
-    _umMsg('success', 'Token authorization created successfully.');
+    _umMsg('success', window.t ? window.t('um.successCreatedToken') : 'Token authorization created successfully.');
     umSwitchTab('manage');
   } catch (e) {
-    _umMsg('error', `Failed to create authorization: ${e?.message || e}`);
+    _umMsg('error', window.tf ? window.tf('um.errCreateFailed', { msg: e?.message || e }) : `Failed to create authorization: ${e?.message || e}`);
   }
 }
 
@@ -272,12 +273,14 @@ function renderUmList() {
   if (!tbody) return;
 
   tbody.innerHTML = page.length === 0
-    ? `<tr><td colspan="8" class="um-empty">No authorizations found.</td></tr>`
+    ? `<tr><td colspan="8" class="um-empty">${window.t ? window.t('um.empty') : 'No authorizations found.'}</td></tr>`
     : page.map(a => _umRenderRow(a)).join('');
 
   // Pagination info
   const infoEl = document.getElementById('umPaginationInfo');
-  if (infoEl) infoEl.textContent = `${page.length} records shown · ${total} total`;
+  if (infoEl) infoEl.textContent = window.tf
+    ? window.tf('um.paginationInfo', { count: page.length, total })
+    : `${page.length} records shown · ${total} total`;
 
   // Pagination buttons
   const pagesEl = document.getElementById('umPaginationPages');
@@ -382,7 +385,7 @@ async function umToggleEnabled(id, val) {
     auth.enabled = prev;  // revert optimistic update on failure
     renderUmStats();
     renderUmList();
-    _umMsg('error', `Failed to update: ${e?.message || e}`);
+    _umMsg('error', window.tf ? window.tf('um.errUpdateFailed', { msg: e?.message || e }) : `Failed to update: ${e?.message || e}`);
   }
 }
 
@@ -392,15 +395,18 @@ async function umDeleteAuth(id) {
   const auth = umAuthorizations.find(a => a.id === id);
   if (!auth) return;
   const label = auth.type === 'user' ? auth.user : auth.token;
-  if (!confirm(`Delete authorization for "${label}"? This cannot be undone.`)) return;
+  const confirmMsg = window.tf
+    ? window.tf('um.confirmDelete', { label })
+    : `Delete authorization for "${label}"? This cannot be undone.`;
+  if (!confirm(confirmMsg)) return;
   try {
     await deleteAuthorization(id);
     umAuthorizations = umAuthorizations.filter(a => a.id !== id);
     renderUmStats();
     renderUmList();
-    _umMsg('success', 'Authorization deleted.');
+    _umMsg('success', window.t ? window.t('um.successDeleted') : 'Authorization deleted.');
   } catch (e) {
-    _umMsg('error', `Failed to delete: ${e?.message || e}`);
+    _umMsg('error', window.tf ? window.tf('um.errDeleteFailed', { msg: e?.message || e }) : `Failed to delete: ${e?.message || e}`);
   }
 }
 
@@ -420,9 +426,11 @@ function umOpenEdit(id) {
     // Requirement 4: edit Enabled + start date + end date
     document.getElementById('umEditUserPanel').style.display  = 'block';
     document.getElementById('umEditTokenPanel').style.display = 'none';
-    document.getElementById('umEditTitle').textContent        = 'Edit Authorization — User';
+    document.getElementById('umEditTitle').textContent        = window.t ? window.t('um.editTitleUser') : 'Edit Authorization — User';
     document.getElementById('umEditInfo').innerHTML =
-      `Editing: <strong>${_umEsc(auth.user || '—')}</strong> · Work: <strong>${_umEsc(auth.job || '—')}</strong>`;
+      (window.tf ? window.tf('um.editInfo', { label: '', work: '' }) : 'Editing: {label} · Work: {work}')
+        .replace('{label}', `<strong>${_umEsc(auth.user || '—')}</strong>`)
+        .replace('{work}',  `<strong>${_umEsc(auth.job  || '—')}</strong>`);
     document.getElementById('umEditEnabled').checked          = Boolean(auth.enabled);
     document.getElementById('umEditStart').value              = auth.start || '';
     document.getElementById('umEditEnd').value                = auth.end   || '';
@@ -431,9 +439,11 @@ function umOpenEdit(id) {
     // Requirement 5: edit TokenName + Enabled + start date + end date
     document.getElementById('umEditUserPanel').style.display  = 'none';
     document.getElementById('umEditTokenPanel').style.display = 'block';
-    document.getElementById('umEditTitle').textContent        = 'Edit Authorization — Token';
+    document.getElementById('umEditTitle').textContent        = window.t ? window.t('um.editTitleToken') : 'Edit Authorization — Token';
     document.getElementById('umEditInfo').innerHTML =
-      `Editing: <strong>${_umEsc(auth.token || '—')}</strong> · Work: <strong>${_umEsc(auth.job || '—')}</strong>`;
+      (window.tf ? window.tf('um.editInfo', { label: '', work: '' }) : 'Editing: {label} · Work: {work}')
+        .replace('{label}', `<strong>${_umEsc(auth.token || '—')}</strong>`)
+        .replace('{work}',  `<strong>${_umEsc(auth.job   || '—')}</strong>`);
     document.getElementById('umEditTokenName').value          = auth.token || '';
     document.getElementById('umEditTokenEnabled').checked     = Boolean(auth.enabled);
     document.getElementById('umEditTokenStart').value         = auth.start || '';
@@ -462,7 +472,7 @@ async function umSaveEdit() {
     const enabled = document.getElementById('umEditEnabled')?.checked ?? auth.enabled;
     const start   = document.getElementById('umEditStart')?.value   || auth.start;
     const end     = document.getElementById('umEditEnd')?.value     || auth.end;
-    if (start > end) { _umMsg('error', 'End date must be after start date.'); return; }
+    if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
     payload = { enabled, start, end };
 
   } else {
@@ -470,8 +480,8 @@ async function umSaveEdit() {
     const enabled   = document.getElementById('umEditTokenEnabled')?.checked ?? auth.enabled;
     const start     = document.getElementById('umEditTokenStart')?.value || auth.start;
     const end       = document.getElementById('umEditTokenEnd')?.value   || auth.end;
-    if (!tokenName) { _umMsg('error', 'Token name cannot be empty.'); return; }
-    if (start > end) { _umMsg('error', 'End date must be after start date.'); return; }
+    if (!tokenName) { _umMsg('error', window.t ? window.t('um.errTokenEmpty') : 'Token name cannot be empty.'); return; }
+    if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
     payload = { token: tokenName, enabled, start, end };
   }
 
@@ -481,9 +491,9 @@ async function umSaveEdit() {
     umCloseEdit();
     renderUmStats();
     renderUmList();
-    _umMsg('success', 'Authorization updated successfully.');
+    _umMsg('success', window.t ? window.t('um.successUpdated') : 'Authorization updated successfully.');
   } catch (e) {
-    _umMsg('error', `Failed to save: ${e?.message || e}`);
+    _umMsg('error', window.tf ? window.tf('um.errSaveFailed', { msg: e?.message || e }) : `Failed to save: ${e?.message || e}`);
   }
 }
 
