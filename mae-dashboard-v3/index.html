@@ -549,8 +549,14 @@
         </select>
       </div>
       <div class="um-field">
-        <label data-i18n="um.fieldTokenName" for="umTokenAuthName">Token Name</label>
-        <input type="text" id="umTokenAuthName" placeholder="e.g. api-client-key-01"/>
+        <label data-i18n="um.fieldProfile" for="umTokenAuthProfile">Profile</label>
+        <select id="umTokenAuthProfile">
+          <option value="">— Select Profile —</option>
+          <option value="Viewer">Viewer</option>
+          <option value="Operator">Operator</option>
+          <option value="Read-Only">Read-Only</option>
+          <option value="Administrator">Administrator</option>
+        </select>
       </div>
     </div>
     <div class="um-form-grid um-form-grid--2-btn" style="margin-top:12px;">
@@ -2582,10 +2588,6 @@
 
   <!-- TOKEN EDIT PANEL -->
   <div id="umEditTokenPanel" style="display:none;">
-    <div class="um-field" style="margin-bottom:14px;">
-      <label data-i18n="um.fieldTokenName" for="umEditTokenName">Token Name</label>
-      <input type="text" id="umEditTokenName" placeholder="token-name"/>
-    </div>
     <div class="um-edit-toggle-row">
       <span class="um-edit-toggle-label" data-i18n="um.fieldEnabled">Enabled</span>
       <label class="um-toggle">

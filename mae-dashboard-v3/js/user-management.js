@@ -7,8 +7,9 @@
 // ║  1) Create a User Authorization                              ║
 // ║     work + profile (dropdown) + email + start/end dates      ║
 // ║                                                              ║
-// ║  2) Create a Token Authorization                             ║
-// ║     work + tokenName (text) + start/end dates                ║
+// ║  2) Create a Token Authorization (guest)                     ║
+// ║     work + profile (dropdown) + start/end dates              ║
+// ║     → server returns the generated token string              ║
 // ║                                                              ║
 // ║  3) View the list of created Authorizations                  ║
 // ║     filterable by type / status / keyword, paginated         ║
@@ -16,8 +17,9 @@
 // ║  4) Edit User Authorization                                  ║
 // ║     change Enabled status and start/end dates                ║
 // ║                                                              ║
-// ║  5) Edit Token Authorization                                 ║
-// ║     change TokenName, Enabled status and start/end dates     ║
+// ║  5) Edit Token Authorization (guest)                         ║
+// ║     change Enabled status and start/end dates                ║
+// ║     (token string is immutable after creation)               ║
 // ║                                                              ║
 // ║  Contains:                                                   ║
 // ║  • initUserManagement()      loads data, renders page        ║
@@ -37,8 +39,12 @@
 // ║  • umDeleteAuth(id)          confirm + delete authorization  ║
 // ║  • umToggleEnabled(id, v)    inline enabled toggle in table  ║
 // ║                                                              ║
-// ║  Dependencies: api.js (fetchAuthorizations, createAuthorization,
-// ║                updateAuthorization, deleteAuthorization)     ║
+// ║  Dependencies: api.js (fetchAuthorizations,                  ║
+// ║                createUserAuthorization,                      ║
+// ║                createGuestAuthorization,                     ║
+// ║                updateUserAuthorization,                      ║
+// ║                updateGuestAuthorization,                     ║
+// ║                deleteAuthorization)                          ║
 // ║                state.js (getUserId, getUserName)             ║
 // ║  Load order:   before modals.js                              ║
 // ╚══════════════════════════════════════════════════════════════╝
@@ -62,9 +68,8 @@ async function initUserManagement() {
   // Populate Work dropdowns from allWorks (loaded by state.js before this runs)
   umPopulateJobDropdowns();
 
-  // Fetch authorizations for the current logged-in user
-  const userId = (typeof getUserId === 'function') ? getUserId() : '';
-  umAuthorizations = await fetchAuthorizations(userId);
+  // Fetch authorizations (aggregated across all works via work-scoped endpoints)
+  umAuthorizations = await fetchAuthorizations();
   if (!Array.isArray(umAuthorizations)) umAuthorizations = [];
 
   renderUmStats();
@@ -167,21 +172,19 @@ async function umCreateUserAuth() {
   const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
   const work  = works.find(w => String(w.id) === job);
 
-  const payload = {
+  // API payload: POST /api/works/:workId/authorizations
+  const apiPayload = { user_id: email, profile_id: profile, start, end, enabled: true };
+
+  // Local record carries extra display fields (job name, type) not returned by the API
+  const localMeta = {
     type:    'user',
     job:     work ? String(work.description || work.id) : job,
     jobId:   job,
-    user:    email,
-    profile: profile,
-    start:   start,
-    end:     end,
-    enabled: true,   // new authorizations are enabled by default
   };
 
   try {
-    const result = await createAuthorization(payload);
-    // Merge returned id with local payload to keep the array in sync
-    const newEntry = { id: result.id ?? Date.now(), ...payload };
+    const result  = await createUserAuthorization(job, apiPayload);
+    const newEntry = { id: result.id ?? Date.now(), ...localMeta, ...apiPayload };
     umAuthorizations.push(newEntry);
 
     // Reset form fields
@@ -202,52 +205,54 @@ async function umCreateUserAuth() {
 
 // ── Create Token Authorization (requirement 2) ────────────────────────────────
 
-// Validates the "New Token Authorization" form, calls createAuthorization(),
-// appends the result to the local array, and switches to the Manage tab.
+// Validates the "New Token Authorization" form, calls createGuestAuthorization(),
+// appends the result to the local array, displays the server-generated token,
+// and switches to the Manage tab.
 async function umCreateTokenAuth() {
-  const jobEl   = document.getElementById('umTokenAuthJob');
-  const nameEl  = document.getElementById('umTokenAuthName');
-  const startEl = document.getElementById('umTokenAuthStart');
-  const endEl   = document.getElementById('umTokenAuthEnd');
+  const jobEl     = document.getElementById('umTokenAuthJob');
+  const profileEl = document.getElementById('umTokenAuthProfile');
+  const startEl   = document.getElementById('umTokenAuthStart');
+  const endEl     = document.getElementById('umTokenAuthEnd');
 
-  const job   = jobEl?.value?.trim()   || '';
-  const name  = nameEl?.value?.trim()  || '';
-  const start = startEl?.value         || '';
-  const end   = endEl?.value           || '';
+  const job     = jobEl?.value?.trim()     || '';
+  const profile = profileEl?.value?.trim() || '';
+  const start   = startEl?.value           || '';
+  const end     = endEl?.value             || '';
 
-  if (!job)   { _umMsg('error', window.t ? window.t('um.errSelectWork')    : 'Please select a work.');    return; }
-  if (!name)  { _umMsg('error', window.t ? window.t('um.errEnterToken')    : 'Please enter a token name.'); return; }
-  if (!start) { _umMsg('error', window.t ? window.t('um.errSelectStart')   : 'Please select a start date.'); return; }
-  if (!end)   { _umMsg('error', window.t ? window.t('um.errSelectEnd')     : 'Please select an end date.'); return; }
+  if (!job)     { _umMsg('error', window.t ? window.t('um.errSelectWork')    : 'Please select a work.');    return; }
+  if (!profile) { _umMsg('error', window.t ? window.t('um.errSelectProfile') : 'Please select a profile.'); return; }
+  if (!start)   { _umMsg('error', window.t ? window.t('um.errSelectStart')   : 'Please select a start date.'); return; }
+  if (!end)     { _umMsg('error', window.t ? window.t('um.errSelectEnd')     : 'Please select an end date.'); return; }
   if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
 
   const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
   const work  = works.find(w => String(w.id) === job);
 
-  const payload = {
-    type:    'token',
-    job:     work ? String(work.description || work.id) : job,
-    jobId:   job,
-    token:   name,
-    profile: null,   // token authorizations have no profile
-    start:   start,
-    end:     end,
-    enabled: true,
+  // API payload: POST /api/works/:workId/authorizations/guests
+  // The server generates and returns the token string in the response.
+  const apiPayload = { profile_id: profile, start, end, enabled: true };
+
+  const localMeta = {
+    type:  'token',
+    job:   work ? String(work.description || work.id) : job,
+    jobId: job,
   };
 
   try {
-    const result = await createAuthorization(payload);
-    const newEntry = { id: result.id ?? Date.now(), ...payload };
+    const result  = await createGuestAuthorization(job, apiPayload);
+    const newEntry = { id: result.id ?? Date.now(), token: result.token ?? '', ...localMeta, ...apiPayload };
     umAuthorizations.push(newEntry);
 
-    if (jobEl)   jobEl.value   = '';
-    if (nameEl)  nameEl.value  = '';
-    if (startEl) startEl.value = '';
-    if (endEl)   endEl.value   = '';
+    if (jobEl)     jobEl.value     = '';
+    if (profileEl) profileEl.value = '';
+    if (startEl)   startEl.value   = '';
+    if (endEl)     endEl.value     = '';
 
     renderUmStats();
     renderUmList();
-    _umMsg('success', window.t ? window.t('um.successCreatedToken') : 'Token authorization created successfully.');
+    // Show the server-generated token prominently so the user can copy it
+    const tokenDisplay = result.token ? ` Token: ${result.token}` : '';
+    _umMsg('success', (window.t ? window.t('um.successCreatedToken') : 'Token authorization created successfully.') + tokenDisplay);
     umSwitchTab('manage');
   } catch (e) {
     _umMsg('error', window.tf ? window.tf('um.errCreateFailed', { msg: e?.message || e }) : `Failed to create authorization: ${e?.message || e}`);
@@ -311,7 +316,7 @@ function _umFiltered() {
     if (umFilterStatus === 'disabled' &&  a.enabled)            return false;
     if (umFilterSearch) {
       const q   = umFilterSearch.toLowerCase();
-      const hay = [a.job, a.user, a.token, a.profile].filter(Boolean).join(' ').toLowerCase();
+      const hay = [a.job, a.user_id, a.token, a.profile_id].filter(Boolean).join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -333,8 +338,9 @@ function _umRenderRow(a) {
     : `<span class="um-type-badge um-type-badge--token"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Token</span>`;
 
   const jobBadge  = `<span class="um-job-badge">${_umEsc(a.job || '—')}</span>`;
-  const userToken = a.type === 'user' ? _umEsc(a.user || '—') : _umEsc(a.token || '—');
-  const profile   = a.type === 'user' ? _umEsc(a.profile || '—') : '<span style="color:var(--muted)">—</span>';
+  // user_id = email for user auths; token = server-generated string for guest auths
+  const userToken = a.type === 'user' ? _umEsc(a.user_id || '—') : _umEsc(a.token || '—');
+  const profile   = _umEsc(a.profile_id || '—');
   const start     = _umEsc(a.start || '—');
   const end       = _umEsc(a.end   || '—');
 
@@ -380,7 +386,8 @@ async function umToggleEnabled(id, val) {
   auth.enabled = Boolean(val);
   renderUmStats();
   try {
-    await updateAuthorization(id, { enabled: Boolean(val) });
+    const fn = auth.type === 'token' ? updateGuestAuthorization : updateUserAuthorization;
+    await fn(auth.jobId, id, { enabled: Boolean(val) });
   } catch (e) {
     auth.enabled = prev;  // revert optimistic update on failure
     renderUmStats();
@@ -394,13 +401,13 @@ async function umToggleEnabled(id, val) {
 async function umDeleteAuth(id) {
   const auth = umAuthorizations.find(a => a.id === id);
   if (!auth) return;
-  const label = auth.type === 'user' ? auth.user : auth.token;
+  const label = auth.type === 'user' ? auth.user_id : auth.token;
   const confirmMsg = window.tf
     ? window.tf('um.confirmDelete', { label })
     : `Delete authorization for "${label}"? This cannot be undone.`;
   if (!confirm(confirmMsg)) return;
   try {
-    await deleteAuthorization(id);
+    await deleteAuthorization(auth.jobId, id, auth.type);
     umAuthorizations = umAuthorizations.filter(a => a.id !== id);
     renderUmStats();
     renderUmList();
@@ -429,14 +436,14 @@ function umOpenEdit(id) {
     document.getElementById('umEditTitle').textContent        = window.t ? window.t('um.editTitleUser') : 'Edit Authorization — User';
     document.getElementById('umEditInfo').innerHTML =
       (window.tf ? window.tf('um.editInfo', { label: '', work: '' }) : 'Editing: {label} · Work: {work}')
-        .replace('{label}', `<strong>${_umEsc(auth.user || '—')}</strong>`)
-        .replace('{work}',  `<strong>${_umEsc(auth.job  || '—')}</strong>`);
+        .replace('{label}', `<strong>${_umEsc(auth.user_id || '—')}</strong>`)
+        .replace('{work}',  `<strong>${_umEsc(auth.job     || '—')}</strong>`);
     document.getElementById('umEditEnabled').checked          = Boolean(auth.enabled);
     document.getElementById('umEditStart').value              = auth.start || '';
     document.getElementById('umEditEnd').value                = auth.end   || '';
 
   } else {
-    // Requirement 5: edit TokenName + Enabled + start date + end date
+    // Requirement 5: edit Enabled + start date + end date (token string is immutable)
     document.getElementById('umEditUserPanel').style.display  = 'none';
     document.getElementById('umEditTokenPanel').style.display = 'block';
     document.getElementById('umEditTitle').textContent        = window.t ? window.t('um.editTitleToken') : 'Edit Authorization — Token';
@@ -444,10 +451,9 @@ function umOpenEdit(id) {
       (window.tf ? window.tf('um.editInfo', { label: '', work: '' }) : 'Editing: {label} · Work: {work}')
         .replace('{label}', `<strong>${_umEsc(auth.token || '—')}</strong>`)
         .replace('{work}',  `<strong>${_umEsc(auth.job   || '—')}</strong>`);
-    document.getElementById('umEditTokenName').value          = auth.token || '';
-    document.getElementById('umEditTokenEnabled').checked     = Boolean(auth.enabled);
-    document.getElementById('umEditTokenStart').value         = auth.start || '';
-    document.getElementById('umEditTokenEnd').value           = auth.end   || '';
+    document.getElementById('umEditTokenEnabled').checked = Boolean(auth.enabled);
+    document.getElementById('umEditTokenStart').value     = auth.start || '';
+    document.getElementById('umEditTokenEnd').value       = auth.end   || '';
   }
 
   overlay.classList.add('open');
@@ -474,19 +480,18 @@ async function umSaveEdit() {
     const end     = document.getElementById('umEditEnd')?.value     || auth.end;
     if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
     payload = { enabled, start, end };
-
   } else {
-    const tokenName = document.getElementById('umEditTokenName')?.value?.trim() || auth.token;
-    const enabled   = document.getElementById('umEditTokenEnabled')?.checked ?? auth.enabled;
-    const start     = document.getElementById('umEditTokenStart')?.value || auth.start;
-    const end       = document.getElementById('umEditTokenEnd')?.value   || auth.end;
-    if (!tokenName) { _umMsg('error', window.t ? window.t('um.errTokenEmpty') : 'Token name cannot be empty.'); return; }
+    // Token string is immutable — only start, end, enabled can change
+    const enabled = document.getElementById('umEditTokenEnabled')?.checked ?? auth.enabled;
+    const start   = document.getElementById('umEditTokenStart')?.value || auth.start;
+    const end     = document.getElementById('umEditTokenEnd')?.value   || auth.end;
     if (start > end) { _umMsg('error', window.t ? window.t('um.errEndAfterStart') : 'End date must be after start date.'); return; }
-    payload = { token: tokenName, enabled, start, end };
+    payload = { enabled, start, end };
   }
 
   try {
-    await updateAuthorization(umEditingId, payload);
+    const fn = auth.type === 'token' ? updateGuestAuthorization : updateUserAuthorization;
+    await fn(auth.jobId, umEditingId, payload);
     Object.assign(auth, payload);  // update local record without a re-fetch
     umCloseEdit();
     renderUmStats();

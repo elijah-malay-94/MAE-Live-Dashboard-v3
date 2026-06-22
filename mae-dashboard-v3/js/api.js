@@ -1986,38 +1986,97 @@ async function fetchWorks(customerId) {
 }
 
 // ═══════════════════════ API: AUTHORIZATIONS ═══════════════════════
-function getMockAuthorizations(userId) {
+//
+// Endpoints (from API spec):
+//   POST   /api/works/:workId/authorizations            → create user auth  {user_id, profile_id, start, end, enabled}  → {id}
+//   PUT    /api/works/:workId/authorizations/:id        → edit user auth    {start, end, enabled}                       → {id}
+//   POST   /api/works/:workId/authorizations/guests     → create token auth {profile_id, start, end, enabled}           → {id, token}
+//   PUT    /api/works/:workId/authorizations/guests/:id → edit token auth   {start, end, enabled}                       → {id}
+//
+// Note: token value is server-generated and returned in the create-guest response.
+// Note: list endpoint (GET /api/works/:workId/authorizations) is assumed; not specified in the XLS.
+
+function getMockAuthorizations() {
+  // Token field contains a server-generated string (not user-defined).
+  // Profile is present on both user and guest (token) records.
   return [
-    { id: 1, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user: 'marco.rossi@example.it',    profile: 'Viewer',     start: '2026-01-10', end: '2026-12-31', enabled: true  },
-    { id: 2, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user: 'giulia.bianchi@corp.com',   profile: 'Operator',   start: '2026-03-01', end: '2026-09-30', enabled: true  },
-    { id: 3, type: 'user',  job: 'MONITORING-B',  jobId: '102', user: 'luca.ferrari@geo.it',       profile: 'Read-Only',  start: '2026-02-15', end: '2026-06-30', enabled: false },
-    { id: 4, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'api-client-dashboard',     profile: null,         start: '2026-04-01', end: '2026-12-31', enabled: true  },
-    { id: 5, type: 'token', job: 'CANTIERE-NORD', jobId: '101', token: 'iot-sensor-relay-01',      profile: null,         start: '2026-01-20', end: '2027-01-20', enabled: true  },
-    { id: 6, type: 'token', job: 'MONITORING-B',  jobId: '102', token: 'ext-reporting-tool',       profile: null,         start: '2026-05-01', end: '2026-08-01', enabled: false },
-    { id: 7, type: 'user',  job: 'SURVEY-FROS',   jobId: '103', user: 'anna.verdi@survey.it',      profile: 'Read-Only',  start: '2026-03-10', end: '2026-11-30', enabled: true  },
-    { id: 8, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'mobile-app-token',         profile: null,         start: '2026-06-01', end: '2026-12-31', enabled: true  },
+    { id: 1, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user_id: 'marco.rossi@example.it',   profile_id: 'Viewer',        start: '2026-01-10', end: '2026-12-31', enabled: true  },
+    { id: 2, type: 'user',  job: 'CANTIERE-NORD', jobId: '101', user_id: 'giulia.bianchi@corp.com',  profile_id: 'Operator',      start: '2026-03-01', end: '2026-09-30', enabled: true  },
+    { id: 3, type: 'user',  job: 'MONITORING-B',  jobId: '102', user_id: 'luca.ferrari@geo.it',      profile_id: 'Read-Only',     start: '2026-02-15', end: '2026-06-30', enabled: false },
+    { id: 4, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'tk_a1b2c3d4e5f6',           profile_id: 'Viewer',        start: '2026-04-01', end: '2026-12-31', enabled: true  },
+    { id: 5, type: 'token', job: 'CANTIERE-NORD', jobId: '101', token: 'tk_9z8y7x6w5v4u',           profile_id: 'Read-Only',     start: '2026-01-20', end: '2027-01-20', enabled: true  },
+    { id: 6, type: 'token', job: 'MONITORING-B',  jobId: '102', token: 'tk_3f2e1d0c9b8a',           profile_id: 'Operator',      start: '2026-05-01', end: '2026-08-01', enabled: false },
+    { id: 7, type: 'user',  job: 'SURVEY-FROS',   jobId: '103', user_id: 'anna.verdi@survey.it',    profile_id: 'Read-Only',     start: '2026-03-10', end: '2026-11-30', enabled: true  },
+    { id: 8, type: 'token', job: 'SURVEY-FROS',   jobId: '103', token: 'tk_7p6q5r4s3t2u',           profile_id: 'Administrator', start: '2026-06-01', end: '2026-12-31', enabled: true  },
   ];
 }
 
-async function fetchAuthorizations(userId) {
-  if (isMockMode()) return getMockAuthorizations(userId);
+// Fetch all authorizations by aggregating across all available works.
+async function fetchAuthorizations() {
+  if (isMockMode()) return getMockAuthorizations();
+  const works = (typeof allWorks !== 'undefined' && Array.isArray(allWorks)) ? allWorks : [];
+  if (works.length === 0) return [];
   try {
-    const data = await apiFetch(`/api/v1/users/${encodeURIComponent(userId)}/authorizations`);
-    return Array.isArray(data) ? data : (data?.records || []);
-  } catch (e) { return getMockAuthorizations(userId); }
+    const results = await Promise.all(
+      works.map(w =>
+        apiFetch(`/api/works/${encodeURIComponent(w.id)}/authorizations`)
+          .then(data => {
+            const records = Array.isArray(data) ? data : (data?.records || []);
+            // Inject job metadata so the list table can display it without extra lookups
+            return records.map(r => ({ ...r, jobId: w.id, job: w.description || String(w.id) }));
+          })
+          .catch(() => [])
+      )
+    );
+    return results.flat();
+  } catch (e) { return getMockAuthorizations(); }
 }
 
-async function createAuthorization(payload) {
+// Create user authorization: POST /api/works/:workId/authorizations
+// Payload: { user_id, profile_id, start, end, enabled }  →  response: { id }
+async function createUserAuthorization(workId, payload) {
   if (isMockMode()) return { id: Date.now(), ...payload };
-  return apiFetch('/api/v1/authorizations', { method: 'POST', body: JSON.stringify(payload) });
+  return apiFetch(
+    `/api/works/${encodeURIComponent(workId)}/authorizations`,
+    { method: 'POST', body: JSON.stringify(payload) }
+  );
 }
 
-async function updateAuthorization(id, payload) {
+// Create guest (token) authorization: POST /api/works/:workId/authorizations/guests
+// Payload: { profile_id, start, end, enabled }  →  response: { id, token }
+// The token string is server-generated and must be displayed to the user after creation.
+async function createGuestAuthorization(workId, payload) {
+  if (isMockMode()) return { id: Date.now(), token: `tk_${Math.random().toString(36).slice(2, 14)}`, ...payload };
+  return apiFetch(
+    `/api/works/${encodeURIComponent(workId)}/authorizations/guests`,
+    { method: 'POST', body: JSON.stringify(payload) }
+  );
+}
+
+// Edit user authorization: PUT /api/works/:workId/authorizations/:id
+// Payload: { start, end, enabled }  →  response: { id }
+async function updateUserAuthorization(workId, id, payload) {
   if (isMockMode()) return { id, ...payload };
-  return apiFetch(`/api/v1/authorizations/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(payload) });
+  return apiFetch(
+    `/api/works/${encodeURIComponent(workId)}/authorizations/${encodeURIComponent(id)}`,
+    { method: 'PUT', body: JSON.stringify(payload) }
+  );
 }
 
-async function deleteAuthorization(id) {
+// Edit guest (token) authorization: PUT /api/works/:workId/authorizations/guests/:id
+// Payload: { start, end, enabled }  →  response: { id }
+async function updateGuestAuthorization(workId, id, payload) {
+  if (isMockMode()) return { id, ...payload };
+  return apiFetch(
+    `/api/works/${encodeURIComponent(workId)}/authorizations/guests/${encodeURIComponent(id)}`,
+    { method: 'PUT', body: JSON.stringify(payload) }
+  );
+}
+
+// Delete authorization (endpoint not specified in XLS; kept for UI completeness).
+async function deleteAuthorization(workId, id, type) {
   if (isMockMode()) return true;
-  return apiFetch(`/api/v1/authorizations/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const base = `/api/works/${encodeURIComponent(workId)}/authorizations`;
+  const url  = type === 'token' ? `${base}/guests/${encodeURIComponent(id)}` : `${base}/${encodeURIComponent(id)}`;
+  return apiFetch(url, { method: 'DELETE' });
 }
