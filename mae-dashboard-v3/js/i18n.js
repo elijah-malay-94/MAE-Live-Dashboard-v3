@@ -358,7 +358,7 @@
 
       'um.colType':      'Type',
       'um.colWork':      'Work',
-      'um.colUserToken': 'User / Guest',
+      'um.colUserToken': 'User / Token',
       'um.colProfile':   'Profile',
       'um.colStartDate': 'Start Date',
       'um.colEndDate':   'End Date',
@@ -748,7 +748,7 @@
 
       'um.colType':      'Tipo',
       'um.colWork':      'Lavoro',
-      'um.colUserToken': 'Utente / Guest',
+      'um.colUserToken': 'Utente / Token',
       'um.colProfile':   'Profilo',
       'um.colStartDate': 'Data inizio',
       'um.colEndDate':   'Data fine',
