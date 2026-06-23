@@ -1099,7 +1099,11 @@ function renderPowerModal() {
   document.getElementById('leg_usb_cur').textContent  = latest.usb.toFixed(2)  + usbCfg.unit;
   document.getElementById('leg_aux_cur').textContent  = latest.aux.toFixed(2)  + auxCfg.unit;
   const lastTimeEl = document.getElementById('leg_last_time');
-  if (lastTimeEl) lastTimeEl.textContent = latest.label;
+  if (lastTimeEl) {
+    const ts = latest.ts instanceof Date ? latest.ts : new Date(latest.ts);
+    lastTimeEl.textContent = ts.toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' })
+      + ' ' + ts.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
   document.getElementById('pm_ch_batt').textContent   = latest.batt.toFixed(2) + batCfg.unit;
   document.getElementById('pm_ch_usb').textContent    = latest.usb.toFixed(2)  + usbCfg.unit;
   document.getElementById('pm_ch_aux').textContent    = latest.aux.toFixed(2)  + auxCfg.unit;

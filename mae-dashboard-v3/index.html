@@ -19,6 +19,7 @@
 <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 <link href="css/mqtt.css" rel="stylesheet"/>
 <link href="css/user-management.css" rel="stylesheet"/>
+<link href="css/users.css" rel="stylesheet"/>
 </head>
 <body>
 <!-- ═══════════════════════ LOGIN MODAL ═══════════════════════ -->
@@ -76,9 +77,13 @@
 <svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"></path><circle cx="12" cy="9" r="2"></circle></svg>
 <span data-i18n="nav.works">Works</span>
 </a>
+<a class="nav-item" href="index.html?page=users" id="navUsers">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+<span data-i18n="nav.users">Users</span>
+</a>
 <a class="nav-item" href="index.html?page=user_management" id="navUserManagement">
 <svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-<span data-i18n="nav.userManagement">User Management</span>
+<span data-i18n="nav.userManagement">Authorization Management</span>
 </a>
 <div class="nav-item" id="navAlerts" onclick="openAlarmsPanel()">
 <svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -451,6 +456,61 @@
 </div>
 </div><!-- /#mqttDashboardPage -->
 
+<!-- ═══════════════════════ USERS PAGE ═══════════════════════ -->
+<div id="usersPage" style="display:none;">
+  <div id="usMsg" class="us-msg"></div>
+  <div class="us-header">
+    <div></div>
+    <button class="btn btn-primary" data-i18n="users.btnCreate" onclick="usOpenCreateModal()">+ Create User</button>
+  </div>
+  <div class="us-stats-grid">
+    <div class="us-stat-card">
+      <div class="us-stat-label" data-i18n="users.statTotal">Total Users</div>
+      <div class="us-stat-value" id="usStatTotal">—</div>
+      <div class="us-stat-sub" id="usStatTotalSub"></div>
+    </div>
+    <div class="us-stat-card">
+      <div class="us-stat-label" data-i18n="users.statEnabled">Enabled</div>
+      <div class="us-stat-value" id="usStatEnabled">—</div>
+      <div class="us-stat-sub" id="usStatEnabledSub"></div>
+    </div>
+    <div class="us-stat-card">
+      <div class="us-stat-label" data-i18n="users.statLocked">Locked</div>
+      <div class="us-stat-value" id="usStatLocked">—</div>
+      <div class="us-stat-sub" id="usStatLockedSub"></div>
+    </div>
+  </div>
+  <div class="us-table-wrap">
+    <div class="us-table-toolbar">
+      <span class="us-table-title" data-i18n="users.tableTitle">User List</span>
+      <input class="us-search" id="usSearch" type="text" data-i18n-placeholder="users.searchPlaceholder" placeholder="Search by ID, email or username…">
+    </div>
+    <table class="us-table">
+      <thead>
+        <tr>
+          <th data-i18n="users.colId">ID</th>
+          <th data-i18n="users.colEmail">Email</th>
+          <th data-i18n="users.colEnabled">Enabled</th>
+          <th data-i18n="users.colLocked">Locked</th>
+          <th data-i18n="users.colEmailVerified">Email Verified</th>
+          <th data-i18n="users.colLastLogin">Last Login</th>
+          <th data-i18n="users.colActions">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="usTableBody">
+        <tr><td colspan="7" class="us-table-empty">Loading…</td></tr>
+      </tbody>
+    </table>
+    <div style="padding:10px 16px;">
+      <span id="usPaginationInfo" class="us-footer-chip"></span>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-left"><span data-i18n="footer.appTitle">Datalogger Live Dashboard</span> · <span id="usFooterDate"></span></div>
+    <div class="footer-chips"><div class="footer-chip" data-i18n="nav.users">Users</div></div>
+  </div>
+</div><!-- /#usersPage -->
+
 <!-- ═══════════════════════ USER MANAGEMENT PAGE ═══════════════════════ -->
 <div id="userManagementPage" style="display:none;">
 <div class="api-hint" id="apiHintUserMgmt" style="display:none;"></div>
@@ -635,6 +695,111 @@
 </div><!-- /#userManagementPage -->
 
 </main>
+
+<!-- ═══════════════════════ USERS PAGE MODALS ═══════════════════════ -->
+
+<!-- Create User Modal -->
+<div class="us-modal-overlay" id="usCreateModal">
+  <div class="us-modal-box">
+    <div class="us-modal-header">
+      <span class="us-modal-title" data-i18n="users.createTitle">Create New User</span>
+      <button class="us-modal-close" onclick="usCloseCreateModal()">&times;</button>
+    </div>
+    <div class="us-modal-body">
+      <div id="usCreateMsg" class="us-msg"></div>
+      <div class="um-field">
+        <label data-i18n="users.fieldEmail" for="usCreateEmail">Email</label>
+        <input type="email" id="usCreateEmail" data-i18n-placeholder="users.fieldEmail" placeholder="Email" onkeydown="if(event.key==='Enter')usCreateUser()"/>
+      </div>
+    </div>
+    <div class="us-modal-footer">
+      <button class="btn" onclick="usCloseCreateModal()" data-i18n="common.cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="usCreateUser()" data-i18n="users.btnCreate">+ Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="us-modal-overlay" id="usDetailsModal">
+  <div class="us-modal-box us-modal-box--wide">
+    <div class="us-modal-header">
+      <span class="us-modal-title" data-i18n="users.detailsTitle">User Details</span>
+      <button class="us-modal-close" onclick="usCloseDetailsModal()">&times;</button>
+    </div>
+    <div class="us-modal-body" id="usDetailsBody">
+    </div>
+    <div class="us-modal-footer">
+      <button class="btn btn-primary" onclick="usCloseDetailsModal()" data-i18n="common.close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Email Modal -->
+<div class="us-modal-overlay" id="usEditEmailModal">
+  <div class="us-modal-box">
+    <div class="us-modal-header">
+      <span class="us-modal-title" data-i18n="users.editEmailTitle">Edit Email Address</span>
+      <button class="us-modal-close" onclick="usCloseEditEmailModal()">&times;</button>
+    </div>
+    <div class="us-modal-body">
+      <div id="usEditEmailMsg" class="us-msg"></div>
+      <div class="um-field" style="margin-bottom:12px;">
+        <label data-i18n="users.newEmail" for="usEditEmailInput">New Email</label>
+        <input type="email" id="usEditEmailInput" data-i18n-placeholder="users.newEmail" placeholder="New Email"/>
+      </div>
+      <div class="um-field">
+        <label data-i18n="users.currentPassword" for="usEditEmailPassword">Current Password</label>
+        <input type="password" id="usEditEmailPassword" data-i18n-placeholder="users.currentPassword" placeholder="Current Password" onkeydown="if(event.key==='Enter')usSaveEditEmail()"/>
+      </div>
+    </div>
+    <div class="us-modal-footer">
+      <button class="btn" onclick="usCloseEditEmailModal()" data-i18n="common.cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="usSaveEditEmail()" data-i18n="common.go">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Devices Modal -->
+<div class="us-modal-overlay" id="usDevicesModal">
+  <div class="us-modal-box us-modal-box--wide">
+    <div class="us-modal-header">
+      <div>
+        <span class="us-modal-title" data-i18n="users.devicesTitle">User Devices</span>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;" id="usDevicesTitle"></div>
+      </div>
+      <button class="us-modal-close" onclick="usCloseDevicesModal()">&times;</button>
+    </div>
+    <div class="us-modal-body">
+      <div id="usDeviceMsg" class="us-msg"></div>
+      <table class="us-devices-table">
+        <thead>
+          <tr>
+            <th data-i18n="users.devicesColId">ID</th>
+            <th data-i18n="users.devicesColType">Type</th>
+            <th data-i18n="users.devicesColSerial">Serial</th>
+            <th data-i18n="users.devicesColIp">IP</th>
+            <th data-i18n="users.devicesColEnabled">Enabled</th>
+          </tr>
+        </thead>
+        <tbody id="usDevicesTableBody">
+          <tr><td colspan="5" class="us-devices-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+      <div class="us-add-device-form">
+        <div class="us-add-device-title" data-i18n="users.addDeviceTitle">Add New Device</div>
+        <div class="us-add-device-row">
+          <input type="text" id="usDeviceType" data-i18n-placeholder="users.fieldDeviceType" placeholder="Device Type"/>
+          <input type="text" id="usDeviceSerial" data-i18n-placeholder="users.fieldSerial" placeholder="Serial Number" onkeydown="if(event.key==='Enter')usAddDevice()"/>
+          <button class="btn btn-primary" onclick="usAddDevice()" data-i18n="users.btnAddDevice">+ Add Device</button>
+        </div>
+      </div>
+    </div>
+    <div class="us-modal-footer">
+      <button class="btn btn-primary" onclick="usCloseDevicesModal()" data-i18n="common.close">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════ HANDBOOK ═══════════════════════ -->
 <div class="handbook-page" id="handbookPage">
 <div class="handbook-toolbar">
@@ -2621,7 +2786,7 @@ function getCurrentPage() {
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
-    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management') ? p : 'dashboard';
+    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management' || p === 'users') ? p : 'dashboard';
   } catch (e) { return 'dashboard'; }
 }
 
@@ -2642,35 +2807,40 @@ function toggleSidebar() {
 })();
 
 function setActiveNav(page) {
-  const dash    = document.getElementById('navDashboard');
-  const works   = document.getElementById('navWorks');
+  const dash     = document.getElementById('navDashboard');
+  const works    = document.getElementById('navWorks');
   const userMgmt = document.getElementById('navUserManagement');
+  const users    = document.getElementById('navUsers');
   if (dash)     dash.classList.toggle('active',    page === 'dashboard' || page === 'dashboard_mqtt');
   if (works)    works.classList.toggle('active',   page === 'works');
   if (userMgmt) userMgmt.classList.toggle('active', page === 'user_management');
+  if (users)    users.classList.toggle('active',   page === 'users');
 }
 
 function togglePages() {
   const page = getCurrentPage();
-  const dash   = document.getElementById('dashboardPage');
-  const works  = document.getElementById('worksPage');
-  const job    = document.getElementById('jobPage');
-  const mqtt   = document.getElementById('mqttDashboardPage');
-  const umPage = document.getElementById('userManagementPage');
-  if (dash)   dash.style.display   = page === 'dashboard'        ? 'block' : 'none';
-  if (works)  works.style.display  = page === 'works'            ? 'block' : 'none';
-  if (job)    job.style.display    = page === 'job'              ? 'block' : 'none';
-  if (mqtt)   mqtt.style.display   = page === 'dashboard_mqtt'   ? 'block' : 'none';
-  if (umPage) umPage.style.display = page === 'user_management'  ? 'block' : 'none';
+  const dash    = document.getElementById('dashboardPage');
+  const works   = document.getElementById('worksPage');
+  const job     = document.getElementById('jobPage');
+  const mqtt    = document.getElementById('mqttDashboardPage');
+  const umPage  = document.getElementById('userManagementPage');
+  const usPage  = document.getElementById('usersPage');
+  if (dash)    dash.style.display    = page === 'dashboard'        ? 'block' : 'none';
+  if (works)   works.style.display   = page === 'works'            ? 'block' : 'none';
+  if (job)     job.style.display     = page === 'job'              ? 'block' : 'none';
+  if (mqtt)    mqtt.style.display    = page === 'dashboard_mqtt'   ? 'block' : 'none';
+  if (umPage)  umPage.style.display  = page === 'user_management'  ? 'block' : 'none';
+  if (usPage)  usPage.style.display  = page === 'users'            ? 'block' : 'none';
   setActiveNav(page);
 
-  const navDash    = document.getElementById('navDashboard');
-  const navWorks   = document.getElementById('navWorks');
-  const navAlerts  = document.getElementById('navAlerts');
-  const navExport  = document.getElementById('navExport');
+  const navDash     = document.getElementById('navDashboard');
+  const navWorks    = document.getElementById('navWorks');
+  const navAlerts   = document.getElementById('navAlerts');
+  const navExport   = document.getElementById('navExport');
   const navSettings = document.getElementById('navSettings');
-  const navManual  = document.getElementById('navManual');
+  const navManual   = document.getElementById('navManual');
   const navUserMgmt = document.getElementById('navUserManagement');
+  const navUsersEl  = document.getElementById('navUsers');
 
   const showEl = (el, show) => { if (el) el.style.display = show ? '' : 'none'; };
 
@@ -2682,6 +2852,7 @@ function togglePages() {
     showEl(navSettings, false);
     showEl(navManual, true);
     showEl(navUserMgmt, true);
+    showEl(navUsersEl, true);
   } else if (page === 'works') {
     showEl(navDash, false);
     showEl(navWorks, false);
@@ -2690,6 +2861,7 @@ function togglePages() {
     showEl(navSettings, false);
     showEl(navManual, true);
     showEl(navUserMgmt, true);
+    showEl(navUsersEl, true);
   } else if (page === 'user_management') {
     showEl(navDash, true);
     showEl(navWorks, true);
@@ -2698,6 +2870,16 @@ function togglePages() {
     showEl(navSettings, false);
     showEl(navManual, true);
     showEl(navUserMgmt, true);
+    showEl(navUsersEl, true);
+  } else if (page === 'users') {
+    showEl(navDash, true);
+    showEl(navWorks, true);
+    showEl(navAlerts, false);
+    showEl(navExport, false);
+    showEl(navSettings, false);
+    showEl(navManual, true);
+    showEl(navUserMgmt, true);
+    showEl(navUsersEl, true);
   } else {
     showEl(navDash, false);
     showEl(navWorks, true);
@@ -2706,6 +2888,7 @@ function togglePages() {
     showEl(navSettings, false);
     showEl(navManual, true);
     showEl(navUserMgmt, true);
+    showEl(navUsersEl, true);
     try {
       const navSection = document.querySelector('.sidebar .nav-section');
       if (navSection) {
@@ -2734,9 +2917,12 @@ function togglePages() {
     } else if (page === 'job') {
       titleEl.setAttribute('data-i18n', 'page.job');
       titleEl.textContent = tr('page.job', 'WORK MANAGEMENT');
+    } else if (page === 'users') {
+      titleEl.removeAttribute('data-i18n');
+      titleEl.textContent = tr('nav.users', 'Users');
     } else if (page === 'user_management') {
       titleEl.removeAttribute('data-i18n');
-      titleEl.textContent = tr('nav.userManagement', 'User Management');
+      titleEl.textContent = tr('nav.userManagement', 'Authorization Management');
     } else {
       titleEl.setAttribute('data-i18n', 'page.liveDashboard');
       titleEl.textContent = tr('page.liveDashboard', 'Live Dashboard');
@@ -2747,6 +2933,8 @@ function togglePages() {
       subEl.textContent = tr('works.subtitle', 'Select a work to view measures');
     } else if (page === 'job') {
       subEl.textContent = tr('page.jobSubtitle', 'Create or edit a work, then manage devices.');
+    } else if (page === 'users') {
+      subEl.textContent = tr('users.tableTitle', 'User List');
     } else if (page === 'user_management') {
       subEl.textContent = 'Manage user and guest authorizations for your works';
     } else {
@@ -2781,6 +2969,7 @@ if (document.readyState !== 'loading') togglePages();
 <script src="js/works.js"></script>
 <script src="js/mqtt.js"></script>
 <script src="js/user-management.js"></script>
+<script src="js/users.js"></script>
 <script src="js/modals.js"></script>
 </body>
 </html>

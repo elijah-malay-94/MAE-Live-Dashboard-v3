@@ -2082,3 +2082,210 @@ async function deleteAuthorization(workId, id, type) {
   const url  = type === 'token' ? `${base}/guests/${encodeURIComponent(id)}` : `${base}/${encodeURIComponent(id)}`;
   return apiFetch(url, { method: 'DELETE' });
 }
+
+// ═══════════════════════ USERS API ═══════════════════════
+// Endpoints: GET /api/users, GET /api/users/:id, POST /api/users,
+//            PUT /api/users/:id/email, PUT /api/users/:id,
+//            GET /api/devices, POST /api/devices
+
+// Mock users — 5 realistic Italian-sounding accounts with all spec fields.
+function getMockUsers() {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: 1,
+      email: 'marco.rossi@maeservice.it',
+      enabled: true,
+      locked: false,
+      email_verified: true,
+      last_login: '2026-06-20T09:14:00.000Z',
+      last_attempt: '2026-06-20T09:14:00.000Z',
+      failed_attempts: 0,
+      reset_token: null,
+      reset_token_expires: null,
+      verify_token: null,
+      verify_token_expires: null,
+      refresh_token: 'rt_a1b2c3d4e5f6',
+      refresh_token_expires: '2026-07-20T09:14:00.000Z',
+      created_by_id: null,
+      created_at: '2025-01-10T08:00:00.000Z',
+      updated_by_id: null,
+      updated_at: now,
+    },
+    {
+      id: 2,
+      email: 'giulia.bianchi@maeservice.it',
+      enabled: true,
+      locked: false,
+      email_verified: true,
+      last_login: '2026-06-19T14:30:00.000Z',
+      last_attempt: '2026-06-19T14:30:00.000Z',
+      failed_attempts: 0,
+      reset_token: null,
+      reset_token_expires: null,
+      verify_token: null,
+      verify_token_expires: null,
+      refresh_token: 'rt_9z8y7x6w5v4u',
+      refresh_token_expires: '2026-07-19T14:30:00.000Z',
+      created_by_id: 1,
+      created_at: '2025-03-05T10:00:00.000Z',
+      updated_by_id: 1,
+      updated_at: now,
+    },
+    {
+      id: 3,
+      email: 'luca.ferrari@maeservice.it',
+      enabled: false,
+      locked: false,
+      email_verified: true,
+      last_login: '2026-05-01T11:00:00.000Z',
+      last_attempt: '2026-05-01T11:00:00.000Z',
+      failed_attempts: 0,
+      reset_token: null,
+      reset_token_expires: null,
+      verify_token: null,
+      verify_token_expires: null,
+      refresh_token: null,
+      refresh_token_expires: null,
+      created_by_id: 1,
+      created_at: '2025-04-01T09:00:00.000Z',
+      updated_by_id: 1,
+      updated_at: now,
+    },
+    {
+      id: 4,
+      email: 'anna.verdi@maeservice.it',
+      enabled: true,
+      locked: true,
+      email_verified: false,
+      last_login: null,
+      last_attempt: '2026-06-22T08:05:00.000Z',
+      failed_attempts: 5,
+      reset_token: 'rst_k7j6h5g4f3e2',
+      reset_token_expires: '2026-06-24T08:05:00.000Z',
+      verify_token: 'vfy_1a2b3c4d5e6f',
+      verify_token_expires: '2026-06-25T08:00:00.000Z',
+      refresh_token: null,
+      refresh_token_expires: null,
+      created_by_id: 1,
+      created_at: '2026-06-15T12:00:00.000Z',
+      updated_by_id: 1,
+      updated_at: now,
+    },
+    {
+      id: 5,
+      email: 'paolo.conti@maeservice.it',
+      enabled: true,
+      locked: false,
+      email_verified: true,
+      last_login: '2026-06-21T16:45:00.000Z',
+      last_attempt: '2026-06-21T16:45:00.000Z',
+      failed_attempts: 0,
+      reset_token: null,
+      reset_token_expires: null,
+      verify_token: null,
+      verify_token_expires: null,
+      refresh_token: 'rt_3f2e1d0c9b8a',
+      refresh_token_expires: '2026-07-21T16:45:00.000Z',
+      created_by_id: 1,
+      created_at: '2025-06-01T07:30:00.000Z',
+      updated_by_id: null,
+      updated_at: now,
+    },
+  ];
+}
+
+// Mock devices — 5 devices with owner_user_id referencing mock users.
+function getMockDevices() {
+  return [
+    { id: 101, owner_user_id: 1, device_type: 'DL8',  serial_number: 'SN-MAE-0001', ip: '192.168.1.10', enabled: true  },
+    { id: 102, owner_user_id: 1, device_type: 'DL16', serial_number: 'SN-MAE-0002', ip: '192.168.1.11', enabled: true  },
+    { id: 103, owner_user_id: 2, device_type: 'DL4',  serial_number: 'SN-MAE-0003', ip: '10.0.0.5',     enabled: true  },
+    { id: 104, owner_user_id: 3, device_type: 'DL8',  serial_number: 'SN-MAE-0004', ip: '10.0.0.6',     enabled: false },
+    { id: 105, owner_user_id: 5, device_type: 'DL16', serial_number: 'SN-MAE-0005', ip: '172.16.0.2',   enabled: true  },
+  ];
+}
+
+// GET /api/users  →  [{id, email, enabled, locked, last_login, …}]
+// Falls back to getMockUsers() on CORS / network error or empty response.
+async function fetchUsers() {
+  if (isMockMode()) return getMockUsers();
+  try {
+    const data = await apiFetch('/api/users');
+    const arr = Array.isArray(data) ? data : [];
+    return arr.length > 0 ? arr : getMockUsers();
+  } catch (e) {
+    return getMockUsers();
+  }
+}
+
+// GET /api/users/:id  →  full user object (all 18 fields)
+// Falls back to the matching mock user on error.
+async function fetchUser(id) {
+  if (isMockMode()) {
+    const u = getMockUsers().find(u => Number(u.id) === Number(id));
+    return u || getMockUsers()[0];
+  }
+  try {
+    return await apiFetch(`/api/users/${encodeURIComponent(id)}`);
+  } catch (e) {
+    const u = getMockUsers().find(u => Number(u.id) === Number(id));
+    return u || getMockUsers()[0];
+  }
+}
+
+// POST /api/users  →  {email}  →  {id}
+// Mock returns a synthetic id and the provided email.
+async function apiCreateUser(email) {
+  if (isMockMode()) return { id: Date.now(), email };
+  return apiFetch('/api/users', { method: 'POST', body: JSON.stringify({ email }) });
+}
+
+// PUT /api/users/:id/email  →  {email, password}  →  {id, email}
+async function apiUpdateUserEmail(id, email, password) {
+  if (isMockMode()) return { id, email };
+  return apiFetch(
+    `/api/users/${encodeURIComponent(id)}/email`,
+    { method: 'PUT', body: JSON.stringify({ email, password }) }
+  );
+}
+
+// PUT /api/users/:id  →  {enabled}  →  {id, enabled}
+// Catches errors silently in mock mode.
+async function apiToggleUserEnabled(id, enabled) {
+  if (isMockMode()) return { id, enabled };
+  try {
+    return await apiFetch(
+      `/api/users/${encodeURIComponent(id)}`,
+      { method: 'PUT', body: JSON.stringify({ enabled }) }
+    );
+  } catch (e) {
+    // Re-throw so callers can revert state on failure.
+    throw e;
+  }
+}
+
+// GET /api/devices  →  [{id, owner_user_id, device_type, serial_number, enabled}]
+// Filters by owner_user_id; falls back to mock on error or empty.
+async function fetchUserDevices(userId) {
+  if (isMockMode()) {
+    return getMockDevices().filter(d => Number(d.owner_user_id) === Number(userId));
+  }
+  try {
+    const data = await apiFetch('/api/devices');
+    const arr = Array.isArray(data) ? data : [];
+    const filtered = arr.filter(d => Number(d.owner_user_id) === Number(userId));
+    return filtered.length > 0 ? filtered : getMockDevices().filter(d => Number(d.owner_user_id) === Number(userId));
+  } catch (e) {
+    return getMockDevices().filter(d => Number(d.owner_user_id) === Number(userId));
+  }
+}
+
+// POST /api/devices  →  {device_type, serial_number}  →  {id}
+async function apiCreateDevice(deviceType, serialNumber) {
+  if (isMockMode()) return { id: Date.now(), device_type: deviceType, serial_number: serialNumber };
+  return apiFetch('/api/devices', {
+    method: 'POST',
+    body: JSON.stringify({ device_type: deviceType, serial_number: serialNumber }),
+  });
+}

@@ -81,7 +81,7 @@ function updateDashboardAuthButton() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management' || p === 'users') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
@@ -131,7 +131,7 @@ async function init() {
     try {
       const qp = new URLSearchParams(window.location.search || '');
       const p = (qp.get('page') || '').toLowerCase().trim();
-      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management') ? p : 'dashboard';
+      return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management' || p === 'users') ? p : 'dashboard';
     } catch (e) { return 'dashboard'; }
   };
 
@@ -139,6 +139,14 @@ async function init() {
   console.log('%c[init] Starting app init()', 'color:#2563eb;font-weight:700', { page });
   // If on works or job page, let the dedicated page controllers handle it.
   if (page === 'works' || page === 'job') {
+    return;
+  }
+
+  // Users page
+  if (page === 'users') {
+    await ensureAuth();
+    updateDashboardAuthButton();
+    if (typeof initUsers === 'function') await initUsers();
     return;
   }
 

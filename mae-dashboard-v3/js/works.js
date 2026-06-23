@@ -15,7 +15,7 @@ function getCurrentPage() {
   try {
     const qp = new URLSearchParams(window.location.search || '');
     const p = (qp.get('page') || '').toLowerCase().trim();
-    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management') ? p : 'dashboard';
+    return (p === 'works' || p === 'dashboard' || p === 'job' || p === 'dashboard_mqtt' || p === 'user_management' || p === 'users') ? p : 'dashboard';
   } catch (e) {
     return 'dashboard';
   }
