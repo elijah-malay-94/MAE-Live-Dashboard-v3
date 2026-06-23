@@ -468,7 +468,7 @@
     <div class="um-stat-sub" id="umStatUsersSub">0 users linked to profiles</div>
   </div>
   <div class="um-stat-card">
-    <div class="um-stat-label" data-i18n="um.statTokens">Token Authorizations</div>
+    <div class="um-stat-label" data-i18n="um.statTokens">Guest Authorizations</div>
     <div class="um-stat-value" id="umStatTokens">0</div>
     <div class="um-stat-sub" id="umStatTokensSub">0 tokens API access keys</div>
   </div>
@@ -504,7 +504,7 @@
       <div class="um-field">
         <label data-i18n="um.fieldProfile" for="umUserAuthProfile">Profile</label>
         <select id="umUserAuthProfile">
-          <option value="">— Select Profile —</option>
+          <option value="" data-i18n="um.selectProfile">— Select Profile —</option>
           <option value="Viewer">Viewer</option>
           <option value="Operator">Operator</option>
           <option value="Read-Only">Read-Only</option>
@@ -533,13 +533,13 @@
   </div>
 
   <!-- Separator -->
-  <div class="um-separator" data-i18n="um.separator">— or create a token authorization —</div>
+  <div class="um-separator" data-i18n="um.separator">— or create a guest authorization —</div>
 
-  <!-- Section 2: New Token Authorization -->
+  <!-- Section 2: New Guest Authorization -->
   <div class="um-section">
     <div class="um-section-header">
-      <div class="um-section-title" data-i18n="um.sectionNewToken">New Token Authorization</div>
-      <span class="um-badge um-badge--token" data-i18n="um.badgeTokenAccess">Token Access</span>
+      <div class="um-section-title" data-i18n="um.sectionNewToken">New Guest Authorization</div>
+      <span class="um-badge um-badge--token" data-i18n="um.badgeTokenAccess">Guest Access</span>
     </div>
     <div class="um-form-grid um-form-grid--2">
       <div class="um-field">
@@ -551,7 +551,7 @@
       <div class="um-field">
         <label data-i18n="um.fieldProfile" for="umTokenAuthProfile">Profile</label>
         <select id="umTokenAuthProfile">
-          <option value="">— Select Profile —</option>
+          <option value="" data-i18n="um.selectProfile">— Select Profile —</option>
           <option value="Viewer">Viewer</option>
           <option value="Operator">Operator</option>
           <option value="Read-Only">Read-Only</option>
@@ -604,7 +604,7 @@
           <tr>
             <th data-i18n="um.colType">Type</th>
             <th data-i18n="um.colWork">Work</th>
-            <th data-i18n="um.colUserToken">User / Token</th>
+            <th data-i18n="um.colUserToken">User / Guest</th>
             <th data-i18n="um.colProfile">Profile</th>
             <th data-i18n="um.colStartDate">Start Date</th>
             <th data-i18n="um.colEndDate">End Date</th>
@@ -2681,7 +2681,7 @@ function togglePages() {
     showEl(navExport, false);
     showEl(navSettings, false);
     showEl(navManual, true);
-    showEl(navUserMgmt, false);
+    showEl(navUserMgmt, true);
   } else if (page === 'works') {
     showEl(navDash, false);
     showEl(navWorks, false);
@@ -2689,7 +2689,7 @@ function togglePages() {
     showEl(navExport, false);
     showEl(navSettings, false);
     showEl(navManual, true);
-    showEl(navUserMgmt, false);
+    showEl(navUserMgmt, true);
   } else if (page === 'user_management') {
     showEl(navDash, true);
     showEl(navWorks, true);
@@ -2748,7 +2748,7 @@ function togglePages() {
     } else if (page === 'job') {
       subEl.textContent = tr('page.jobSubtitle', 'Create or edit a work, then manage devices.');
     } else if (page === 'user_management') {
-      subEl.textContent = 'Manage user and token authorizations for your works';
+      subEl.textContent = 'Manage user and guest authorizations for your works';
     } else {
       if (typeof window.updateWorkSubtitle === 'function') window.updateWorkSubtitle();
       else subEl.textContent = 'WORK: — - PLACE: — - DEVICES: —';

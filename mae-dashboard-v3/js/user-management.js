@@ -345,7 +345,7 @@ function umSetFilterSearch(v) { umFilterSearch = v; umCurrentPage = 1; renderUmL
 function _umRenderRow(a) {
   const typeBadge = a.type === 'user'
     ? `<span class="um-type-badge um-type-badge--user"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> User</span>`
-    : `<span class="um-type-badge um-type-badge--token"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Token</span>`;
+    : `<span class="um-type-badge um-type-badge--token"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Guest</span>`;
 
   const jobBadge  = `<span class="um-job-badge">${_umEsc(a.job || '—')}</span>`;
   // user_id = email for user auths; token = server-generated string for guest auths
