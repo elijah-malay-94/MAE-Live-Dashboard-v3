@@ -93,7 +93,7 @@
       'auth.password': 'Password',
       'auth.enterUsername': 'Enter username',
       'auth.enterPassword': 'Enter password',
-
+      'auth.goToOldPortal': 'Go to the previous version of the portal',
       'common.noData': 'No data',
       'common.records': 'records',
       'common.loading': 'Loading…',
@@ -554,6 +554,7 @@
       'auth.password': 'Password',
       'auth.enterUsername': 'Inserisci username',
       'auth.enterPassword': 'Inserisci password',
+      'auth.goToOldPortal': 'Accedi alla precedente versione del portale',
 
       'common.noData': 'Nessun dato',
       'common.records': 'record',
